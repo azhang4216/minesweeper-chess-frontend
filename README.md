@@ -13,7 +13,7 @@ If any piece (friend or foe) lands on a square containing a bomb, the bomb deton
 ## 🏗️ System Architecture
 
 ### Frontend
-- React.js with TypeScript for a responsive single-page application
+- React.js with JavaScript for a responsive single-page application
 - Chess UI built with react-chessboard
 - Redux for state management
 - Tailwind CSS for styling
