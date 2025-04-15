@@ -39,12 +39,6 @@
 .chess-board-container {
   width: 480px;
   height: 480px;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(8, 1fr);
-  border: 4px solid #3a3a3a;
-  border-radius: 4px;
-  overflow: hidden;
 }
 
 .move-history {

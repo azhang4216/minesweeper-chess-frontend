@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import Chess from 'chess.js';
 
 const ChessBoard = () => {
-    const [game, setGame] = useState(new Chess());
+    const game = useSelector((state) => state.game);
+    const orientation = useSelector((state) => state.orientation);
 
     const makeMove = (move) => {
         const gameCopy = new Chess(game.fen());  // create a real clone of game
@@ -25,8 +27,7 @@ const ChessBoard = () => {
 
     return (
         <div>
-            {/* TODO: boardOrientation={"white"} or "black" */}
-            <Chessboard id="BasicBoard" position={game.fen()} onPieceDrop={onDrop}/>
+            <Chessboard position={game.fen()} onPieceDrop={onDrop} boardOrientation={orientation} />
         </div>
     );
 };

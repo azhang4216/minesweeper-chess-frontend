@@ -1,8 +1,9 @@
-import ChessBoard from "./components/ChessBoard";
+import BoardPage from "./components/BoardPage";
+// import ChessBoard from "./components/ChessBoard";
 
 const App = () => {
     return (
-        <ChessBoard />
+        <BoardPage />
     );
 }
 
