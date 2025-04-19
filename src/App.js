@@ -1,9 +1,11 @@
 import BoardPage from "./components/BoardPage";
-// import ChessBoard from "./components/ChessBoard";
+import { SocketProvider } from "./socketContext.js";
 
 const App = () => {
     return (
-        <BoardPage />
+        <SocketProvider>
+            <BoardPage />
+        </SocketProvider>
     );
 }
 

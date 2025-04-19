@@ -1,17 +1,21 @@
 import Chess from 'chess.js';
 
 const initialState = {
-    game: new Chess(),
-    orientation: "white",
+    // game: new Chess(),
+    gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
+    isWhite: true,
+    isMyTurn: false,
+    placingBombs: false, 
+    moveHistory: [],
     player: {
         name: "My Name Here",
-        rating: 1500,
-        bombs: 3
+        rating: 0,
+        bombs: []
     },
     opponent: {
         name: "Opponent's Name Here",
-        rating: 1200,
-        bombs: 3
+        rating: 0,
+        bombs: []
     }
 }
 
@@ -23,32 +27,65 @@ Rules of Reducers (https://redux.js.org/tutorials/fundamentals/part-3-state-acti
 */
 export default function appReducer(state = initialState, action) {
     switch (action.type) {
-        case "MAKE_MOVE": {
-            return {}
-        }
-        case "PLACE_BOMB": {
-            const newBombs = [...state.game.plantedBombs, action.payload.square];
-            const newBombCount = state.game.player.bombs - 1;
-        
-            // Prevent planting if no bombs left or already on that square
-            if (newBombCount < 0 || state.game.plantedBombs.includes(action.payload.square)) {
-                console.log(`bomb already planted on ${action.payload.square}`)
-                return state;
-            }
-        
-            return {
+        // case "UPDATE_GAME": {
+        //     const updatedFen = action.payload.fen;
+        //     return {
+        //         ...state,
+        //         gameFen: updatedFen,
+        //     };
+        // }
+
+        case "PLACE_BOMB":
+            // based on the location of the square, we can determine whether it's our or our opponent's bomb
+            const square = action.payload;
+            return ((state.isWhite && (square[1] === '3' || square[1] === '4')) || (!state.isWhite && (square[1] === '5' || square[1] === '6'))) ? {
                 ...state,
-                game: {
-                    ...state.game,
-                    plantedBombs: newBombs,
-                    player: {
-                        ...state.game.player,
-                        bombs: newBombCount
-                    }
+                player: {
+                    ...state.player,
+                    bombs: [...state.player.bombs, action.payload]
+                }
+            } : {
+                ...state,
+                opponent: {
+                    ...state.opponent,
+                    bombs: [...state.opponent.bombs, action.payload]
                 }
             };
-        }
+
+        // case "DETONATE_BOMB":
+        //     return {
+        //         ...state,
+        //         placedBombs: state.placedBombs.filter(sq => sq !== action.payload),
+            // };
+
+        case "SET_GAME_STAGE":
+            return {
+                ...state,
+                placingBombs: action.payload,
+            }
+
+        case "SET_PLAYER_INFO":
+            return {
+                ...state,
+                player: action.payload,
+            };
+
+        case "SET_OPPONENT_INFO":
+            return {
+                ...state,
+                opponent: action.payload,
+            };
+
+        case "SET_ORIENTATION":
+            return {
+                ...state,
+                isWhite: action.payload,
+            };
+
+        // case "RESET_GAME":
+        //     return initialState;
+
         default:
-            return state
+            return state;
     }
 }
