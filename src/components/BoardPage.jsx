@@ -80,9 +80,7 @@ const BoardPage = () => {
         };
 
         const handleGameState = ({ gameFen, moveSan, specialMove, sideToMoveNext }) => {
-            // TODO: record moveSan in game history
-            console.log(moveSan);
-            dispatch(actions.updateGameFromServer(gameFen));
+            dispatch(actions.updateGameFromServer(gameFen, moveSan));
 
             // determine who just made this move
             const isNextMoveWhite = !(sideToMoveNext === "b");
@@ -145,7 +143,7 @@ const BoardPage = () => {
             socket.off('gameState', handleGameState);
             socket.off('invalidMove', handleinvalidMove);
         };
-    }, [dispatch, socket]);
+    }, [dispatch, socket, player.isWhite]);
 
     const handleRoomIdChange = (event) => {
         setRoomId(event.target.value);

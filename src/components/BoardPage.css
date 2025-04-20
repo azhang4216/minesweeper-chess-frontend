@@ -63,6 +63,28 @@
   text-align: center;
 }
 
+.move-history-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.move-history-row {
+  display: flex;
+  gap: 12px;
+  font-family: monospace;
+}
+
+.move-turn {
+  width: 30px;
+  text-align: right;
+}
+
+.move-white, .move-black {
+  width: 60px;
+  text-align: left;
+}
+
 /* for bomb planted X overlay */
 .red-x {
   position: absolute;
