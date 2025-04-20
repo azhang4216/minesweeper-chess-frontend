@@ -1,5 +1,6 @@
 .game-container {
   display: flex;
+  align-items: stretch;
   justify-content: center;
   align-items: flex-start;
   padding: 20px;
@@ -8,6 +9,12 @@
   min-height: 100vh;
   color: white;
   font-family: "Segoe UI", sans-serif;
+}
+
+.game-content-wrapper {
+  display: flex;
+  gap: 40px;
+  align-items: stretch;
 }
 
 .chess-wrapper {
@@ -41,18 +48,28 @@
   height: 480px;
 }
 
-.move-history {
+.side-panel {
   width: 180px;
   background: #3a3a3a;
   border-radius: 8px;
   padding: 12px;
-  max-height: 500px;
   overflow-y: auto;
 }
 
-.move-history h3 {
+.side-panel h3 {
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 18px;
   text-align: center;
 }
+
+/* for bomb planted X overlay */
+.red-x {
+  position: absolute;
+  color: red;
+  font-size: 36px;
+  font-weight: bold;
+  pointer-events: none; /* So it doesn't interfere with clicking the square */
+  z-index: 5;
+}
+

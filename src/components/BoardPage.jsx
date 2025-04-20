@@ -2,26 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ChessBoard from './ChessBoard';
 import Loader from './Loader';
+import SidePanel from './SidePanel';
 import './BoardPage.css';
 import { useSocket } from "../socketContext.js";
 import * as actions from '../redux/actions.js';
-
-const MoveHistory = () => {
-    const moveHistory = useSelector((state) => state.moveHistory);
-
-    return (
-        <div className="move-history">
-            <h3>Moves</h3>
-            {moveHistory.map((move, i) => (
-                <div key={i}>
-                    {String.fromCharCode(97 + move.from.col)}{8 - move.from.row} →{' '}
-                    {String.fromCharCode(97 + move.to.col)}{8 - move.to.row}
-                    {move.bombDetonated && ' 💣'}
-                </div>
-            ))}
-        </div>
-    );
-};
 
 const BoardPage = () => {
     const dispatch = useDispatch();      // sends actions to redux store
@@ -67,23 +51,30 @@ const BoardPage = () => {
             setRoomMessage(message);
             setGameState("inactive");
         };
-        
+
         const handleDisconnect = ({ message }) => {
             console.log("disconnecting");
             setRoomMessage(message);
             setGameState("inactive");
         };
 
+        const handleStartPlay = () => {
+            console.log("Finished placing bombs. Now ready to play.");
+            dispatch(actions.setGameStage(false)); // boolean represents whether still placing bombs
+        };
+
         socket.on('roomCreated', handleRoomCreated);
         socket.on('roomJoined', handleRoomJoined);
         socket.on('roomJoinError', handleRoomJoinError);
         socket.on('playerDisconnected', handleDisconnect);
+        socket.on('startPlay', handleStartPlay);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
             socket.off('roomJoined', handleRoomJoined);
             socket.off('roomJoinError', handleRoomJoinError);
-            socket.on('playerDisconnected', handleDisconnect);
+            socket.off('playerDisconnected', handleDisconnect);
+            socket.off('startPlay', handleStartPlay);
         };
     }, [dispatch, socket]);
 
@@ -100,8 +91,8 @@ const BoardPage = () => {
 
     return (
         <div className="game-container">
-            <div className="chess-wrapper">
-                {gameState !== "playing" ? (
+            {gameState !== "playing" ? (
+                <div className="chess-wrapper">
                     <div className="join-room-container">
                         <input
                             type="text"
@@ -113,8 +104,10 @@ const BoardPage = () => {
                         {roomMessage && <p>{roomMessage}</p>}
                         {gameState === "matching" && <Loader />}
                     </div>
-                ) : (
-                    <>
+                </div>
+            ) : (
+                <div className="game-content-wrapper">
+                    <div className="chess-wrapper">
                         <div className="player-info top">
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
@@ -130,11 +123,12 @@ const BoardPage = () => {
                             <span>{player.rating}</span>
                             <span>💣 x{3 - player.bombs.length}</span>
                         </div>
-                    </>
-                )}
-            </div>
-            {gameState === "playing" && <MoveHistory />}
+                    </div>
+                    <SidePanel />
+                </div>
+            )}
         </div>
+
     );
 };
 

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../socketContext.js';
-import * as actions from '../redux/actions.js';;
+import * as actions from '../redux/actions.js';
+import shovelSound from '../assets/shovel_sound.mov';
 
 const ChessBoard = () => {
     const dispatch = useDispatch();
@@ -16,69 +17,42 @@ const ChessBoard = () => {
 
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
 
-    // const [roomId, setRoomId] = useState(null);
+    useEffect(() => {
+        const handleBombPlaced = (square) => {
+            dispatch(actions.placeBomb(square));
+        };
 
-    // // the useEffects subscribe to events when the component mounts
-    // useEffect(() => {
-    //     // we update the redux state by dispatching actions when we receive server updates
-    //     socket.on("game:update", (newGameState) => {
-    //         dispatch(updateGameFromServer(newGameState));
-    //     });
+        socket.on('bombPlaced', handleBombPlaced);
 
-    //     return () => {
-    //         socket.off("game:update");
-    //     };
-    // }, [dispatch]);
+        return () => {
+            socket.off('bombPlaced', handleBombPlaced);
+        };
+    }, [dispatch, socket]);
 
-    // useEffect(() => {
-    //     socket.emit("move:make", {
-    //         from: sourceSquare,
-    //         to: targetSquare,
-            
-    //     })
-    // })
+    useEffect(() => {
+        console.log("hello world!");
+        myBombs.forEach(square => {
+            const squareEl = document.querySelector(`[data-square="${square}"]`);
+            if (squareEl && !squareEl.querySelector('.red-x')) {
+                const x = document.createElement('div');
+                x.className = 'red-x';
+                x.textContent = 'X';
+                x.style.top = '0';
+                x.style.left = '0';
+                x.style.width = '100%';
+                x.style.height = '100%';
+                x.style.display = 'flex';
+                x.style.alignItems = 'center';
+                x.style.justifyContent = 'center';
 
-    // TODO: delete comments
-    // const makeMove = (move) => {
-    //     const gameCopy = new Chess(game.fen());  // create a real clone of game
-    //     const intendedMove = gameCopy.move(move);
+                squareEl.style.position = 'relative';
+                squareEl.appendChild(x);
 
-    //     if (intendedMove === null) return false; // illegal move
-
-    //     setGame(gameCopy);                       // only set state if move is legal
-    //     return true;
-    // }
-
-    // uisng UseCallback to memoize a function for performance
-    // const onDrop = useCallback(
-    //     (sourceSquare, targetSquare, piece) => {
-    //         if (!isMyTurn) return false;
-
-    //         const move = {
-    //             from: sourceSquare,
-    //             to: targetSquare,
-    //             roomId: roomId,
-    //             promotion: piece[1]?.toLowerCase() ?? "q",
-    //         };
-
-    //         const result = game.move(move);
-
-    //     }
-    //     , 
-    //     [game, isMyTurn, dispatch]
-    // )
-
-        useEffect(() => {
-            const handleBombPlaced = (square) => {
-                dispatch(actions.placeBomb(square));
-            };
-    
-            socket.on('bombPlaced', handleBombPlaced);
-    
-            return () => {
-                socket.off('bombPlaced', handleBombPlaced);
-            };
-        }, [dispatch, socket]);
+                // play shovel sound when bomb buried
+                new Audio(shovelSound).play();
+            }
+        });
+    }, [myBombs]);
 
     const handleClick = (_e) => {
         if (placingBombs && myBombs.length < 3) {
@@ -92,7 +66,7 @@ const ChessBoard = () => {
 
         console.log(`Clicked on square ${squareMouseIsOver}`);
     };
-    
+
     const onDrop = (sourceSquare, targetSquare, piece) => {
 
     };
@@ -101,8 +75,8 @@ const ChessBoard = () => {
     const onMouseoverSquare = (square, _pieceOnSquare) => {
         setSquareMouseIsOver(square);
     };
-    
-    
+
+
     // (startSquare, endSquare, piece) => {
     //     socket.emit("makeMove", {
     //         from: startSquare,
@@ -113,9 +87,9 @@ const ChessBoard = () => {
 
     return (
         <div onClick={handleClick}>
-            <Chessboard 
-                position={gameFen} 
-                onPieceDrop={onDrop} 
+            <Chessboard
+                position={gameFen}
+                onPieceDrop={onDrop}
                 onMouseOverSquare={onMouseoverSquare}
                 boardOrientation={isWhite ? "white" : "black"}
             />

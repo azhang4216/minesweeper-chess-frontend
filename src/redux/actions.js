@@ -1,10 +1,8 @@
-// // Game state updates
-// export const updateGameFromServer = (gameState) => ({
-//     type: "UPDATE_GAME",
-//     payload: gameState,
-// });
+export const updateGameFromServer = (gameState) => ({
+    type: "UPDATE_GAME",
+    payload: gameState,
+});
 
-// // Bomb-related actions
 export const placeBomb = (square) => ({
     type: "PLACE_BOMB",
     payload: square,
