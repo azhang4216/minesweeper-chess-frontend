@@ -1,6 +1,6 @@
-export const updateGameFromServer = (gameState) => ({
+export const updateGameFromServer = (gameFen) => ({
     type: "UPDATE_GAME",
-    payload: gameState,
+    payload: gameFen,
 });
 
 export const placeBomb = (square) => ({

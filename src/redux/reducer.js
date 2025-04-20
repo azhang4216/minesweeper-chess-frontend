@@ -1,7 +1,4 @@
-import Chess from 'chess.js';
-
 const initialState = {
-    // game: new Chess(),
     gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
     isWhite: true,
     isMyTurn: false,
@@ -27,13 +24,13 @@ Rules of Reducers (https://redux.js.org/tutorials/fundamentals/part-3-state-acti
 */
 export default function appReducer(state = initialState, action) {
     switch (action.type) {
-        // case "UPDATE_GAME": {
-        //     const updatedFen = action.payload.fen;
-        //     return {
-        //         ...state,
-        //         gameFen: updatedFen,
-        //     };
-        // }
+        case "UPDATE_GAME": {
+            const updatedFen = action.payload;
+            return {
+                ...state,
+                gameFen: updatedFen,
+            };
+        }
 
         case "PLACE_BOMB":
             // based on the location of the square, we can determine whether it's our or our opponent's bomb

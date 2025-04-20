@@ -3,7 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../socketContext.js';
 import * as actions from '../redux/actions.js';
+
+// sound effects
 import shovelSound from '../assets/shovel_sound.mov';
+import illegalSound from '../assets/illegal.mp3';
 
 const ChessBoard = () => {
     const dispatch = useDispatch();
@@ -30,7 +33,6 @@ const ChessBoard = () => {
     }, [dispatch, socket]);
 
     useEffect(() => {
-        console.log("hello world!");
         myBombs.forEach(square => {
             const squareEl = document.querySelector(`[data-square="${square}"]`);
             if (squareEl && !squareEl.querySelector('.red-x')) {
@@ -55,35 +57,40 @@ const ChessBoard = () => {
     }, [myBombs]);
 
     const handleClick = (_e) => {
-        if (placingBombs && myBombs.length < 3) {
-            if ((isWhite && (squareMouseIsOver[1] === '3' || squareMouseIsOver[1] === '4')) || (!isWhite && (squareMouseIsOver[1] === '5' || squareMouseIsOver[1] === '6'))) {
-                // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
-                socket.emit("placeBomb", squareMouseIsOver);
-            } else {
-                console.log(`Cannot place bombs as ${isWhite ? "white" : "black"} on ${squareMouseIsOver}.`);
-            }
+        const selectedSquare = squareMouseIsOver;  // accounting for sudden changes in mouse movement
+        if (placingBombs && myBombs.length < 3 &&
+            ((isWhite && (selectedSquare[1] === '3' || selectedSquare[1] === '4')) || (!isWhite && (selectedSquare[1] === '5' || selectedSquare[1] === '6'))) &&
+            !myBombs.includes(selectedSquare)
+        )  {
+            // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
+            socket.emit("placeBomb", selectedSquare);
+        } else {
+            new Audio(illegalSound).play();
         }
 
-        console.log(`Clicked on square ${squareMouseIsOver}`);
+        console.log(`Clicked on square ${selectedSquare}`);
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
+        console.log(`Trying to make move: ${sourceSquare} to ${targetSquare} with ${piece}.`);
 
+        if ((isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b')) {
+            // trying to move own pieces
+            socket.emit("makeMove", {
+                from: sourceSquare,
+                to: targetSquare,
+                promotion: piece[1]?.toLowerCase() ?? "q",
+            });
+        } else {
+            // trying to move opponent's pieces
+            new Audio(illegalSound).play();
+        }
     };
 
     // keeps track of where our mouse is
     const onMouseoverSquare = (square, _pieceOnSquare) => {
         setSquareMouseIsOver(square);
     };
-
-
-    // (startSquare, endSquare, piece) => {
-    //     socket.emit("makeMove", {
-    //         from: startSquare,
-    //         to: endSquare,
-    //         promotion: piece[1]?.toLowerCase() ?? "q",
-    //     });
-    // };
 
     return (
         <div onClick={handleClick}>
