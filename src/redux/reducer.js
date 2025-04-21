@@ -27,6 +27,7 @@ export default function appReducer(state = initialState, action) {
         case "UPDATE_GAME": {
             // we use temporaryUpdate=true for pre-explosion animation purposes
             const { gameFen, moveSan, temporaryUpdate } = action.payload;
+            console.log(`Updating game: ${gameFen}, ${moveSan}, ${temporaryUpdate}`);
             return {
                 ...state,
                 gameFen,

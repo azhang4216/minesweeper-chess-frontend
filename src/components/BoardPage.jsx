@@ -17,9 +17,9 @@ import moveCheckSound from '../assets/move-check.mp3';
 import moveOpponentSound from '../assets/move-opponent.mp3';
 import moveSelfSound from '../assets/move-self.mp3';
 import ohNoBoomSound from '../assets/oh-no-boom.mov';
-import premoveSound from '../assets/premove.mp3';
+// import premoveSound from '../assets/premove.mp3';
 import promoteSound from '../assets/promote.mp3';
-import tenSecondsSound from '../assets/tenseconds.mp3';
+// import tenSecondsSound from '../assets/tenseconds.mp3';
 
 // other assets
 import explosionGif from '../assets/explosion.gif';
@@ -91,6 +91,12 @@ const BoardPage = () => {
             const isNextMoveWhite = !(sideToMoveNext === "b");
             const wasMyMove = player.isWhite !== isNextMoveWhite;
 
+            // update the game normally when move isn't an explosion
+            // note: explosions have custom timing / updates
+            if (!specialMove || !specialMove.startsWith("explode ")) {
+                dispatch(actions.updateGameFromServer(gameFen, moveSan));
+            }
+
             // see what sort of sound we need to play based on the move just made
             if (specialMove) {
                 if (specialMove.startsWith("explode ")) {
@@ -151,8 +157,6 @@ const BoardPage = () => {
                     // TODO
 
                 } else {
-                    // update our board pieces asap
-                    dispatch(actions.updateGameFromServer(gameFen, moveSan));
                     switch (specialMove) {
                         case "capture":
                             playSound(captureSound);
