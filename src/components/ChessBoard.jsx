@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../socketContext.js';
@@ -33,6 +33,12 @@ const ChessBoard = () => {
     }, [dispatch, socket]);
 
     useEffect(() => {
+        // remove all existing red-Xs
+        document.querySelectorAll('.red-x').forEach((x) => {
+            x.remove();
+        });
+
+        // redraw all of them (so that when a bomb detonates, removed bomb is not there)
         myBombs.forEach(square => {
             const squareEl = document.querySelector(`[data-square="${square}"]`);
             if (squareEl && !squareEl.querySelector('.red-x')) {
@@ -50,8 +56,10 @@ const ChessBoard = () => {
                 squareEl.style.position = 'relative';
                 squareEl.appendChild(x);
 
-                // play shovel sound when bomb buried
-                new Audio(shovelSound).play();
+                if (placingBombs) {
+                    // play shovel sound when bomb buried
+                    new Audio(shovelSound).play();
+                }
             }
         });
     }, [myBombs]);
@@ -61,7 +69,7 @@ const ChessBoard = () => {
         if (placingBombs && myBombs.length < 3 &&
             ((isWhite && (selectedSquare[1] === '3' || selectedSquare[1] === '4')) || (!isWhite && (selectedSquare[1] === '5' || selectedSquare[1] === '6'))) &&
             !myBombs.includes(selectedSquare)
-        )  {
+        ) {
             // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
             socket.emit("placeBomb", selectedSquare);
         } else {

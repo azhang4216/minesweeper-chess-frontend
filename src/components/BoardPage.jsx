@@ -16,13 +16,18 @@ import illegalSound from '../assets/illegal.mp3';
 import moveCheckSound from '../assets/move-check.mp3';
 import moveOpponentSound from '../assets/move-opponent.mp3';
 import moveSelfSound from '../assets/move-self.mp3';
+import ohNoBoomSound from '../assets/oh-no-boom.mov';
 import premoveSound from '../assets/premove.mp3';
 import promoteSound from '../assets/promote.mp3';
 import tenSecondsSound from '../assets/tenseconds.mp3';
 
+// other assets
+import explosionGif from '../assets/explosion.gif';
+import craterPng from '../assets/crater.png';
+
 const BoardPage = () => {
-    const dispatch = useDispatch();      // sends actions to redux store
-    const socket = useSocket();          // use context so that all components reference the same socket
+    const dispatch = useDispatch();                          // sends actions to redux store
+    const socket = useSocket();                              // use context so that all components reference the same socket
 
     const player = useSelector((state) => state.player);
     const opponent = useSelector((state) => state.opponent);
@@ -30,6 +35,8 @@ const BoardPage = () => {
     const [roomId, setRoomId] = useState('');
     const [roomMessage, setRoomMessage] = useState('');
     const [gameState, setGameState] = useState("inactive");  // matching, or playing
+
+    const playSound = (sound) => new Audio(sound).play();    // for playing sound effects
 
     useEffect(() => {
         const handleRoomCreated = ({ message }) => {
@@ -59,7 +66,7 @@ const BoardPage = () => {
             dispatch(actions.setOrientation(myInfo.is_white));
             dispatch(actions.setGameStage(true));
 
-            new Audio(gameStartSound).play();
+            playSound(gameStartSound);
         };
 
         const handleRoomJoinError = ({ message }) => {
@@ -75,45 +82,102 @@ const BoardPage = () => {
 
         const handleStartPlay = () => {
             console.log("Finished placing bombs. Now ready to play.");
-            new Audio(gameStartSound).play();
+            playSound(gameStartSound);
             dispatch(actions.setGameStage(false)); // boolean represents whether still placing bombs
         };
 
-        const handleGameState = ({ gameFen, moveSan, specialMove, sideToMoveNext }) => {
-            dispatch(actions.updateGameFromServer(gameFen, moveSan));
-
+        const handleGameState = ({ gameFen, moveSan, specialMove, sideToMoveNext, preExplosionFen }) => {
             // determine who just made this move
             const isNextMoveWhite = !(sideToMoveNext === "b");
             const wasMyMove = player.isWhite !== isNextMoveWhite;
 
-            const playSound = (sound) => new Audio(sound).play();
-
             // see what sort of sound we need to play based on the move just made
             if (specialMove) {
-                switch (specialMove) {
-                    case "capture":
-                        playSound(captureSound);
-                        break;
-                    case "castle":
-                        playSound(castleSound);
-                        break;
-                    case "promotion":
-                        playSound(promoteSound);
-                        break;
-                    case "checkmate":
-                    case "stalemate":
-                    case "draw":
-                    case "draw by 50-move rule":
-                    case "threefold repetition":
-                    case "insufficient material":
-                        playSound(gameEndSound);
-                        break;
-                    case "in check":
-                        playSound(moveCheckSound);
-                        break;
-                    default:
-                        playSound(wasMyMove ? moveSelfSound : moveOpponentSound);
-                        break;
+                if (specialMove.startsWith("explode ")) {
+                    // temporary update is true, so the piece temporarily moves there
+                    dispatch(actions.updateGameFromServer(preExplosionFen, moveSan, true));
+
+                    const squareToExplode = specialMove.split(" ")[1];
+                    playSound(ohNoBoomSound);
+
+                    // if it is our own bomb, we need to remove the X
+                    dispatch(actions.detonateBomb(squareToExplode));
+
+                    setTimeout(() => {
+                        // we get rid of the exploded piece a bit later for syncing with "oh no" sound
+                        dispatch(actions.updateGameFromServer(gameFen, moveSan));
+                        
+                        // explosion animation
+                        const explosion = document.createElement('img');
+                        explosion.src = explosionGif;
+                        explosion.className = 'explosion';
+                        explosion.style.position = 'absolute';
+                        explosion.style.top = '0';
+                        explosion.style.left = '0';
+                        explosion.style.width = '100%';
+                        explosion.style.height = '100%';
+                        explosion.style.pointerEvents = 'none';
+                        explosion.style.zIndex = '10';
+
+                        const squareEl = document.querySelector(`[data-square="${squareToExplode}"]`);
+                        squareEl.style.position = 'relative';
+                        squareEl.appendChild(explosion);
+
+                        // after animation, the scorched overlay is added
+                        setTimeout(() => {
+                            explosion.remove();
+
+                            const crater = document.createElement('img');
+                            crater.src = craterPng;
+                            crater.className = 'scorched';
+                            Object.assign(crater.style, {
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                width: '85%',
+                                height: '85%',
+                                objectFit: 'cover',
+                                pointerEvents: 'none',
+                                zIndex: '5',
+                                opacity: '0.9',
+                                transform: 'translate(-50%, -50%)', // offset to center the crater
+                            });
+
+                            squareEl.appendChild(crater);
+                        }, 1000);                                   // adjust time to match GIF length
+                    }, 900);                                        // delay time before we play explosion
+
+                    // if we've just blown up the king, then game over!
+                    // TODO
+
+                } else {
+                    // update our board pieces asap
+                    dispatch(actions.updateGameFromServer(gameFen, moveSan));
+                    switch (specialMove) {
+                        case "capture":
+                            playSound(captureSound);
+                            break;
+                        case "castle":
+                            playSound(castleSound);
+                            break;
+                        case "promotion":
+                            playSound(promoteSound);
+                            break;
+                        case "checkmate":
+                        case "stalemate":
+                        case "draw":
+                        case "draw by 50-move rule":
+                        case "threefold repetition":
+                        case "insufficient material":
+                            playSound(gameEndSound);
+                            break;
+                        case "in check":
+                            playSound(moveCheckSound);
+                            break;
+                        default:
+                            playSound(wasMyMove ? moveSelfSound : moveOpponentSound);
+                            break;
+                    }
                 }
             } else {
                 // Play default move sound for regular moves
@@ -123,7 +187,7 @@ const BoardPage = () => {
         }
 
         const handleinvalidMove = () => {
-            new Audio(illegalSound).play();
+            playSound(illegalSound);
         }
 
         socket.on('roomCreated', handleRoomCreated);

@@ -1,8 +1,9 @@
-export const updateGameFromServer = (gameFen, moveSan) => ({
+export const updateGameFromServer = (gameFen, moveSan, temporaryUpdate=false) => ({
     type: "UPDATE_GAME",
     payload: {
         gameFen,
-        moveSan
+        moveSan,
+        temporaryUpdate,
     },
 });
 
@@ -11,10 +12,10 @@ export const placeBomb = (square) => ({
     payload: square,
 });
 
-// export const detonateBomb = (square) => ({
-//     type: "DETONATE_BOMB",
-//     payload: square,
-// });
+export const detonateBomb = (square) => ({
+    type: "DETONATE_BOMB",
+    payload: square,
+});
 
 export const setGameStage = (placingBombs) => ({
     type: "SET_GAME_STAGE",

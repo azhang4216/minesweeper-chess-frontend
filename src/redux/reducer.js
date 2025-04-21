@@ -2,7 +2,7 @@ const initialState = {
     gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
     isWhite: true,
     isMyTurn: false,
-    placingBombs: false, 
+    placingBombs: false,
     moveHistory: [],
     player: {
         name: "My Name Here",
@@ -25,13 +25,13 @@ Rules of Reducers (https://redux.js.org/tutorials/fundamentals/part-3-state-acti
 export default function appReducer(state = initialState, action) {
     switch (action.type) {
         case "UPDATE_GAME": {
-            const x = {
+            // we use temporaryUpdate=true for pre-explosion animation purposes
+            const { gameFen, moveSan, temporaryUpdate } = action.payload;
+            return {
                 ...state,
-                gameFen: action.payload.gameFen,
-                moveHistory: [...state.moveHistory, action.payload.moveSan],
+                gameFen,
+                ...(temporaryUpdate ? {} : { moveHistory: [...state.moveHistory, moveSan] })
             };
-            console.log(x);
-            return x;
         }
 
         case "PLACE_BOMB":
@@ -51,11 +51,29 @@ export default function appReducer(state = initialState, action) {
                 }
             };
 
-        // case "DETONATE_BOMB":
-        //     return {
-        //         ...state,
-        //         placedBombs: state.placedBombs.filter(sq => sq !== action.payload),
-            // };
+        case "DETONATE_BOMB":
+            const squareToExplode = action.payload;
+            const isMyBomb = (state.isWhite && (squareToExplode[1] === '3' || squareToExplode[1] === '4')) || (!state.isWhite && (squareToExplode[1] === '5' || squareToExplode[1] === '6'));
+
+            console.log(`Denotating bomb on ${squareToExplode}, and it is ${isMyBomb ? "" : "not"} my bomb.`)
+
+            if (isMyBomb) {
+                return {
+                    ...state,
+                    player: {
+                        ...state.player,
+                        bombs: state.player.bombs.filter(sq => sq !== squareToExplode),
+                    },
+                };
+            } else {
+                return {
+                    ...state,
+                    opponent: {
+                        ...state.opponent,
+                        bombs: state.opponent.bombs.filter(sq => sq !== squareToExplode),
+                    },
+                };
+            }
 
         case "SET_GAME_STAGE":
             return {
