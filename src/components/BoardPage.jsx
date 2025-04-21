@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import ChessBoard from './ChessBoard';
-import Loader from './Loader';
-import SidePanel from './SidePanel';
 import './BoardPage.css';
 import { useSocket } from "../socketContext.js";
 import * as actions from '../redux/actions.js';
+
+// other components
+import ChessBoard from './ChessBoard';
+import Loader from './Loader';
+import SidePanel from './SidePanel';
+import WinLossPopup from './WinLossPopup.jsx';
 
 // sound effects
 import captureSound from '../assets/capture.mp3';
@@ -31,10 +34,18 @@ const BoardPage = () => {
 
     const player = useSelector((state) => state.player);
     const opponent = useSelector((state) => state.opponent);
+    const isWhite = useSelector((state) => state.isWhite);
 
     const [roomId, setRoomId] = useState('');
     const [roomMessage, setRoomMessage] = useState('');
     const [gameState, setGameState] = useState("inactive");  // matching, or playing
+
+    // these are for the outcome at the end of the game
+    const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
+    const [gameOverReason, setGameOverReason] = useState("");
+    const [gameOverResult, setGameOverResult] = useState("");
+    const [myEloChange, setmyEloChange] = useState(0);
+    const [opponentEloChange, setOpponentEloChange] = useState(0);
 
     const playSound = (sound) => new Audio(sound).play();    // for playing sound effects
 
@@ -89,7 +100,7 @@ const BoardPage = () => {
         const handleGameState = ({ gameFen, moveSan, specialMove, sideToMoveNext, preExplosionFen }) => {
             // determine who just made this move
             const isNextMoveWhite = !(sideToMoveNext === "b");
-            const wasMyMove = player.isWhite !== isNextMoveWhite;
+            const wasMyMove = isWhite !== isNextMoveWhite;
 
             // update the game normally when move isn't an explosion
             // note: explosions have custom timing / updates
@@ -112,7 +123,7 @@ const BoardPage = () => {
                     setTimeout(() => {
                         // we get rid of the exploded piece a bit later for syncing with "oh no" sound
                         dispatch(actions.updateGameFromServer(gameFen, moveSan));
-                        
+
                         // explosion animation
                         const explosion = document.createElement('img');
                         explosion.src = explosionGif;
@@ -152,10 +163,6 @@ const BoardPage = () => {
                             squareEl.appendChild(crater);
                         }, 1000);                                   // adjust time to match GIF length
                     }, 900);                                        // delay time before we play explosion
-
-                    // if we've just blown up the king, then game over!
-                    // TODO
-
                 } else {
                     switch (specialMove) {
                         case "capture":
@@ -194,6 +201,23 @@ const BoardPage = () => {
             playSound(illegalSound);
         }
 
+        const handleDrawGameOver = ({ by, whiteEloChange, blackEloChange }) => {
+            setGameOverResult("Draw");
+            setGameOverReason(by);
+            setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
+            setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
+            setDisplayWinLossPopup(true);
+        }
+
+        const handleWinLossGameOver = ({ winner, reason, whiteEloChange, blackEloChange }) => {
+            const isWinner = (winner === 'w') === isWhite;
+            setGameOverResult(isWinner ? "You win" : "You lose");
+            setGameOverReason(reason);
+            setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
+            setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
+            setDisplayWinLossPopup(true);
+        }
+
         socket.on('roomCreated', handleRoomCreated);
         socket.on('roomJoined', handleRoomJoined);
         socket.on('roomJoinError', handleRoomJoinError);
@@ -201,6 +225,8 @@ const BoardPage = () => {
         socket.on('startPlay', handleStartPlay);
         socket.on('gameState', handleGameState);
         socket.on('invalidMove', handleinvalidMove);
+        socket.on('drawGameOver', handleDrawGameOver);
+        socket.on('winLossGameOver', handleWinLossGameOver);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
@@ -210,8 +236,9 @@ const BoardPage = () => {
             socket.off('startPlay', handleStartPlay);
             socket.off('gameState', handleGameState);
             socket.off('invalidMove', handleinvalidMove);
+            socket.off('winLossGameOver', handleWinLossGameOver);
         };
-    }, [dispatch, socket, player.isWhite]);
+    }, [dispatch, socket, isWhite]);
 
     const handleRoomIdChange = (event) => {
         setRoomId(event.target.value);
@@ -242,6 +269,15 @@ const BoardPage = () => {
                 </div>
             ) : (
                 <div className="game-content-wrapper">
+                    {displayWinLossPopup && (
+                        <WinLossPopup
+                            result={gameOverResult}
+                            reason={gameOverReason}
+                            myEloChange={myEloChange}
+                            opponentEloChange={opponentEloChange}
+                            onClose={() => setDisplayWinLossPopup(false)}
+                        />
+                    )}
                     <div className="chess-wrapper">
                         <div className="player-info top">
                             <span>{opponent.name}</span>
