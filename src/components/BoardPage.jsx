@@ -35,6 +35,7 @@ const BoardPage = () => {
     const player = useSelector((state) => state.player);
     const opponent = useSelector((state) => state.opponent);
     const isWhite = useSelector((state) => state.isWhite);
+    const placingBombs = useSelector((state) => state.placingBombs);
 
     const [roomId, setRoomId] = useState('');
     const [roomMessage, setRoomMessage] = useState('');
@@ -116,7 +117,7 @@ const BoardPage = () => {
 
                     const squareToExplode = specialMove.split(" ")[1];
                     playSound(ohNoBoomSound);
-
+                    
                     // if it is our own bomb, we need to remove the X
                     dispatch(actions.detonateBomb(squareToExplode));
 
@@ -289,7 +290,20 @@ const BoardPage = () => {
                         <div className="player-info top">
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
-                            <span>💣 x{3 - opponent.bombs.length}</span>
+                            <span>
+                                {placingBombs
+                                    ? `💣x${3 - opponent.bombs.length}`
+                                    : (
+                                        <>
+                                            {[...Array(3)].map((_, i) => (
+                                                <span key={i}>
+                                                    {i < opponent.bombs.length ? '💣' : '💥'}
+                                                </span>
+                                            ))}
+                                        </>
+                                    )
+                                }
+                            </span>
                         </div>
 
                         <div className="chess-board-container">
@@ -299,7 +313,20 @@ const BoardPage = () => {
                         <div className="player-info bottom">
                             <span>{player.name}</span>
                             <span>{player.rating}</span>
-                            <span>💣 x{3 - player.bombs.length}</span>
+                            <span>
+                                {placingBombs
+                                    ? `💣x${3 - player.bombs.length}`
+                                    : (
+                                        <>
+                                            {[...Array(3)].map((_, i) => (
+                                                <span key={i}>
+                                                    {i < player.bombs.length ? '💣' : '💥'}
+                                                </span>
+                                            ))}
+                                        </>
+                                    )
+                                }
+                            </span>
                         </div>
                     </div>
                     <SidePanel />

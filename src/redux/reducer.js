@@ -56,7 +56,7 @@ export default function appReducer(state = initialState, action) {
             const squareToExplode = action.payload;
             const isMyBomb = (state.isWhite && (squareToExplode[1] === '3' || squareToExplode[1] === '4')) || (!state.isWhite && (squareToExplode[1] === '5' || squareToExplode[1] === '6'));
 
-            console.log(`Denotating bomb on ${squareToExplode}, and it is ${isMyBomb ? "" : "not"} my bomb.`)
+            console.log(`Denotating bomb on ${squareToExplode}, and it is ${isMyBomb ? "" : "not "}my bomb.`)
 
             if (isMyBomb) {
                 return {
