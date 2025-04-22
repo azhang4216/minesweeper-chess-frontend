@@ -48,6 +48,8 @@ const BoardPage = () => {
     const [myEloChange, setmyEloChange] = useState(0);
     const [opponentEloChange, setOpponentEloChange] = useState(0);
 
+    // const [madeCustomCursors, setMadeCustomCursors] = useState(false);
+
     const playSound = (sound) => new Audio(sound).play();    // for playing sound effects
 
     useEffect(() => {
@@ -77,7 +79,6 @@ const BoardPage = () => {
 
             dispatch(actions.setOrientation(myInfo.is_white));
             dispatch(actions.setGameStage(true));
-
             playSound(gameStartSound);
         };
 
@@ -95,6 +96,10 @@ const BoardPage = () => {
         const handleStartPlay = () => {
             console.log("Finished placing bombs. Now ready to play.");
             playSound(gameStartSound);
+
+            // double check every highlighted square is removed
+            document.querySelectorAll('div.highlighted').forEach(div => div.remove());
+
             dispatch(actions.setGameStage(false)); // boolean represents whether still placing bombs
         };
 
@@ -117,7 +122,7 @@ const BoardPage = () => {
 
                     const squareToExplode = specialMove.split(" ")[1];
                     playSound(ohNoBoomSound);
-                    
+
                     // if it is our own bomb, we need to remove the X
                     dispatch(actions.detonateBomb(squareToExplode));
 
@@ -248,6 +253,63 @@ const BoardPage = () => {
         };
     }, [dispatch, socket, isWhite]);
 
+    // this is for changing our cursor for planting bombs
+    // const changeCursor = () => {
+    //     console.log(`Placing bombs: ${placingBombs}`);
+    //     console.log(`Made custom cursors: ${madeCustomCursors}`);
+    //     if (placingBombs && !madeCustomCursors) {
+    //         // we haven't set our custom cursors yet! 
+    //         console.log("hello world!");
+
+    //         // we can shovel up the 3rd and 4th ranks as white, and 5th and 6th ranks as black
+    //         const squaresToChange = isWhite
+    //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
+    //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
+    //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
+    //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
+
+    //         const canvas = document.createElement('canvas');
+    //         canvas.width = 100;
+    //         canvas.height = 150;
+    //         const ctx = canvas.getContext('2d');
+
+    //         // Set font and draw emoji
+    //         ctx.font = '50px serif';
+    //         ctx.textBaseline = 'top';
+    //         ctx.fillText('🪏', 0, 0);
+
+    //         // Convert to image data URL
+    //         const dataURL = canvas.toDataURL('image/png');
+
+    //         squaresToChange.forEach((square, _index) => {
+    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
+    //             if (squareEl) {
+    //                 // squareEl.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='48' viewBox='0 0 100 100' style='fill:black;font-size:55px;'><text y='50%'>🪏</text></svg>") 16 0, auto`;
+    //                 squareEl.style.cursor = `url(${dataURL}) 32 32, auto`;
+    //                 console.log(`Set ${square} cursor`);
+    //             } else {
+    //                 console.log(`Couldn't find square ${square}`);
+    //             }
+    //         });
+
+    //         setMadeCustomCursors(true);
+    //     } else if (!placingBombs && madeCustomCursors) {
+    //         // get rid of custom cursors
+    //         const squaresToRevert = isWhite
+    //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
+    //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
+    //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
+    //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
+
+    //         squaresToRevert.forEach((square) => {
+    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
+    //             if (squareEl) {
+    //                 squareEl.style.removeProperty('cursor');
+    //             }
+    //         });
+    //     }
+    // };
+
     const handleRoomIdChange = (event) => {
         setRoomId(event.target.value);
     };
@@ -258,6 +320,56 @@ const BoardPage = () => {
         console.log(`Trying to join room ${roomId}`);
         socket.emit('joinRoom', roomId);
     };
+
+    // const canvas = document.createElement('canvas');
+    // canvas.width = 100;
+    // canvas.height = 150;
+    // const ctx = canvas.getContext('2d');
+
+    // // Set font and draw emoji
+    // ctx.font = '50px serif';
+    // ctx.textBaseline = 'top';
+    // ctx.fillText('🪏', 0, 0);
+
+    // // Convert to image data URL
+    // const dataURL = canvas.toDataURL('image/png');
+
+    // const squaresToChange = isWhite
+    // //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
+    // //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
+    // //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
+    // //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
+
+    // setTimeout(() => {
+    //     squaresToChange.forEach((square, _index) => {
+    //         const squareEl = document.querySelector(`[data-square="${square}"]`);
+    //         if (squareEl) {
+    //             // squareEl.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='48' viewBox='0 0 100 100' style='fill:black;font-size:55px;'><text y='50%'>🪏</text></svg>") 16 0, auto`;
+    //             squareEl.style.cursor = `url(${dataURL}) 32 32, auto`;
+    //             setCursor = true;
+    //         } else {
+    //             console.log(`Couldn't find square ${square}`);
+    //         }
+    //     });
+    // }, 1000);
+
+    // let setCursor = false;
+
+    // while (!setCursor) {
+    //     // wait a little to let squares generate
+    //     // eslint-disable-next-line no-loop-func
+    //     setTimeout(() => {
+    //         squaresToChange.forEach((square, _index) => {
+    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
+    //             if (squareEl) {
+    //                 // squareEl.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='48' viewBox='0 0 100 100' style='fill:black;font-size:55px;'><text y='50%'>🪏</text></svg>") 16 0, auto`;
+    //                 squareEl.style.cursor = `url(${dataURL}) 32 32, auto`;
+    //                 setCursor = true;
+    //             } else {
+    //                 console.log(`Couldn't find square ${square}`);
+    //             }
+    //         });
+    //     }, 1000);
 
     return (
         <div className="game-container">
@@ -276,7 +388,9 @@ const BoardPage = () => {
                     </div>
                 </div>
             ) : (
-                <div className="game-content-wrapper">
+                <div
+                    className={placingBombs ? "game-content-wrapper" : "game-content-wrapper"}
+                >
                     {displayWinLossPopup && (
                         <WinLossPopup
                             result={gameOverResult}
@@ -306,7 +420,9 @@ const BoardPage = () => {
                             </span>
                         </div>
 
-                        <div className="chess-board-container">
+                        <div
+                            className="chess-board-container"
+                        >
                             <ChessBoard />
                         </div>
 

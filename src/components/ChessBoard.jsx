@@ -98,14 +98,57 @@ const ChessBoard = () => {
     // keeps track of where our mouse is
     const onMouseoverSquare = (square, _pieceOnSquare) => {
         setSquareMouseIsOver(square);
+
+        if (myBombs.length < 3) {
+            // highlight the square the mouse is over
+            const squareEl = document.querySelector(`[data-square="${square}"]`);
+            if (squareEl && !squareEl.querySelector('.highlighted')) {
+                squareEl.style.position = 'relative';
+
+                const x = document.createElement('div');
+                x.className = 'highlighted';
+
+                // Set absolute positioning for the highlight element
+                x.style.position = 'absolute';
+                x.style.top = '0';
+                x.style.left = '0';
+                x.style.width = '100%';
+                x.style.height = '100%';
+                x.style.display = 'flex';
+                x.style.alignItems = 'center';
+                x.style.justifyContent = 'center';
+                x.style.backgroundColor = '#ffeb3b';
+                x.style.opacity = '0.5';
+
+                squareEl.appendChild(x);
+            }
+        }
     };
 
+    // TODO: get rid of highlighted squares when our mouse is off
+    const onMouseoutSquare = (square, _pieceOnSquare) => {
+        const squareEl = document.querySelector(`[data-square="${square}"]`);
+
+        if (squareEl) {
+            const highlightDiv = squareEl.querySelector('.highlighted');
+            if (highlightDiv) {
+                highlightDiv.remove();
+            } else {
+                console.log(`${square} is not highlighted`);
+            }
+        }
+
+    }
+
     return (
-        <div onClick={handleClick}>
+        <div
+            onClick={handleClick}
+        >
             <Chessboard
                 position={gameFen}
                 onPieceDrop={onDrop}
-                onMouseOverSquare={onMouseoverSquare}
+                {...(placingBombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
+                {...(placingBombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
                 boardOrientation={isWhite ? "white" : "black"}
             />
         </div>

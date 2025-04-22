@@ -77,6 +77,7 @@ export default function appReducer(state = initialState, action) {
             }
 
         case "SET_GAME_STAGE":
+            console.log(`Changing placing bombs to: ${action.payload}`);
             return {
                 ...state,
                 placingBombs: action.payload,
