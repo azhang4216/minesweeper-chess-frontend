@@ -155,7 +155,7 @@ const BoardPage = () => {
                                 height: '85%',
                                 objectFit: 'cover',
                                 pointerEvents: 'none',
-                                zIndex: '5',
+                                zIndex: '1',
                                 opacity: '0.9',
                                 transform: 'translate(-50%, -50%)', // offset to center the crater
                             });
@@ -207,15 +207,22 @@ const BoardPage = () => {
             setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
             setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
             setDisplayWinLossPopup(true);
+            playSound(gameEndSound);
         }
 
-        const handleWinLossGameOver = ({ winner, reason, whiteEloChange, blackEloChange }) => {
-            const isWinner = (winner === 'w') === isWhite;
+        const handleWinLossGameOver = ({ winner, by, whiteEloChange, blackEloChange }) => {
+            const isWinner = ((winner === 'w') && isWhite) || ((winner === 'b') && !isWhite);
             setGameOverResult(isWinner ? "You win" : "You lose");
-            setGameOverReason(reason);
+            setGameOverReason(by);
             setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
             setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
-            setDisplayWinLossPopup(true);
+
+            // if the reason the game ended is cuz a king blew up, 
+            // we delay the popup a little so that we can watch the king blow up
+            setTimeout(() => {
+                setDisplayWinLossPopup(true);
+            }, 2000);
+            playSound(gameEndSound);
         }
 
         socket.on('roomCreated', handleRoomCreated);
