@@ -17,6 +17,11 @@ export const detonateBomb = (square) => ({
     payload: square,
 });
 
+export const setGameFen = (fen) => ({
+    type: "SET_GAME_FEN",
+    payload: fen,
+});
+
 export const setGameStage = (placingBombs) => ({
     type: "SET_GAME_STAGE",
     payload: placingBombs,

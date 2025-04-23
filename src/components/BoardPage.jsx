@@ -58,7 +58,7 @@ const BoardPage = () => {
             setGameState("matching");
         };
 
-        const handleRoomJoined = ({ players, message }) => {
+        const handleRoomJoined = ({ players, message, fen }) => {
             setRoomMessage(message);
             setGameState("playing");
 
@@ -77,6 +77,7 @@ const BoardPage = () => {
                 bombs: []
             }));
 
+            dispatch(actions.setGameFen(fen));
             dispatch(actions.setOrientation(myInfo.is_white));
             dispatch(actions.setGameStage(true));
             playSound(gameStartSound);
