@@ -1,22 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
-import { useSocket } from '../socketContext.js';
-import * as actions from '../redux/actions.js';
+import { useSocket } from '../../socket/socketContext.js';
+import * as actions from '../../redux/actions.js';
+import { sounds } from '../../assets';
+import { playSound } from '../../utils';
 
-// sound effects
-import shovelSound from '../assets/shovel_sound.mov';
-import illegalSound from '../assets/illegal.mp3';
+// hooks
+import {
+    useGameFen,
+    useIsWhite,
+    usePlacingBombs,
+    useMyBombs
+} from '../../hooks';
 
 const ChessBoard = () => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
     // extract state from redux 
-    const gameFen = useSelector((state) => state.gameFen);
-    const isWhite = useSelector((state) => state.isWhite);
-    const placingBombs = useSelector((state) => state.placingBombs);
-    const myBombs = useSelector((state) => state.player.bombs);
+    const gameFen = useGameFen();
+    const isWhite = useIsWhite();
+    const placingBombs = usePlacingBombs();
+    const myBombs = useMyBombs();
 
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
 
@@ -58,10 +64,11 @@ const ChessBoard = () => {
 
                 if (placingBombs) {
                     // play shovel sound when bomb buried
-                    new Audio(shovelSound).play();
+                    playSound(sounds.shovel);
                 }
             }
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [myBombs]);
 
     const handleClick = (_e) => {
@@ -73,7 +80,7 @@ const ChessBoard = () => {
             // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
             socket.emit("placeBomb", selectedSquare);
         } else {
-            new Audio(illegalSound).play();
+            playSound(sounds.illegal);
         }
 
         console.log(`Clicked on square ${selectedSquare}`);
@@ -91,7 +98,7 @@ const ChessBoard = () => {
             });
         } else {
             // trying to move opponent's pieces
-            new Audio(illegalSound).play();
+            playSound(sounds.illegal);
         }
     };
 

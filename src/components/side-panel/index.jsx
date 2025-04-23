@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
+
+// hooks
+import {
+    useIsWhite,
+    usePlacingBombs,
+    useMoveHistory,
+    useMyBombs
+} from '../../hooks';
 
 const SidePanel = () => {
-    const moveHistory = useSelector((state) => state.moveHistory);
-    const placingBombs = useSelector((state) => state.placingBombs);
-    const isWhite = useSelector((state) => state.isWhite);
-    const myBombs = useSelector((state) => state.player.bombs);
+    const moveHistory = useMoveHistory();
+    const placingBombs = usePlacingBombs();
+    const isWhite = useIsWhite();
+    const myBombs = useMyBombs();
 
     return (
         <div className="side-panel">

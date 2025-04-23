@@ -1,5 +1,5 @@
-import BoardPage from "./components/BoardPage";
-import { SocketProvider } from "./socketContext.js";
+import { BoardPage } from "./components";
+import { SocketProvider } from "./socket";
 
 const App = () => {
     return (

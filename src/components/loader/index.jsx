@@ -1,5 +1,5 @@
 import React from 'react';
-import './Loader.css';
+import './style.css';
 
 const Loader = () => {
     return (

@@ -1,25 +1,16 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import './WinLossPopup.css';
-import sadHamster from "../assets/sad-hamster.gif";
-import happyCat from "../assets/happy-cat.gif";
-import officeHandshakeMeme from "../assets/office-handshake-meme.png";
+import './style.css';
+import { getGameOverAsset, getEloChangeColor } from "../../utils";
+
+// hooks
+import {
+    usePlayer,
+    useOpponent
+} from '../../hooks';
 
 const WinLossPopup = ({ result, reason, myEloChange, opponentEloChange, onClose }) => {
-    const player = useSelector((state) => state.player);
-    const opponent = useSelector((state) => state.opponent);
-
-    const getGameOverAsset = () => {
-        if (result === "You win") return happyCat;
-        if (result === "You lose") return sadHamster;
-        return officeHandshakeMeme;
-    };
-
-    const getEloChangeColor = (change) => {
-        if (change > 0) return "green";
-        if (change < 0) return "red";
-        return "gray";
-    };
+    const player = usePlayer();
+    const opponent = useOpponent();
 
     return (
         <div className="popup-overlay">
@@ -27,7 +18,7 @@ const WinLossPopup = ({ result, reason, myEloChange, opponentEloChange, onClose 
                 <button className="close-button" onClick={onClose}>
                     &times;
                 </button>
-                <img src={getGameOverAsset()} alt="Result Media" className="result-media" />
+                <img src={getGameOverAsset(result)} alt="Result Media" className="result-media" />
                 <div className="result-text">
                     <h2>{`${result} by ${reason}`}</h2>
                     <div className="elo-info">
@@ -35,7 +26,7 @@ const WinLossPopup = ({ result, reason, myEloChange, opponentEloChange, onClose 
                             Your New Elo:{" "}
                             <span>{player.rating + myEloChange}</span>{" "}
                             <span style={{ color: getEloChangeColor(myEloChange) }}>
-                                ({myEloChange > 0 ? "+" : ""}
+                                ({myEloChange < 0 ? "" : "+"}
                                 {myEloChange})
                             </span>
                         </p>
@@ -43,7 +34,7 @@ const WinLossPopup = ({ result, reason, myEloChange, opponentEloChange, onClose 
                             Opponent's New Elo:{" "}
                             <span>{opponent.rating + opponentEloChange}</span>{" "}
                             <span style={{ color: getEloChangeColor(opponentEloChange) }}>
-                                ({opponentEloChange > 0 ? "+" : ""}
+                                ({opponentEloChange < 0 ? "" : "+"}
                                 {opponentEloChange})
                             </span>
                         </p>
