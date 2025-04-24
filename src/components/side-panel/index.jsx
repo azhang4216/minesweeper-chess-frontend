@@ -5,14 +5,19 @@ import {
     useIsWhite,
     usePlacingBombs,
     useMoveHistory,
-    useMyBombs
+    useMyBombs,
+    useBombPlantingTime
 } from '../../hooks';
+
+// components
+import { Timer } from '../';
 
 const SidePanel = () => {
     const moveHistory = useMoveHistory();
     const placingBombs = usePlacingBombs();
     const isWhite = useIsWhite();
     const myBombs = useMyBombs();
+    const bombPlantingTimeLeft = useBombPlantingTime();
 
     return (
         <div className="side-panel">
@@ -25,6 +30,10 @@ const SidePanel = () => {
                                 "Waiting for your opponent to finish planting bombs..."
                         }
                     </h3>
+                    <Timer 
+                        isActive={true}
+                        initialSeconds={bombPlantingTimeLeft}
+                    />
                     <p>
                         As the {isWhite ? "white" : "black"} player, you can place bombs only on the {isWhite ? "3rd & 4th" : "5th & 6th"} ranks.
                         <br />

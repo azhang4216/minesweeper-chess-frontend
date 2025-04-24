@@ -42,6 +42,16 @@ export const setOrientation = (isWhite) => ({
     payload: isWhite,
 });
 
+export const setPlacingBombSeconds = (placingBombSeconds) => ({
+    type: "SET_PLACING_BOMBS_SECONDS",
+    payload: placingBombSeconds,
+});
+
+export const setRandomizedBombs = ({ whitePlayerBombs, blackPlayerBombs }) => ({
+    type: "SET_RANDOMIZED_BOMBS",
+    payload: { whitePlayerBombs, blackPlayerBombs },
+});
+
 // // Reset game
 // export const resetGame = () => ({
 //     type: "RESET_GAME",

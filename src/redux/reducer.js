@@ -3,16 +3,19 @@ const initialState = {
     isWhite: true,
     isMyTurn: false,
     placingBombs: false,
+    placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
     moveHistory: [],
     player: {
         name: "My Name Here",
         rating: 0,
-        bombs: []
+        bombs: [],
+        secondsLeft: 100
     },
     opponent: {
         name: "Opponent's Name Here",
         rating: 0,
-        bombs: []
+        bombs: [],
+        secondsLeft: 100
     }
 }
 
@@ -104,6 +107,26 @@ export default function appReducer(state = initialState, action) {
             return {
                 ...state,
                 isWhite: action.payload,
+            };
+
+        case "SET_PLACING_BOMBS_SECONDS":
+            return {
+                ...state,
+                placingBombsSeconds: action.payload,
+            };
+        
+        case "SET_RANDOMIZED_BOMBS":
+            const { whitePlayerBombs, blackPlayerBombs } = action.payload;
+            return {
+                ...state,
+                player: {
+                    ...state.player,
+                    bombs: state.isWhite ? whitePlayerBombs : blackPlayerBombs,
+                },
+                opponent: {
+                    ...state.opponent,
+                    bombs: state.isWhite ? blackPlayerBombs : whitePlayerBombs,
+                }
             };
 
         // case "RESET_GAME":

@@ -30,6 +30,18 @@ export const useOpponent = () => {
 
 export const useMyBombs = () => {
     return useSelector((state) => state.game.player.bombs);
+};
+
+export const useMyTimeLeft = () => {
+    return useSelector((state) => state.game.player.secondsLeft);
+}
+
+export const useOpponentTimeLeft = () => {
+    return useSelector((state) => state.game.opponent.secondsLeft);
+}
+
+export const useBombPlantingTime = () => {
+    return useSelector((state) => state.game.placingBombsSeconds);
 }
 
 // could also add a hook that returns multiple related values

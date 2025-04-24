@@ -12,7 +12,7 @@ export const useBoardSocketHandlers = ({
     setGameOverResult,
     setmyEloChange,
     setOpponentEloChange,
-    setDisplayWinLossPopup
+    setDisplayWinLossPopup,
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
@@ -25,7 +25,7 @@ export const useBoardSocketHandlers = ({
         setGameState("matching");
     };
 
-    const handleRoomJoined = ({ players, message, fen }) => {
+    const handleRoomJoined = ({ players, message, fen, secsToPlaceBomb, secsToPlay }) => {
         setRoomMessage(message);
         setGameState("playing");
 
@@ -35,18 +35,21 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setOpponentInfo({
             name: opponentInfo.user_id,
             rating: 1500, // dummy placeholder for now
-            bombs: []
+            bombs: [],
+            secondsLeft: secsToPlay,
         }));
 
         dispatch(actions.setPlayerInfo({
             name: myInfo.user_id,
             rating: 1500, // dummy placeholder for now
-            bombs: []
+            bombs: [],
+            secondsLeft: secsToPlay,
         }));
 
         dispatch(actions.setGameFen(fen));
         dispatch(actions.setOrientation(myInfo.is_white));
         dispatch(actions.setGameStage(true));
+        dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
         playSound(sounds.gameStart);
     };
 
@@ -61,7 +64,16 @@ export const useBoardSocketHandlers = ({
         setGameState("inactive");
     };
 
-    const handleStartPlay = () => {
+    const handleStartPlay = ({ whitePlayerBombs=null, blackPlayerBombs=null }) => {
+        if (whitePlayerBombs !== null && blackPlayerBombs !== null) {
+            // we've received randomized bombs from timeout!
+            setRoomMessage("Randomly placed bombs on timeout!");
+            console.log(`Setting white player bombs: ${whitePlayerBombs}`);
+            console.log(`Setting black player bombs: ${blackPlayerBombs}`);
+            playSound(sounds.shovel);
+            dispatch(actions.setRandomizedBombs({ whitePlayerBombs, blackPlayerBombs }));
+        };
+
         console.log("Finished placing bombs. Now ready to play.");
         playSound(sounds.gameStart);
 

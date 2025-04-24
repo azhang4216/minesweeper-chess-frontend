@@ -6,5 +6,8 @@ export {
     useMoveHistory,
     usePlayer,
     useOpponent,
-    useMyBombs
+    useMyBombs,
+    useMyTimeLeft,
+    useOpponentTimeLeft,
+    useBombPlantingTime
 } from './useGameState';
