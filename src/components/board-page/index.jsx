@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 // styling
 import './style.css';
 
@@ -7,15 +8,20 @@ import {
     Chessboard,
     Loader,
     SidePanel,
-    WinLossPopup
+    WinLossPopup,
+    Timer
 } from '../';
 
 // hooks
 import {
-    usePlacingBombs,
     usePlayer,
-    useOpponent
+    useOpponent,
+    useIsMyTurn,
+    useGameState
 } from '../../hooks';
+
+// constant game states
+import { GAME_STATES } from '../../constants';
 
 // sockets use context so all components reference the same socket
 import { useSocket, useBoardSocketHandlers } from "../../socket";
@@ -25,11 +31,15 @@ const BoardPage = () => {
 
     const player = usePlayer();
     const opponent = useOpponent();
-    const placingBombs = usePlacingBombs();
+    const gameState = useGameState();
+
+    // for timer display logic
+    const isMyMove = useIsMyTurn();
+    useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
+    useEffect(() => {console.log(`Game state: ${gameState}`)}, [gameState]);
 
     const [roomId, setRoomId] = useState('');
     const [roomMessage, setRoomMessage] = useState('');
-    const [gameState, setGameState] = useState("inactive");  // matching, or playing
 
     // these are for the outcome at the end of the game
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
@@ -48,9 +58,9 @@ const BoardPage = () => {
         handleGameState,
         handleinvalidMove,
         handleDrawGameOver,
-        handleWinLossGameOver
+        handleWinLossGameOver,
+        handleSyncTime
     } = useBoardSocketHandlers({
-        setGameState,
         setRoomMessage,
         setGameOverReason,
         setGameOverResult,
@@ -69,8 +79,9 @@ const BoardPage = () => {
         socket.on('startPlay', handleStartPlay);
         socket.on('gameState', handleGameState);
         socket.on('invalidMove', handleinvalidMove);
-        socket.on('drawGameOver', handleDrawGameOver);
         socket.on('winLossGameOver', handleWinLossGameOver);
+        socket.on('drawGameOver', handleDrawGameOver);
+        socket.on('syncTime', handleSyncTime);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
@@ -81,8 +92,10 @@ const BoardPage = () => {
             socket.off('gameState', handleGameState);
             socket.off('invalidMove', handleinvalidMove);
             socket.off('winLossGameOver', handleWinLossGameOver);
+            socket.off('drawGameOver', handleDrawGameOver);
+            socket.off('syncTime', handleSyncTime);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
     // this is for changing our cursor for planting bombs
@@ -155,7 +168,7 @@ const BoardPage = () => {
 
     return (
         <div className="game-container">
-            {gameState !== "playing" ? (
+            {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
                 <div className="chess-wrapper">
                     <div className="join-room-container">
                         <input
@@ -166,12 +179,12 @@ const BoardPage = () => {
                         />
                         <button onClick={handleJoinRoom}>Join Room</button>
                         {roomMessage && <p>{roomMessage}</p>}
-                        {gameState === "matching" && <Loader />}
+                        {gameState === GAME_STATES.matching && <Loader />}
                     </div>
                 </div>
             ) : (
                 <div
-                    className={placingBombs ? "game-content-wrapper" : "game-content-wrapper"}
+                    className={gameState === GAME_STATES.placing_bombs ? "game-content-wrapper" : "game-content-wrapper"}
                 >
                     {displayWinLossPopup && (
                         <WinLossPopup
@@ -186,8 +199,12 @@ const BoardPage = () => {
                         <div className="player-info top">
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
+                            <Timer
+                                isActive={!isMyMove && (gameState === GAME_STATES.playing)}
+                                initialSeconds={opponent.secondsLeft}
+                            />
                             <span>
-                                {placingBombs
+                                {gameState === GAME_STATES.placing_bombs
                                     ? `💣x${3 - opponent.bombs.length}`
                                     : (
                                         <>
@@ -211,8 +228,12 @@ const BoardPage = () => {
                         <div className="player-info bottom">
                             <span>{player.name}</span>
                             <span>{player.rating}</span>
+                            <Timer
+                                isActive={isMyMove && (gameState === GAME_STATES.playing)}
+                                initialSeconds={player.secondsLeft}
+                            />
                             <span>
-                                {placingBombs
+                                {gameState === GAME_STATES.placing_bombs
                                     ? `💣x${3 - player.bombs.length}`
                                     : (
                                         <>

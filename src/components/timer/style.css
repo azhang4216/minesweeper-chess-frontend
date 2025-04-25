@@ -9,11 +9,11 @@
 }
 
 .active {
-    background-color: #222;
-    color: #fff;
+    background-color: #fff;
+    color: black;
 }
 
 .inactive {
     background-color: #888;
-    color: #fff;
+    color: black;
 }

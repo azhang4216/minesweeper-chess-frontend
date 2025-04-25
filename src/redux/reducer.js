@@ -1,8 +1,9 @@
+import { GAME_STATES } from '../constants';
+
 const initialState = {
     gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
     isWhite: true,
-    isMyTurn: false,
-    placingBombs: false,
+    gameState: GAME_STATES.inactive,
     placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
     moveHistory: [],
     player: {
@@ -85,10 +86,10 @@ export default function appReducer(state = initialState, action) {
                 gameFen: action.payload,
             }
 
-        case "SET_GAME_STAGE":
+        case "SET_GAME_STATE":
             return {
                 ...state,
-                placingBombs: action.payload,
+                gameState: action.payload,
             }
 
         case "SET_PLAYER_INFO":
@@ -104,6 +105,7 @@ export default function appReducer(state = initialState, action) {
             };
 
         case "SET_ORIENTATION":
+            console.log(`In reducer, setting orientation to white: ${action.payload}`);
             return {
                 ...state,
                 isWhite: action.payload,
@@ -126,6 +128,21 @@ export default function appReducer(state = initialState, action) {
                 opponent: {
                     ...state.opponent,
                     bombs: state.isWhite ? blackPlayerBombs : whitePlayerBombs,
+                }
+            };
+        
+        case "SET_TIMERS":
+            const { whiteTimeLeft, blackTimeLeft } = action.payload;
+            console.log(`Setting timers in Redux for white, black: ${whiteTimeLeft}, ${blackTimeLeft}`);
+            return {
+                ...state,
+                player: {
+                    ...state.player,
+                    secondsLeft: state.isWhite ? whiteTimeLeft : blackTimeLeft,
+                },
+                opponent: {
+                    ...state.opponent,
+                    secondsLeft: state.isWhite ? blackTimeLeft : whiteTimeLeft,
                 }
             };
 

@@ -3,25 +3,28 @@ import React from 'react';
 // hooks
 import {
     useIsWhite,
-    usePlacingBombs,
     useMoveHistory,
     useMyBombs,
-    useBombPlantingTime
+    useBombPlantingTime,
+    useGameState
 } from '../../hooks';
 
 // components
 import { Timer } from '../';
 
+// constants
+import { GAME_STATES } from '../../constants';
+
 const SidePanel = () => {
     const moveHistory = useMoveHistory();
-    const placingBombs = usePlacingBombs();
     const isWhite = useIsWhite();
     const myBombs = useMyBombs();
     const bombPlantingTimeLeft = useBombPlantingTime();
+    const gameState = useGameState();
 
     return (
         <div className="side-panel">
-            {(placingBombs) ?
+            {(gameState === GAME_STATES.placing_bombs) ?
                 <div className="bomb-placement-info">
                     <h3>
                         {

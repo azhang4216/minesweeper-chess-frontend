@@ -5,13 +5,14 @@ import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
 import { sounds } from '../../assets';
 import { playSound } from '../../utils';
+import { GAME_STATES } from '../../constants.js';
 
 // hooks
 import {
     useGameFen,
     useIsWhite,
-    usePlacingBombs,
-    useMyBombs
+    useMyBombs,
+    useGameState
 } from '../../hooks';
 
 const ChessBoard = () => {
@@ -21,8 +22,8 @@ const ChessBoard = () => {
     // extract state from redux 
     const gameFen = useGameFen();
     const isWhite = useIsWhite();
-    const placingBombs = usePlacingBombs();
     const myBombs = useMyBombs();
+    const gameState = useGameState();
 
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
 
@@ -62,7 +63,7 @@ const ChessBoard = () => {
                 squareEl.style.position = 'relative';
                 squareEl.appendChild(x);
 
-                if (placingBombs) {
+                if (gameState === GAME_STATES.placing_bombs) {
                     // play shovel sound when bomb buried
                     playSound(sounds.shovel);
                 }
@@ -73,7 +74,7 @@ const ChessBoard = () => {
 
     const handleClick = (_e) => {
         const selectedSquare = squareMouseIsOver;  // accounting for sudden changes in mouse movement
-        if (placingBombs && myBombs.length < 3 &&
+        if (gameState === GAME_STATES.placing_bombs && myBombs.length < 3 &&
             ((isWhite && (selectedSquare[1] === '3' || selectedSquare[1] === '4')) || (!isWhite && (selectedSquare[1] === '5' || selectedSquare[1] === '6'))) &&
             !myBombs.includes(selectedSquare)
         ) {
@@ -89,7 +90,7 @@ const ChessBoard = () => {
     const onDrop = (sourceSquare, targetSquare, piece) => {
         console.log(`Trying to make move: ${sourceSquare} to ${targetSquare} with ${piece}.`);
 
-        if ((isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b')) {
+        if (GAME_STATES.playing && ((isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b'))) {
             // trying to move own pieces
             socket.emit("makeMove", {
                 from: sourceSquare,
@@ -154,8 +155,8 @@ const ChessBoard = () => {
             <Chessboard
                 position={gameFen}
                 onPieceDrop={onDrop}
-                {...(placingBombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
-                {...(placingBombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
+                {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
+                {...(gameState === GAME_STATES.placing_bombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
                 boardOrientation={isWhite ? "white" : "black"}
             />
         </div>

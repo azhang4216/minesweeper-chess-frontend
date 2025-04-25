@@ -22,9 +22,9 @@ export const setGameFen = (fen) => ({
     payload: fen,
 });
 
-export const setGameStage = (placingBombs) => ({
-    type: "SET_GAME_STAGE",
-    payload: placingBombs,
+export const setGameState = (gameState) => ({
+    type: "SET_GAME_STATE",
+    payload: gameState,
 });
 
 export const setPlayerInfo = (player) => ({
@@ -52,7 +52,7 @@ export const setRandomizedBombs = ({ whitePlayerBombs, blackPlayerBombs }) => ({
     payload: { whitePlayerBombs, blackPlayerBombs },
 });
 
-// // Reset game
-// export const resetGame = () => ({
-//     type: "RESET_GAME",
-// });
+export const setTimers = ({ whiteTimeLeft, blackTimeLeft }) => ({
+    type: "SET_TIMERS",
+    payload: { whiteTimeLeft, blackTimeLeft },
+});

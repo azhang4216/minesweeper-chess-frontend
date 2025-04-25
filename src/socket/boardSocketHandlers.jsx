@@ -4,9 +4,9 @@ import { images, sounds } from '../assets';
 import { actions } from '../redux';
 import { playSound } from '../utils';
 import { useIsWhite } from '../hooks';
+import { GAME_STATES } from '../constants';
 
 export const useBoardSocketHandlers = ({
-    setGameState,
     setRoomMessage,
     setGameOverReason,
     setGameOverResult,
@@ -22,12 +22,11 @@ export const useBoardSocketHandlers = ({
 
     const handleRoomCreated = ({ message }) => {
         setRoomMessage(message);
-        setGameState("matching");
+        dispatch(actions.setGameState(GAME_STATES.matching));
     };
 
     const handleRoomJoined = ({ players, message, fen, secsToPlaceBomb, secsToPlay }) => {
         setRoomMessage(message);
-        setGameState("playing");
 
         const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
         const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
@@ -46,25 +45,27 @@ export const useBoardSocketHandlers = ({
             secondsLeft: secsToPlay,
         }));
 
+        console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
+
+        dispatch(actions.setGameState(GAME_STATES.placing_bombs));
         dispatch(actions.setGameFen(fen));
         dispatch(actions.setOrientation(myInfo.is_white));
-        dispatch(actions.setGameStage(true));
         dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
         playSound(sounds.gameStart);
     };
 
     const handleRoomJoinError = ({ message }) => {
         setRoomMessage(message);
-        setGameState("inactive");
+        dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
     const handleDisconnect = ({ message }) => {
         console.log("disconnecting");
         setRoomMessage(message);
-        setGameState("inactive");
+        dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
-    const handleStartPlay = ({ whitePlayerBombs=null, blackPlayerBombs=null }) => {
+    const handleStartPlay = ({ whitePlayerBombs, blackPlayerBombs }) => {
         if (whitePlayerBombs !== null && blackPlayerBombs !== null) {
             // we've received randomized bombs from timeout!
             setRoomMessage("Randomly placed bombs on timeout!");
@@ -80,7 +81,7 @@ export const useBoardSocketHandlers = ({
         // double check every highlighted square is removed
         document.querySelectorAll('div.highlighted').forEach(div => div.remove());
 
-        dispatch(actions.setGameStage(false)); // boolean represents whether still placing bombs
+        dispatch(actions.setGameState(GAME_STATES.playing));
     };
 
     const handleGameState = ({ gameFen, moveSan, specialMove, sideToMoveNext, preExplosionFen }) => {
@@ -192,10 +193,20 @@ export const useBoardSocketHandlers = ({
         setGameOverReason(by);
         setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
-        setDisplayWinLossPopup(true);
+        
+        // if the reason the game ended is cuz a piece blew up leading to insufficient material, 
+        // we delay the popup a little so that we can watch the piece blow up
+        if (by.includes("explode")) {
+            setTimeout(() => {
+                setDisplayWinLossPopup(true);
+            }, 2000);
+            playSound(sounds.gameEnd);
+        } else {
+            setDisplayWinLossPopup(true);
+            playSound(sounds.gameEnd);
+        };
 
-        // TODO: wait for an explosion animation if it results in draw
-        playSound(sounds.gameEnd);
+        dispatch(actions.setGameState(GAME_STATES.game_over));
     };
 
     const handleWinLossGameOver = ({ winner, by, whiteEloChange, blackEloChange }) => {
@@ -213,8 +224,15 @@ export const useBoardSocketHandlers = ({
             }, 2000);
             playSound(sounds.gameEnd);
         } else {
+            setDisplayWinLossPopup(true);
             playSound(sounds.gameEnd);
-        }
+        };
+
+        dispatch(actions.setGameState(GAME_STATES.game_over));
+    };
+
+    const handleSyncTime = ({ whiteTimeLeft, blackTimeLeft }) => {
+        dispatch(actions.setTimers({ whiteTimeLeft, blackTimeLeft }));
     };
 
     return {
@@ -226,7 +244,8 @@ export const useBoardSocketHandlers = ({
         handleGameState,
         handleinvalidMove,
         handleDrawGameOver,
-        handleWinLossGameOver
+        handleWinLossGameOver,
+        handleSyncTime
     };
 };
 

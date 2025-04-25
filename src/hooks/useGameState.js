@@ -9,11 +9,7 @@ export const useIsWhite = () => {
 };
 
 export const useIsMyTurn = () => {
-    return useSelector((state) => state.game.isMyTurn);
-};
-
-export const usePlacingBombs = () => {
-    return useSelector((state) => state.game.placingBombs);
+    return useSelector((state) => (state.game.moveHistory.length % 2 === 0) === state.game.isWhite);
 };
 
 export const useMoveHistory = () => {
@@ -42,6 +38,10 @@ export const useOpponentTimeLeft = () => {
 
 export const useBombPlantingTime = () => {
     return useSelector((state) => state.game.placingBombsSeconds);
+}
+
+export const useGameState = () => {
+    return useSelector((state) => state.game.gameState);
 }
 
 // could also add a hook that returns multiple related values
