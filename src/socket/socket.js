@@ -1,6 +1,9 @@
 import { io } from "socket.io-client";
 
-// TODO: replace with backend url in PROD
-const socket = io("http://localhost:4000");
+const socket = io(
+    process.env.NODE_ENV === "production"
+        ? process.env.REACT_APP_API_URL
+        : "http://localhost:4000"
+);
 
 export default socket;
