@@ -5,7 +5,7 @@ import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
 import { sounds } from '../../assets';
 import { playSound } from '../../utils';
-import { GAME_STATES } from '../../constants.js';
+import { GAME_STATES, RGBA } from '../../constants.js';
 
 // hooks
 import {
@@ -14,6 +14,29 @@ import {
     useMyBombs,
     useGameState
 } from '../../hooks';
+
+const highlightSquare = (square, colorRgba) => {
+    const squareEl = document.querySelector(`[data-square="${square}"]`);
+    if (squareEl && !squareEl.querySelector('.highlighted')) {
+        squareEl.style.position = 'relative';
+
+        const x = document.createElement('div');
+        x.className = 'highlighted';
+
+        // Set absolute positioning for the highlight element
+        x.style.position = 'absolute';
+        x.style.top = '0';
+        x.style.left = '0';
+        x.style.width = '100%';
+        x.style.height = '100%';
+        x.style.display = 'flex';
+        x.style.alignItems = 'center';
+        x.style.justifyContent = 'center';
+        x.style.backgroundColor = colorRgba;
+
+        squareEl.appendChild(x);
+    }
+};
 
 const ChessBoard = () => {
     const dispatch = useDispatch();
@@ -25,7 +48,16 @@ const ChessBoard = () => {
     const myBombs = useMyBombs();
     const gameState = useGameState();
 
+    // need reference because socket handlers don't necessarily register updated isWhite value
+    // const isWhiteRef = useRef(isWhite);
+    // useEffect(() => {
+    //     isWhiteRef.current = isWhite;
+    // }, [isWhite]);
+
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
+    const [squaresToHighlight, setSquaresToHighlight] = useState([]);
+
+    useEffect(() => {console.log(`player is set to white: ${isWhite}`)}, [isWhite]);
 
     useEffect(() => {
         const handleBombPlaced = (square) => {
@@ -69,8 +101,21 @@ const ChessBoard = () => {
                 }
             }
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [myBombs]);
+
+    useEffect(() => {
+        // remove all existing highlighted squares
+        document.querySelectorAll('.highlighted').forEach((x) => {
+            x.remove();
+        });
+
+        // redraw (if there are any)
+        squaresToHighlight.forEach(square => {
+            highlightSquare(square, RGBA.light_yellow);
+        });
+
+    }, [squaresToHighlight]);
 
     const handleClick = (_e) => {
         const selectedSquare = squareMouseIsOver;  // accounting for sudden changes in mouse movement
@@ -80,6 +125,9 @@ const ChessBoard = () => {
         ) {
             // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
             socket.emit("placeBomb", selectedSquare);
+        } else if (gameState === GAME_STATES.playing) {
+            // left clicking clears are selected squares
+            setSquaresToHighlight([]);
         } else {
             playSound(sounds.illegal);
         }
@@ -109,55 +157,41 @@ const ChessBoard = () => {
 
         if (myBombs.length < 3) {
             // highlight the square the mouse is over
-            const squareEl = document.querySelector(`[data-square="${square}"]`);
-            if (squareEl && !squareEl.querySelector('.highlighted')) {
-                squareEl.style.position = 'relative';
-
-                const x = document.createElement('div');
-                x.className = 'highlighted';
-
-                // Set absolute positioning for the highlight element
-                x.style.position = 'absolute';
-                x.style.top = '0';
-                x.style.left = '0';
-                x.style.width = '100%';
-                x.style.height = '100%';
-                x.style.display = 'flex';
-                x.style.alignItems = 'center';
-                x.style.justifyContent = 'center';
-                x.style.backgroundColor = '#ffeb3b';
-                x.style.opacity = '0.5';
-
-                squareEl.appendChild(x);
-            }
+            setSquaresToHighlight([square]);
         }
     };
 
-    // TODO: get rid of highlighted squares when our mouse is off
     const onMouseoutSquare = (square, _pieceOnSquare) => {
-        const squareEl = document.querySelector(`[data-square="${square}"]`);
+        setSquaresToHighlight(squaresToHighlight.filter(s => s !== square));
+        // const squareEl = document.querySelector(`[data-square="${square}"]`);
 
-        if (squareEl) {
-            const highlightDiv = squareEl.querySelector('.highlighted');
-            if (highlightDiv) {
-                highlightDiv.remove();
-            } else {
-                console.log(`${square} is not highlighted`);
-            }
-        }
+        // if (squareEl) {
+        //     const highlightDiv = squareEl.querySelector('.highlighted');
+        //     if (highlightDiv) {
+        //         highlightDiv.remove();
+        //     } else {
+        //         console.log(`${square} is not highlighted`);
+        //     }
+        // }
 
-    }
+    };
+
+    const onSquareRightClick = (square) => {
+        setSquaresToHighlight([...squaresToHighlight, square]);
+    };
 
     return (
-        <div
-            onClick={handleClick}
-        >
+        <div onClick={handleClick}>
             <Chessboard
                 position={gameFen}
                 onPieceDrop={onDrop}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
+                {...(gameState === GAME_STATES.playing ? { onSquareRightClick: onSquareRightClick } : {})}
                 boardOrientation={isWhite ? "white" : "black"}
+                arePremovesAllowed={true}
+                clearPremovesOnRightClick={true}
+                customArrowColor={RGBA.iwc_purple}
             />
         </div>
     );

@@ -17,7 +17,8 @@ import {
     usePlayer,
     useOpponent,
     useIsMyTurn,
-    useGameState
+    useGameState,
+    useMoveHistory
 } from '../../hooks';
 
 // constant game states
@@ -32,6 +33,7 @@ const BoardPage = () => {
     const player = usePlayer();
     const opponent = useOpponent();
     const gameState = useGameState();
+    const moveHistory = useMoveHistory();
 
     // for timer display logic
     const isMyMove = useIsMyTurn();
@@ -200,7 +202,7 @@ const BoardPage = () => {
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
                             <Timer
-                                isActive={!isMyMove && (gameState === GAME_STATES.playing)}
+                                isActive={!isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
                                 initialSeconds={opponent.secondsLeft}
                             />
                             <span>
@@ -229,7 +231,7 @@ const BoardPage = () => {
                             <span>{player.name}</span>
                             <span>{player.rating}</span>
                             <Timer
-                                isActive={isMyMove && (gameState === GAME_STATES.playing)}
+                                isActive={isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
                                 initialSeconds={player.secondsLeft}
                             />
                             <span>

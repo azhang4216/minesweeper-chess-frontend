@@ -146,8 +146,8 @@ export default function appReducer(state = initialState, action) {
                 }
             };
 
-        // case "RESET_GAME":
-        //     return initialState;
+        case "RESET":
+            return initialState;
 
         default:
             return state;

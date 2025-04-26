@@ -56,3 +56,7 @@ export const setTimers = ({ whiteTimeLeft, blackTimeLeft }) => ({
     type: "SET_TIMERS",
     payload: { whiteTimeLeft, blackTimeLeft },
 });
+
+export const reset = () => ({
+    type: "RESET",
+});

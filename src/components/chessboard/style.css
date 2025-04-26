@@ -1,0 +1,23 @@
+#board_wrapper {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+#primary_canvas,
+#drawing_canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 392px;
+    height: 392px;
+}
+
+#primary_canvas {
+    z-index: 5;
+    pointer-events: none;
+}
+
+#drawing_canvas {
+    z-index: 6;
+}

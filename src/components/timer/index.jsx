@@ -8,6 +8,12 @@ const Timer = ({ isActive, initialSeconds }) => {
     const tenSecondAlertPlayed = useRef(false);
 
     useEffect(() => {
+        // Update the secondsLeft whenever initialSeconds changes
+        setSecondsLeft(initialSeconds);
+        console.log(`Display seconds on block set to: ${initialSeconds}`);
+    }, [initialSeconds]);
+
+    useEffect(() => {
         if (isActive && secondsLeft > 0) {
             timerRef.current = setInterval(() => {
                 setSecondsLeft((prev) => {

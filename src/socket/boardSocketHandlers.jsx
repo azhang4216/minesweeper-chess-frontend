@@ -5,6 +5,7 @@ import { actions } from '../redux';
 import { playSound } from '../utils';
 import { useIsWhite } from '../hooks';
 import { GAME_STATES } from '../constants';
+import { useRef, useEffect } from 'react';
 
 export const useBoardSocketHandlers = ({
     setRoomMessage,
@@ -17,8 +18,14 @@ export const useBoardSocketHandlers = ({
 
     const dispatch = useDispatch();                          // sends actions to redux store
     const socket = useSocket();                              // use context so that all components reference the same socket
-
+    
+    // useRef needed because the is white is updated after handlers connected,
+    // so we need updated reference to isWhite
     const isWhite = useIsWhite();
+    const isWhiteRef = useRef(isWhite);
+    useEffect(() => {
+        isWhiteRef.current = isWhite;
+    }, [isWhite]);
 
     const handleRoomCreated = ({ message }) => {
         setRoomMessage(message);
@@ -62,6 +69,7 @@ export const useBoardSocketHandlers = ({
     const handleDisconnect = ({ message }) => {
         console.log("disconnecting");
         setRoomMessage(message);
+        dispatch(actions.reset());
         dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
@@ -87,7 +95,7 @@ export const useBoardSocketHandlers = ({
     const handleGameState = ({ gameFen, moveSan, specialMove, sideToMoveNext, preExplosionFen }) => {
         // determine who just made this move
         const isNextMoveWhite = !(sideToMoveNext === "b");
-        const wasMyMove = isWhite !== isNextMoveWhite;
+        const wasMyMove = isWhiteRef.current !== isNextMoveWhite;
 
         // update the game normally when move isn't an explosion
         // note: explosions have custom timing / updates
@@ -191,17 +199,19 @@ export const useBoardSocketHandlers = ({
     const handleDrawGameOver = ({ by, whiteEloChange, blackEloChange }) => {
         setGameOverResult("Draw");
         setGameOverReason(by);
-        setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
-        setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
+        setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
+        setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
         
         // if the reason the game ended is cuz a piece blew up leading to insufficient material, 
         // we delay the popup a little so that we can watch the piece blow up
         if (by.includes("explode")) {
+            console.log(`explosive ending! waiting for animation`);
             setTimeout(() => {
                 setDisplayWinLossPopup(true);
             }, 2000);
             playSound(sounds.gameEnd);
         } else {
+            console.log(`regular ending! no need to wait for animation`);
             setDisplayWinLossPopup(true);
             playSound(sounds.gameEnd);
         };
@@ -210,11 +220,15 @@ export const useBoardSocketHandlers = ({
     };
 
     const handleWinLossGameOver = ({ winner, by, whiteEloChange, blackEloChange }) => {
-        const isWinner = ((winner === 'w') && isWhite) || ((winner === 'b') && !isWhite);
+        const isWinner = ((winner === 'w') && isWhiteRef.current) || ((winner === 'b') && !isWhiteRef.current);
         setGameOverResult(isWinner ? "You win" : "You lose");
+        console.log(`Winner: ${winner}`);
+        console.log(`Winner is white ? : ${winner === 'w'}`);
+        console.log(`is white? : ${isWhiteRef.current}`);
+        console.log(`set game over result: ${isWinner ? "You win" : "You lose"}`);
         setGameOverReason(by);
-        setmyEloChange(isWhite ? whiteEloChange : blackEloChange);
-        setOpponentEloChange(isWhite ? blackEloChange : whiteEloChange);
+        setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
+        setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
 
         // if the reason the game ended is cuz a king blew up, 
         // we delay the popup a little so that we can watch the king blow up
