@@ -2,8 +2,8 @@ import { images } from '../assets';
 
 export const getGameOverAsset = (result) => {
     console.log(`Setting game over media based on result of: ${result}`);
-    if (result === "You win") return images.happyCat;
-    if (result === "You lose") return images.sadHamster;
+    if (result === "You win") return images.happyCatGif;
+    if (result === "You lose") return images.sadHamsterGif;
     return images.officeHandshakeMeme;
 };
 
