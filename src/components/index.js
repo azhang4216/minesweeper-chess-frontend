@@ -4,3 +4,5 @@ export { default as Loader } from './loader';
 export { default as SidePanel } from './side-panel';
 export { default as Timer } from './timer';
 export { default as WinLossPopup } from './win-loss-popup';
+export { default as ProtectedRoute } from './protected-route';
+export { default as HomePage } from './home-page';

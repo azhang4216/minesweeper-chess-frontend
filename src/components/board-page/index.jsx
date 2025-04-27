@@ -6,10 +6,11 @@ import './style.css';
 // other components
 import {
     Chessboard,
-    Loader,
+    // Loader,
     SidePanel,
     WinLossPopup,
-    Timer
+    Timer,
+    // HomePage
 } from '../';
 
 // hooks
@@ -26,9 +27,12 @@ import { GAME_STATES } from '../../constants';
 
 // sockets use context so all components reference the same socket
 import { useSocket, useBoardSocketHandlers } from "../../socket";
+import { useDispatch } from 'react-redux';
+import { actions } from '../../redux';
 
 const BoardPage = () => {
     const socket = useSocket();
+    const dispatch = useDispatch();
 
     const player = usePlayer();
     const opponent = useOpponent();
@@ -38,10 +42,9 @@ const BoardPage = () => {
     // for timer display logic
     const isMyMove = useIsMyTurn();
     useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
-    useEffect(() => {console.log(`Game state: ${gameState}`)}, [gameState]);
+    useEffect(() => { console.log(`Game state: ${gameState}`) }, [gameState]);
 
-    const [roomId, setRoomId] = useState('');
-    const [roomMessage, setRoomMessage] = useState('');
+    // const [roomMessage, setRoomMessage] = useState('');
 
     // these are for the outcome at the end of the game
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
@@ -53,7 +56,7 @@ const BoardPage = () => {
     // board socket handlers
     const {
         handleRoomCreated,
-        handleRoomJoined,
+        _handleRoomJoined,
         handleRoomJoinError,
         handleDisconnect,
         handleStartPlay,
@@ -63,7 +66,7 @@ const BoardPage = () => {
         handleWinLossGameOver,
         handleSyncTime
     } = useBoardSocketHandlers({
-        setRoomMessage,
+        setRoomMessage: (_x) => { }, // for now, we don't need it
         setGameOverReason,
         setGameOverResult,
         setmyEloChange,
@@ -75,7 +78,7 @@ const BoardPage = () => {
 
     useEffect(() => {
         socket.on('roomCreated', handleRoomCreated);
-        socket.on('roomJoined', handleRoomJoined);
+        // socket.on('roomJoined', handleRoomJoined);
         socket.on('roomJoinError', handleRoomJoinError);
         socket.on('playerDisconnected', handleDisconnect);
         socket.on('startPlay', handleStartPlay);
@@ -87,7 +90,7 @@ const BoardPage = () => {
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
-            socket.off('roomJoined', handleRoomJoined);
+            // socket.off('roomJoined', handleRoomJoined);
             socket.off('roomJoinError', handleRoomJoinError);
             socket.off('playerDisconnected', handleDisconnect);
             socket.off('startPlay', handleStartPlay);
@@ -157,20 +160,22 @@ const BoardPage = () => {
     //     }
     // };
 
-    const handleRoomIdChange = (event) => {
-        setRoomId(event.target.value);
-    };
-
-    const handleJoinRoom = () => {
-        if (!roomId) return;
-
-        console.log(`Trying to join room ${roomId}`);
-        socket.emit('joinRoom', roomId);
+    const handleNavigateHome = () => {
+        dispatch(actions.reset());
+        socket.emit("playerDisconnect");
     };
 
     return (
-        <div className="game-container">
-            {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
+        <div className="board-page-container">
+            <button
+                onClick={handleNavigateHome}
+                className="home-button"
+            >
+                Go Home
+            </button>
+            <div className="title">Minesweeper Chess</div>
+            <div className="game-container">
+                {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
                 <div className="chess-wrapper">
                     <div className="join-room-container">
                         <input
@@ -184,7 +189,7 @@ const BoardPage = () => {
                         {gameState === GAME_STATES.matching && <Loader />}
                     </div>
                 </div>
-            ) : (
+            ) : ( */}
                 <div
                     className={gameState === GAME_STATES.placing_bombs ? "game-content-wrapper" : "game-content-wrapper"}
                 >
@@ -252,7 +257,8 @@ const BoardPage = () => {
                     </div>
                     <SidePanel />
                 </div>
-            )}
+                {/* )} */}
+            </div>
         </div>
 
     );

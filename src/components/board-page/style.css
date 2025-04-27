@@ -1,3 +1,7 @@
+.board-page-container {
+  background-color: #2e2e2e;
+}
+
 .game-container {
   display: flex;
   align-items: stretch;
@@ -5,7 +9,6 @@
   align-items: flex-start;
   padding: 20px;
   gap: 40px;
-  background-color: #2e2e2e;
   min-height: 100vh;
   color: white;
   font-family: "Segoe UI", sans-serif;
@@ -28,6 +31,7 @@
   width: 480px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 8px 16px;
   font-size: 16px;
   font-weight: 500;
@@ -71,6 +75,7 @@
 
 .move-history-row {
   display: flex;
+  align-items: center;
   gap: 12px;
   font-family: monospace;
 }
@@ -95,6 +100,46 @@
   /* So it doesn't interfere with clicking the square */
   z-index: 5;
 }
+
+.title {
+  font-size: 30px; /* Adjust the size to make it stand out more */
+  font-weight: bold;
+  color: white;
+  margin-bottom: 40px;
+  padding-top: 5%;
+  display: flex;
+  justify-content: center;
+  text-align: center; /* Ensure the text is centered */
+  font-family: "Segoe UI", sans-serif; /* Make sure the font family is consistent */
+  letter-spacing: 2px; /* Optional: adds a bit of space between letters */
+}
+
+.home-button {
+  position: absolute;
+  top: 20px; /* Distance from the top of the page */
+  left: 20px; /* Distance from the left of the page */
+  padding: 12px 24px;
+  background-color: #4CAF50; /* Green background */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.home-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.home-button:focus {
+  outline: none; /* Remove the focus outline */
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.5); /* Add focus ring */
+}
+
 
 /* custom cursor for planting bombs
 .bomb-planting-cursor {
