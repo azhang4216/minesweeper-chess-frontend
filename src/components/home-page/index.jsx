@@ -63,13 +63,13 @@ const HomePage = () => {
     };
 
     useEffect(() => {
-            socket.on('roomJoined', handleRoomJoined);
-    
-            return () => {
-                socket.off('roomJoined', handleRoomJoined);
-            };
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [socket]);
+        socket.on('roomJoined', handleRoomJoined);
+
+        return () => {
+            socket.off('roomJoined', handleRoomJoined);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socket]);
 
     // useEffect(() => {
     //     if (gameState === GAME_STATES.playing) {
@@ -77,12 +77,47 @@ const HomePage = () => {
     //     }
     // }, [gameState, navigate]);
 
+    /* 
+    <div className="button-group">
+        <button onClick={handleCreateRoom} className="join-button">
+            Create Room
+        </button>
+        <button
+            onClick={handleJoinRoom}
+            disabled={gameState === GAME_STATES.matching}
+            className="join-button"
+        >
+            {gameState === GAME_STATES.matching ? "Matching..." : "Join Room"}
+        </button>
+    </div>
+    */
+
+    const handleCreateRoom = () => {
+        console.log("creating room");
+    }
+
+
     return (
         <div className="front-page">
-            <div className="title">Minesweeper Chess</div>
+            <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
             <div className="chess-wrapper">
-                <div className="join-room-container">
-                    <input
+                <div className="join-create-room-container">
+                    <div className="button-group">
+                        <button
+                            onClick={handleCreateRoom}
+                            className="create-room-button"
+                        >
+                            Create Room
+                        </button>
+                        <button
+                            onClick={handleJoinRoom}
+                            disabled={gameState === GAME_STATES.matching}
+                            className="join-room-button"
+                        >
+                            {gameState === GAME_STATES.matching ? "Matching..." : "Join Room"}
+                        </button>
+                    </div>
+                    {/* <input
                         type="text"
                         value={roomId}
                         onChange={handleRoomIdChange}
@@ -97,15 +132,14 @@ const HomePage = () => {
                             <p className="room-message">Waiting for an opponent to join...</p>
                             <Loader />
                         </>
-                    )}
+                    )} */}
                 </div>
             </div>
 
-            {/* Bomb animation elements */}
-            <div className="bomb" />
-            <div className="bomb" />
-            <div className="bomb" />
-            <div className="bomb" />
+            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
+            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
+            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
+            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
         </div>
     );
 };

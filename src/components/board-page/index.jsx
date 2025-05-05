@@ -173,7 +173,7 @@ const BoardPage = () => {
             >
                 Go Home
             </button>
-            <div className="title">Minesweeper Chess</div>
+            <div className="title">Landmine Chess</div>
             <div className="game-container">
                 {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
                 <div className="chess-wrapper">
