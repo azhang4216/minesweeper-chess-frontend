@@ -14,14 +14,14 @@ code {
 
 button:hover:enabled {
   transform: scale(1.1);
-  box-shadow: 0 0 8px yellow, 0 0 20px orange;
+  /* box-shadow: 0 0 8px yellow, 0 0 20px orange; */
 }
 
 button:disabled {
-  background-color: #d3d3d3; /* Light gray background */
-  color: #a1a1a1; /* Gray text color */
-  border: 1px solid #a1a1a1; /* Gray border */
-  cursor: not-allowed; /* Change cursor to indicate it's disabled */
+  background-color: #d3d3d3;
+  color: #a1a1a1;
+  border: 1px solid #a1a1a1;
+  cursor: not-allowed;
 }
 
 :root {
