@@ -6,3 +6,5 @@ export { default as Timer } from './timer';
 export { default as WinLossPopup } from './win-loss-popup';
 export { default as ProtectedRoute } from './protected-route';
 export { default as HomePage } from './home-page';
+export { default as CreateRoomPage } from './create-room-page';
+export { default as JoinRoomPage } from './join-room-page';

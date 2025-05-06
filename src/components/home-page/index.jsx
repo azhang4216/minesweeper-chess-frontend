@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import './style.css';
 
@@ -16,7 +16,7 @@ import { playSound } from '../../utils';
 const HomePage = () => {
     const socket = useSocket();
     const dispatch = useDispatch();
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const gameState = useGameState();
 
     const [roomId, setRoomId] = useState('');
@@ -25,12 +25,18 @@ const HomePage = () => {
         setRoomId(event.target.value);
     };
 
-    const handleJoinRoom = () => {
-        if (!roomId) return;
+    const handleCreateRoom = () => {
+        navigate("/create-room");
+    };
 
-        console.log(`Trying to join room ${roomId}`);
-        dispatch(actions.setGameState(GAME_STATES.matching));
-        socket.emit('joinRoom', roomId);
+    const handleJoinRoom = () => {
+        navigate("/join-room");
+
+        // if (!roomId) return;
+
+        // console.log(`Trying to join room ${roomId}`);
+        // dispatch(actions.setGameState(GAME_STATES.matching));
+        // socket.emit('joinRoom', roomId);
     };
 
     const handleRoomJoined = ({ players, message, fen, secsToPlaceBomb, secsToPlay }) => {
@@ -92,9 +98,7 @@ const HomePage = () => {
     </div>
     */
 
-    const handleCreateRoom = () => {
-        console.log("creating room");
-    }
+
 
 
     return (
@@ -114,7 +118,7 @@ const HomePage = () => {
                             disabled={gameState === GAME_STATES.matching}
                             className="join-room-button"
                         >
-                            {gameState === GAME_STATES.matching ? "Matching..." : "Join Room"}
+                            Join Room
                         </button>
                     </div>
                     {/* <input

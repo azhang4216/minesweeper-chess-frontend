@@ -1,5 +1,5 @@
 .front-page {
-    background-color: #6a0dad;
+    background-color: var(--iwc-purple);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -54,7 +54,7 @@
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 10px;
-    border: 2px solid #6a0dad;
+    border: 2px solid var(--iwc-purple);
     width: 250px;
 }
 
@@ -64,7 +64,7 @@
 }
 
 .create-room-button {
-    background-color: #6a0dad;
+    background-color: var(--iwc-purple);
     color: white;
 }
 
@@ -79,13 +79,6 @@
     transition: transform 0.2s, box-shadow 0.2s;
     min-width: 160px; /* Ensures equal width for both buttons */
     text-align: center;
-}
-
-
-.join-room-button:hover,
-.create-room-button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px yellow, 0 0 40px orange;
 }
 
 .room-message {
