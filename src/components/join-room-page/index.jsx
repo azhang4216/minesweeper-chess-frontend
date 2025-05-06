@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from "../../socket";
+import { useDispatch } from 'react-redux';
+import { actions } from '../../redux';
 import { useNavigate } from "react-router-dom";
+import { GAME_STATES } from '../../constants';
 import "./style.css";
 
 const JoinRoomPage = () => {
     const socket = useSocket();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [rooms, setRooms] = useState([]);                 // all rooms
     const [filteredRooms, setFilteredRooms] = useState([]); // just the filtered ones we display
     const [loading, setLoading] = useState(true);
@@ -15,6 +19,8 @@ const JoinRoomPage = () => {
 
     // TODO: a way to search via pages
 
+
+    // for searching for all active rooms on load
     useEffect(() => {
         if (!socket) return;
         // Emit event to fetch all active rooms
@@ -29,6 +35,7 @@ const JoinRoomPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // for filtering down only to what we have selected
     useEffect(() => {
         setFilteredRooms(rooms
             .filter((room) => {
@@ -41,6 +48,25 @@ const JoinRoomPage = () => {
             })
         );
     }, [timeFilter, eloFilter, rooms]);
+
+    // for listening for when we join a room
+    useEffect(() => {
+        const handleRoomJoined = (data) => {
+            console.log("Joined room:", data);
+
+            // set our game state before navigating over, so our protected route doesn't reroute to home
+            dispatch(actions.setGameState(GAME_STATES.placing_bombs));
+
+            navigate("/play-game", { state: data });
+        };
+
+        socket.on("roomJoined", handleRoomJoined);
+
+        return () => {
+            socket.off("roomJoined", handleRoomJoined);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const refreshRooms = () => {
         setLoading(true);
@@ -60,6 +86,14 @@ const JoinRoomPage = () => {
     const handleEloFilterChange = (e) => {
         const [min, max] = e.target.value.split('-').map(Number);
         setEloFilter([min, max]);
+    };
+
+    const joinRoom = (roomId) => {
+        socket.emit("joinRoom", roomId, (response) => {
+            if (!response.success) {
+                setError(response.message);
+            }
+        });
     };
 
     return (
@@ -136,8 +170,8 @@ const JoinRoomPage = () => {
                         <tbody>
                             {filteredRooms.map((room) => (
                                 <tr key={room.id}>
-                                    {/* <td>{room.id.length > 10 ? `${room.id.slice(0, 7)}...` : room.id}</td> */}
-                                    <td>{room.id}</td>
+                                    <td>{room.id.length > 15 ? `${room.id.slice(0, 12)}...` : room.id}</td>
+                                    {/* <td>{room.id}</td> */}
                                     <td>{room.elo}</td>
                                     <td>
                                         {room.time_control % 60 === 0
@@ -147,7 +181,7 @@ const JoinRoomPage = () => {
                                     <td>
                                         <button
                                             className="join-room-btn"
-                                            onClick={() => console.log(`Joining room: ${room.id}`)}
+                                            onClick={() => joinRoom(room.id)}
                                         >
                                             Join Room
                                         </button>

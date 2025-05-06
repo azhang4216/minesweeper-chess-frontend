@@ -1,16 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSocket } from "../../socket";
 import { useNavigate } from "react-router-dom";
 import { Loader } from "../";
+import { GAME_STATES } from '../../constants';
+import { useDispatch } from 'react-redux';
+import { actions } from '../../redux';
 import "./style.css";
 
 const CreateRoomPage = () => {
     const socket = useSocket();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [roomId, setRoomId] = useState("");
     const [timeControl, setTimeControl] = useState(""); // in seconds (string)
     const [error, setError] = useState("");
-    const navigate = useNavigate();
+
+    // for listening for when we join a room
+    useEffect(() => {
+        const handleRoomJoined = (data) => {
+            console.log("Joined room:", data);
+
+            // set our game state before navigating over, so our protected route doesn't reroute to home
+            dispatch(actions.setGameState(GAME_STATES.placing_bombs));
+
+            navigate("/play-game", { state: data });
+        };
+
+        socket.on("roomJoined", handleRoomJoined);
+
+        return () => {
+            socket.off("roomJoined", handleRoomJoined);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const createRoom = () => {
         if (!roomId) {
