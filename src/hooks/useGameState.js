@@ -1,4 +1,6 @@
 import { useSelector } from 'react-redux';
+// import { useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
 
 export const useGameFen = () => {
     return useSelector((state) => state.game.gameFen);
@@ -43,6 +45,31 @@ export const useBombPlantingTime = () => {
 export const useGameState = () => {
     return useSelector((state) => state.game.gameState);
 }
+
+// export const usePrompt = (when, message) => {
+//     const navigate = useNavigate();
+
+//     useEffect(() => {
+//         if (!when) return;
+
+//         // Handle navigation blocking
+//         const handleBeforeUnload = (e) => {
+//             if (when) {
+//                 e.preventDefault();
+//                 e.returnValue = message;  // Display the custom message
+//             }
+//         };
+
+//         // Attach the event listener to block navigation
+//         window.addEventListener("beforeunload", handleBeforeUnload);
+
+//         // Cleanup event listener when the component is unmounted or when `when` is false
+//         return () => {
+//             window.removeEventListener("beforeunload", handleBeforeUnload);
+//         };
+//     }, [when, message, navigate]);
+// }
+
 
 // could also add a hook that returns multiple related values
 // export const useGameStatus = () => {

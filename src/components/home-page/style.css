@@ -1,5 +1,5 @@
 .front-page {
-    background-color: #6a0dad;
+    background-color: var(--iwc-purple);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -9,13 +9,21 @@
     position: relative;
 }
 
+
 .title {
-    font-size: 60px;
-    font-weight: bold;
-    color: white;
     margin-bottom: 40px;
-    /* animation: pop 1s ease forwards; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.logo {
+    width: 500px;
+    max-width: 90vw;
+    height: auto;
+    animation: pop 1s ease forwards;
+}
+
 
 .chess-wrapper {
     display: flex;
@@ -23,7 +31,7 @@
     align-items: center;
 }
 
-.join-room-container {
+.join-create-room-container {
     background-color: white;
     padding: 30px;
     border-radius: 20px;
@@ -33,30 +41,44 @@
     gap: 20px;
     align-items: center;
     animation: fadeInUp 1.5s ease forwards;
+    max-width: 90vw;
+}
+
+.button-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
 }
 
 .room-input {
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 10px;
-    border: 2px solid #6a0dad;
+    border: 2px solid var(--iwc-purple);
     width: 250px;
 }
 
-.join-button {
+.join-room-button {
+    background-color: rgb(235,179,100);
+    color: black;
+}
+
+.create-room-button {
+    background-color: var(--iwc-purple);
+    color: white;
+}
+
+.join-room-button,
+.create-room-button {
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 10px;
     border: none;
-    background-color: #6a0dad;
-    color: white;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.join-button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px yellow, 0 0 40px orange;
+    min-width: 160px; /* Ensures equal width for both buttons */
+    text-align: center;
 }
 
 .room-message {
@@ -66,38 +88,39 @@
 
 /* Bomb elements floating around */
 .bomb {
-    width: 20px;
-    height: 20px;
-    background-color: gold;
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     position: absolute;
     top: 100%;
     left: 50%;
-    animation: floatBomb 5s infinite ease-in-out;
-    opacity: 0.7;
+    transform: translate(-50%, 0);
+    animation: floatAndSpin 6s infinite ease-in-out;
+    opacity: 0.8;
+    pointer-events: none;
 }
 
 .bomb:nth-child(4) {
     left: 20%;
-    animation-delay: 0s;
+    animation-delay: 2s;
 }
 
 .bomb:nth-child(5) {
     left: 70%;
-    animation-delay: 1s;
+    animation-delay: 7s;
 }
 
 .bomb:nth-child(6) {
     left: 40%;
-    animation-delay: 2s;
+    animation-delay: 10s;
 }
 
 .bomb:nth-child(7) {
     left: 80%;
-    animation-delay: 3s;
+    animation-delay: 9s;
 }
 
 /* Animations */
+/* For the title screen logo */
 @keyframes pop {
     0% {
         transform: scale(0);
@@ -122,18 +145,21 @@
     }
 }
 
-@keyframes floatBomb {
+@keyframes floatAndSpin {
     0% {
-        transform: translate(-50%, 0) scale(1);
+        transform: translate(-50%, 0) rotate(0deg) scale(1);
         top: 100%;
+        opacity: 0.8;
     }
 
     50% {
-        transform: translate(-50%, -300px) scale(1.2);
+        transform: translate(-50%, -300px) rotate(180deg) scale(1.1);
+        opacity: 1;
     }
 
     100% {
-        transform: translate(-50%, -600px) scale(0);
+        transform: translate(-50%, -600px) rotate(360deg) scale(0.8);
         top: -100px;
+        opacity: 0;
     }
 }

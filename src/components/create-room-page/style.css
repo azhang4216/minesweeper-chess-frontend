@@ -1,0 +1,95 @@
+.create-room-page {
+    background-color: var(--iwc-purple);
+    min-height: 100vh;
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.back-button {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background-color: var(--pale-brown);
+    color: var(--dark);
+    font-size: 16px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.2s;
+    z-index: 10;
+}
+
+.create-room-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    animation: fadeInUp 1.5s ease forwards;
+    max-width: 90vw;
+}
+
+.create-room-container h2 {
+    font-size: 24px;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.create-room-container input[type="text"],
+.create-room-container select {
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: 2px solid var(--iwc-purple);
+    width: 250px;
+    box-sizing: border-box;
+}
+
+.create-room-container select {
+    background-color: white;
+    color: var(--dark);
+    appearance: none; /* removes native arrow in some browsers */
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%23999' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.create-room-container select:focus {
+    border-color: var(--pale-brown);
+    box-shadow: 0 0 5px var(--pale-brown);
+    outline: none;
+}
+
+.create-room-container button {
+    background-color: var(--iwc-purple);
+    color: white;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 160px;
+    text-align: center;
+}
+
+.create-room-container p {
+    font-size: 16px;
+    color: red;
+}

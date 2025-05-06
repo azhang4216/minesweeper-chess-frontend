@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from "react-router-dom";
 
 // styling
 import './style.css';
@@ -30,9 +31,45 @@ import { useSocket, useBoardSocketHandlers } from "../../socket";
 import { useDispatch } from 'react-redux';
 import { actions } from '../../redux';
 
+import { playSound } from "../../utils";
+import { sounds } from "../../assets";
+
 const BoardPage = () => {
     const socket = useSocket();
     const dispatch = useDispatch();
+
+    // information about the game being passed in
+    const location = useLocation();
+    const { roomId, players, fen, secsToPlaceBomb, secsToPlay } = location.state || {};
+
+    useEffect(() => {
+        if (roomId && players && fen) {
+            const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
+            const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
+
+            dispatch(actions.setOpponentInfo({
+                name: opponentInfo.user_id,
+                rating: 1500, // dummy placeholder for now
+                bombs: [],
+                secondsLeft: secsToPlay,
+            }));
+
+            dispatch(actions.setPlayerInfo({
+                name: myInfo.user_id,
+                rating: 1500, // dummy placeholder for now
+                bombs: [],
+                secondsLeft: secsToPlay,
+            }));
+
+            console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
+
+            dispatch(actions.setGameFen(fen));
+            dispatch(actions.setOrientation(myInfo.is_white));
+            dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
+            playSound(sounds.gameStart);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [roomId, players, fen, secsToPlaceBomb, secsToPlay]);
 
     const player = usePlayer();
     const opponent = useOpponent();
@@ -44,8 +81,6 @@ const BoardPage = () => {
     useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
     useEffect(() => { console.log(`Game state: ${gameState}`) }, [gameState]);
 
-    // const [roomMessage, setRoomMessage] = useState('');
-
     // these are for the outcome at the end of the game
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
     const [gameOverReason, setGameOverReason] = useState("");
@@ -56,7 +91,7 @@ const BoardPage = () => {
     // board socket handlers
     const {
         handleRoomCreated,
-        _handleRoomJoined,
+        // _handleRoomJoined,
         handleRoomJoinError,
         handleDisconnect,
         handleStartPlay,
@@ -78,7 +113,6 @@ const BoardPage = () => {
 
     useEffect(() => {
         socket.on('roomCreated', handleRoomCreated);
-        // socket.on('roomJoined', handleRoomJoined);
         socket.on('roomJoinError', handleRoomJoinError);
         socket.on('playerDisconnected', handleDisconnect);
         socket.on('startPlay', handleStartPlay);
@@ -165,6 +199,10 @@ const BoardPage = () => {
         socket.emit("playerDisconnect");
     };
 
+    if (!roomId) {
+        return <p>Error: Missing game data</p>;
+    }
+
     return (
         <div className="board-page-container">
             <button
@@ -173,7 +211,7 @@ const BoardPage = () => {
             >
                 Go Home
             </button>
-            <div className="title">Minesweeper Chess</div>
+            <div className="title">Landmine Chess</div>
             <div className="game-container">
                 {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
                 <div className="chess-wrapper">

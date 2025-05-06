@@ -11,3 +11,27 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+button:hover:enabled {
+  transform: scale(1.1);
+  /* box-shadow: 0 0 8px yellow, 0 0 20px orange; */
+}
+
+button:disabled {
+  background-color: #d3d3d3;
+  color: #a1a1a1;
+  border: 1px solid #a1a1a1;
+  cursor: not-allowed;
+}
+
+:root {
+  --iwc-purple: #6a0dad;
+  --dark: rgb(47,46,47);
+  --invalid: rgb(76,76,76);
+  --wood-brown: rgb(235,179,100);
+  --pale-brown: rgb(249,234,213);
+  /* 
+  rgb(171,67,219)
+  rgb(110,110,109)
+  */
+}
