@@ -101,7 +101,6 @@ const JoinRoomPage = () => {
             <button
                 onClick={() => navigate("/")}
                 className="back-button"
-                disabled={loading}
             >
                 ← Back to Home
             </button>

@@ -41,6 +41,33 @@ const BoardPage = () => {
     // information about the game being passed in
     const location = useLocation();
     const { roomId, players, fen, secsToPlaceBomb, secsToPlay } = location.state || {};
+    console.log(`room id: ${roomId}; players: ${players}, fen: ${fen}, secsToPlaceBomb: ${secsToPlaceBomb}, secsToPlay: ${secsToPlay}`);
+
+    // if (roomId && players && fen) {
+    //     const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
+    //     const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
+
+    //     dispatch(actions.setOpponentInfo({
+    //         name: opponentInfo.user_id,
+    //         rating: 1500, // dummy placeholder for now
+    //         bombs: [],
+    //         secondsLeft: secsToPlay,
+    //     }));
+
+    //     dispatch(actions.setPlayerInfo({
+    //         name: myInfo.user_id,
+    //         rating: 1500, // dummy placeholder for now
+    //         bombs: [],
+    //         secondsLeft: secsToPlay,
+    //     }));
+
+    //     console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
+
+    //     dispatch(actions.setGameFen(fen));
+    //     dispatch(actions.setOrientation(myInfo.is_white));
+    //     dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
+    //     playSound(sounds.gameStart);
+    // }
 
     useEffect(() => {
         if (roomId && players && fen) {
@@ -68,8 +95,9 @@ const BoardPage = () => {
             dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
             playSound(sounds.gameStart);
         }
+        // roomId, players, fen, secsToPlaceBomb, secsToPlay
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [roomId, players, fen, secsToPlaceBomb, secsToPlay]);
+    }, []);
 
     const player = usePlayer();
     const opponent = useOpponent();
