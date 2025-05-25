@@ -1,0 +1,88 @@
+.reset-password-page {
+    background-color: var(--iwc-purple);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.reset-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    max-width: 90vw;
+    width: 400px;
+    animation: fadeInUp 1.5s ease forwards;
+}
+
+.reset-title {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    color: var(--iwc-purple);
+}
+
+.reset-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.reset-label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.reset-input {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 2px solid var(--iwc-purple);
+    width: 100%;
+}
+
+.reset-button {
+    background-color: rgb(235, 179, 100);
+    color: black;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+}
+
+.reset-button:hover {
+    transform: scale(1.05);
+}
+
+.reset-message {
+    font-size: 16px;
+    text-align: center;
+    color: red;
+}
+
+/* Animation reused from homepage */
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

@@ -4,7 +4,8 @@ import {
     HomePage,
     ProtectedRoute,
     CreateRoomPage,
-    JoinRoomPage
+    JoinRoomPage,
+    ResetPasswordPage
 } from "./components";
 import { SocketProvider } from "./socket";
 
@@ -21,6 +22,7 @@ const App = () => {
                             <BoardPage />
                         </ProtectedRoute>
                     }/>
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
                 </Routes>
             </Router>
         </SocketProvider>
