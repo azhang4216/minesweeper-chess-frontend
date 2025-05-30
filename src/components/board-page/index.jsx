@@ -5,14 +5,10 @@ import { useLocation } from "react-router-dom";
 import './style.css';
 
 // other components
-import {
-    Chessboard,
-    // Loader,
-    SidePanel,
-    WinLossPopup,
-    Timer,
-    // HomePage
-} from '../';
+import Chessboard from '../chessboard';
+import SidePanel from '../side-panel';
+import WinLossPopup from '../win-loss-popup';
+import Timer from '../timer';
 
 // hooks
 import {

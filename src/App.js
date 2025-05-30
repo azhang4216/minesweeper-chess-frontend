@@ -5,14 +5,18 @@ import {
     ProtectedRoute,
     CreateRoomPage,
     JoinRoomPage,
-    ResetPasswordPage
+    ResetPasswordPage,
+    SignInPage,
+    CreateAccountPage,
+    UserMenu
 } from "./components";
 import { SocketProvider } from "./socket";
 
 const App = () => {
     return (
-        <SocketProvider>
-            <Router>
+        <Router>
+            <SocketProvider>
+                <UserMenu />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/create-room" element={<CreateRoomPage />} />
@@ -21,11 +25,13 @@ const App = () => {
                         <ProtectedRoute>
                             <BoardPage />
                         </ProtectedRoute>
-                    }/>
+                    } />
+                    <Route path="/sign-in" element={<SignInPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/create-account" element={<CreateAccountPage />} />
                 </Routes>
-            </Router>
-        </SocketProvider>
+            </SocketProvider>
+        </Router>
     );
 }
 

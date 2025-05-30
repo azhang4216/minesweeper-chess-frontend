@@ -11,7 +11,7 @@
 
 .reset-container {
     background-color: white;
-    padding: 30px;
+    padding: 50px 30px;
     border-radius: 20px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
     display: flex;
@@ -40,7 +40,6 @@
 .reset-label {
     font-weight: bold;
     color: #333;
-    margin-bottom: 5px;
 }
 
 .reset-input {
@@ -48,7 +47,6 @@
     font-size: 16px;
     border-radius: 10px;
     border: 2px solid var(--iwc-purple);
-    width: 100%;
 }
 
 .reset-button {
@@ -62,6 +60,7 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
     text-align: center;
+    margin-top: 30px;
 }
 
 .reset-button:hover {

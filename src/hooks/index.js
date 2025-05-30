@@ -12,3 +12,5 @@ export {
     useGameState,
     // usePrompt
 } from './useGameState';
+
+export { useAuth } from './useAuth';
