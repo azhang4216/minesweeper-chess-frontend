@@ -105,5 +105,7 @@ export async function generateGuestUUID() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to get unique UUID for guest player');
     }
-    return await response.json();
+    
+    const responseJSON = await response.json();
+    return responseJSON?.guestUUID;
 }

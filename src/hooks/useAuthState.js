@@ -3,15 +3,15 @@ import { useSelector } from 'react-redux';
 // note: need these extra checks because when page first loads,
 //       the reducer hasn't finished loading yet
 export const useUsername = () => {
-    return useSelector((state) => state.player?.name || '');
+    return useSelector((state) => state.game.player?.name || '');
 };
 
 export const useIsLoggedIn = () => {
-    return useSelector((state) => state.loggedIn || false);
+    return useSelector((state) => state.game.loggedIn || false);
 };
 
 export const useIsPlayingAsGuest = () => {
-    return useSelector((state) => state.playingAsGuest || false);
+    return useSelector((state) => state.game.playingAsGuest || false);
 };
 
 

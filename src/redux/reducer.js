@@ -153,6 +153,7 @@ export default function appReducer(state = initialState, action) {
             return {
                 ...state,
                 loggedIn: true,
+                playingAsGuest: false,
                 player: {
                     ...state.player,
                     name: action.payload,
@@ -164,6 +165,7 @@ export default function appReducer(state = initialState, action) {
             return {
                 ...state,
                 loggedIn: false,
+                playingAsGuest: false,
                 player: initialState.player,
             }
         
