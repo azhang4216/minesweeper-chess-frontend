@@ -13,4 +13,8 @@ export {
     // usePrompt
 } from './useGameState';
 
-export { useAuth } from './useAuth';
+export { 
+    useUsername,
+    useIsLoggedIn,
+    useIsPlayingAsGuest,
+} from './useAuthState';

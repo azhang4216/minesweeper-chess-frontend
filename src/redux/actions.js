@@ -57,6 +57,20 @@ export const setTimers = ({ whiteTimeLeft, blackTimeLeft }) => ({
     payload: { whiteTimeLeft, blackTimeLeft },
 });
 
+export const logIn = (username) => ({
+    type: "LOG_IN",
+    payload: username,
+});
+
+export const logOut = () => ({
+    type: "LOG_OUT",
+});
+
+export const playAsGuest = (guestID) => ({
+    type: "PLAY_AS_GUEST",
+    payload: guestID,
+});
+
 export const reset = () => ({
     type: "RESET",
 });

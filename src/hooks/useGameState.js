@@ -1,6 +1,4 @@
 import { useSelector } from 'react-redux';
-// import { useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
 
 export const useGameFen = () => {
     return useSelector((state) => state.game.gameFen);

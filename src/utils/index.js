@@ -6,7 +6,8 @@ import {
     registerUser, 
     verifyAccount, 
     requestPasswordReset, 
-    resetPassword 
+    resetPassword,
+    generateGuestUUID 
 } from './auth';
 
 export { 
@@ -18,5 +19,6 @@ export {
     registerUser, 
     verifyAccount, 
     requestPasswordReset, 
-    resetPassword 
+    resetPassword,
+    generateGuestUUID
 };
