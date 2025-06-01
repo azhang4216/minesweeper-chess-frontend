@@ -9,21 +9,21 @@ const SignInPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [email, setEmail] = useState('');
+    const [identifier, setIdentifier] = useState(''); // can be username or email
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!email || !password) {
+        if (!identifier || !password) {
             setError('Please fill in all fields.');
             return;
         }
 
         try {
-            const data = await loginUser(email, password);
-            dispatch(actions.logIn(data.username));
+            const data = await loginUser(identifier, password);
+            dispatch(actions.logIn(data.user.username));
             navigate('/');
         } catch (err) {
             setError(err.message);
@@ -38,11 +38,11 @@ const SignInPage = () => {
                 <h2 className="sign-in-title">Sign In</h2>
                 <form onSubmit={handleSubmit} className="sign-in-form">
                     <input
-                        type="email"
-                        placeholder="Email"
+                        type="text"
+                        placeholder="Username or Email"
                         className="room-input"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
                     />
                     <input
                         type="password"

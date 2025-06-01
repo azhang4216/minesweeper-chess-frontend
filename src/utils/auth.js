@@ -4,23 +4,23 @@ const responseIsSuccessful = (status) => {
     return 200 <= status && status < 300;
 }
 
-export async function loginUser(email, password) {
-    const response = await fetch(`http://${API_BASE_URL}/api/login`, {
+export async function loginUser(identifier, password) {
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
-        credentials: 'include', // send cookies
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
     });
 
-    if (!responseIsSuccessful(response.status)) {
+    if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(errorData.error || 'Login failed');
     }
 
     const data = await response.json();
-    return data; // usually contains user info or a success flag
+    return data;
 }
 
 export async function logoutUser() {
@@ -105,7 +105,7 @@ export async function generateGuestUUID() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to get unique UUID for guest player');
     }
-    
+
     const responseJSON = await response.json();
     return responseJSON?.guestUUID;
 }
