@@ -7,7 +7,7 @@ import {
     useIsLoggedIn,
     useIsPlayingAsGuest
 } from '../../hooks';
-import { generateGuestUUID } from "../../utils";
+import { generateGuestUUID } from "../../api";
 import './style.css';
 
 const UserMenu = () => {

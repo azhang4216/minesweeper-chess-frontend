@@ -8,7 +8,8 @@ import {
     ResetPasswordPage,
     SignInPage,
     CreateAccountPage,
-    UserMenu
+    UserMenu,
+    ConfirmAccountPage
 } from "./components";
 import { SocketProvider } from "./socket";
 
@@ -29,6 +30,7 @@ const App = () => {
                     <Route path="/sign-in" element={<SignInPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
                     <Route path="/create-account" element={<CreateAccountPage />} />
+                    <Route path="/verify-email" element={<ConfirmAccountPage />} />
                 </Routes>
             </SocketProvider>
         </Router>

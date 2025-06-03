@@ -3,7 +3,7 @@ import { GAME_STATES } from '../../constants';
 import { useGameState } from "../../hooks";
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
-import { generateGuestUUID } from "../../utils";
+import { generateGuestUUID } from "../../api";
 import { useIsLoggedIn } from '../../hooks';
 import './style.css';
 

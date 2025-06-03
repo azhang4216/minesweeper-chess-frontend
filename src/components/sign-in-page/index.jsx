@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
-import { loginUser } from '../../utils';
+import { loginUser } from '../../api';
 import './style.css';
 
 const SignInPage = () => {

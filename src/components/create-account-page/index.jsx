@@ -1,40 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerUser } from '../../utils';
-import { useDispatch } from "react-redux";
-import { actions } from "../../redux";
+import { registerUser } from '../../api';
 import './style.css';
 
 const CreateAccountPage = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!username || !email || !password || !confirmPassword) {
-            setError('Please fill in all fields.');
+            setMessage('Please fill in all fields.');
             return;
         }
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match.');
+            setMessage('Passwords do not match.');
             return;
         }
         
         try {
-            await registerUser(email, username, password);
-            dispatch(actions.logIn(username));
-            navigate('/');
+            const result = await registerUser(email, username, password);
+            setMessage(result?.message);
         } catch (err) {
             console.log(`${err}`);
-            setError(err.message);
+            setMessage(err.message);
             return;
         }
     };
@@ -77,7 +73,7 @@ const CreateAccountPage = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                     />
 
-                    {error && <div className="error-message">{error}</div>}
+                    {message && <div className="message">{message}</div>}
 
                     <button type="submit" className="create-account-button">Create Account</button>
                 </form>
