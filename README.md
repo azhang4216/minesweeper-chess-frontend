@@ -1,27 +1,28 @@
-# Minesweeper Chess Frontend ♟️💣
+# Landmine Chess Frontend ♟️💣
 
 A real-time online chess variant where strategy meets surprise through hidden bombs on the board. Click [here](https://github.com/azhang4216/minesweeper-chess-backend) for the backend repo.
 
 ## 🎮 Game Description
 
-Minesweeper Chess follows standard chess rules with an explosive twist. Before the game begins, each player secretly places three bombs on their half of the board:
+Landmine Chess follows standard chess rules with an explosive twist. Before the game begins, each player secretly places three bombs on their half of the board:
 - White places bombs within ranks 3 and 4
 - Black places bombs within ranks 5 and 6
 
 If any piece (friend or foe) lands on a square containing a bomb, the bomb detonates, removing both the piece and the bomb from play. Each player can see how many of their bombs remain active through a counter display.
 
 ## 🏗️ Tech Stack
-- React.js with JavaScript for a responsive single-page application
+- React.js for a responsive single-page application
 - Chess UI built with react-chessboard
 - Chess logic implemented with chess.js
 - Redux toolkit for state management
 - Tailwind CSS for styling
 - Socket.io client for real-time gameplay
+- Axios for api requests e.g. profile login, reset password
 
 ## 💻 Local Development
 
 ### Prerequisites
-- Node.js (v16+)
+- Node.js (v >=20)
 - Backend server running at `http://localhost:4000`
 
 ### Setup
@@ -46,13 +47,14 @@ npm start
 ## 🛣️ Roadmap
 
 - [x] Core chess mechanics
-- [ ] Core UI: name, elo, timer, bomb count
-- [ ] Bomb placement
-- [ ] Bomb detonation & animation
-- [ ] Display captured pieces
-- [ ] Foley effects for placing a piece & incorrect movies
+- [x] Core UI: name, elo, timer, bomb count
+- [x] Bomb placement
+- [x] Bomb detonation & animation
+- [x] Display captured pieces
+- [x] Foley effects for placing a piece & incorrect movies
 - [ ] Collapsable left menu
-- [ ] Move history tracking
+- [x] Move history tracking
+- [ ] User: creation, login, logout, reset
 
 ## 📄 License
 

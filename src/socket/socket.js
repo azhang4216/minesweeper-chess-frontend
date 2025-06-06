@@ -1,9 +1,6 @@
 import { io } from "socket.io-client";
+import API_BASE_URL from "../config";
 
-const socket = io(
-    process.env.NODE_ENV === "production"
-        ? process.env.REACT_APP_API_URL
-        : "http://localhost:4000"
-);
+const socket = io(API_BASE_URL);
 
 export default socket;

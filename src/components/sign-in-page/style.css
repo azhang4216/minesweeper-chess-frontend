@@ -1,0 +1,116 @@
+.sign-in-page {
+    background-color: var(--iwc-purple);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.logo {
+    width: 500px;
+    max-width: 90vw;
+    height: auto;
+    animation: pop 1s ease forwards;
+    margin-bottom: 20px;
+}
+
+.sign-in-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInUp 1.5s ease forwards;
+    max-width: 90vw;
+    gap: 15px;
+}
+
+.sign-in-title {
+    font-size: 24px;
+    color: var(--iwc-purple);
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.sign-in-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    width: 100%;
+}
+
+.input-field {
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: 2px solid var(--iwc-purple);
+    width: 250px;
+}
+
+.sign-in-button {
+    background-color: var(--iwc-purple);
+    color: white;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 160px;
+    text-align: center;
+}
+
+.sign-in-button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.error-message {
+    color: red;
+    font-size: 16px;
+}
+
+.create-account-text {
+    font-size: 14px;
+    color: #333;
+    margin-top: 10px;
+}
+
+.create-account-link {
+    color: rgb(68, 131, 255);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Animations */
+@keyframes pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

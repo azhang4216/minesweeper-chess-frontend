@@ -4,5 +4,5 @@ import { getGameOverAsset, getEloChangeColor } from './popupLogic';
 export { 
     playSound,
     getEloChangeColor,
-    getGameOverAsset
+    getGameOverAsset,
 };

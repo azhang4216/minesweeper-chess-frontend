@@ -6,14 +6,16 @@ const initialState = {
     gameState: GAME_STATES.inactive,
     placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
     moveHistory: [],
+    loggedIn: false,          // playing as a guest also counts as logging in!
+    playingAsGuest: false,
     player: {
-        name: "My Name Here",
+        name: "My Name",
         rating: 0,
         bombs: [],
         secondsLeft: 100
     },
     opponent: {
-        name: "Opponent's Name Here",
+        name: "Opponent's Name",
         rating: 0,
         bombs: [],
         secondsLeft: 100
@@ -116,7 +118,7 @@ export default function appReducer(state = initialState, action) {
                 ...state,
                 placingBombsSeconds: action.payload,
             };
-        
+
         case "SET_RANDOMIZED_BOMBS":
             const { whitePlayerBombs, blackPlayerBombs } = action.payload;
             return {
@@ -130,7 +132,7 @@ export default function appReducer(state = initialState, action) {
                     bombs: state.isWhite ? blackPlayerBombs : whitePlayerBombs,
                 }
             };
-        
+
         case "SET_TIMERS":
             const { whiteTimeLeft, blackTimeLeft } = action.payload;
             console.log(`Setting timers in Redux for white, black: ${whiteTimeLeft}, ${blackTimeLeft}`);
@@ -145,6 +147,39 @@ export default function appReducer(state = initialState, action) {
                     secondsLeft: state.isWhite ? blackTimeLeft : whiteTimeLeft,
                 }
             };
+
+        case "LOG_IN":
+            console.log(`reducer state: logging in as ${action.payload}`);
+            return {
+                ...state,
+                loggedIn: true,
+                playingAsGuest: false,
+                player: {
+                    ...state.player,
+                    name: action.payload,
+                },
+            }
+        
+        case "LOG_OUT":
+            console.log("reducer state: logging out");
+            return {
+                ...state,
+                loggedIn: false,
+                playingAsGuest: false,
+                player: initialState.player,
+            }
+        
+        case "PLAY_AS_GUEST":
+            console.log(`reducer state: playing as guest ${action.payload}`);
+            return {
+                ...state,
+                loggedIn: true,
+                playingAsGuest: true,
+                player: {
+                    ...state.player,
+                    name: action.payload, // unique uuid assigned by server
+                },
+            }
 
         case "RESET":
             return initialState;

@@ -8,3 +8,8 @@ export { default as ProtectedRoute } from './protected-route';
 export { default as HomePage } from './home-page';
 export { default as CreateRoomPage } from './create-room-page';
 export { default as JoinRoomPage } from './join-room-page';
+export { default as ResetPasswordPage } from './reset-password-page';
+export { default as SignInPage } from './sign-in-page';
+export { default as CreateAccountPage } from './create-account-page';
+export { default as UserMenu } from './user-menu';
+export { default as ConfirmAccountPage } from './confirm-account-page';
