@@ -21,9 +21,13 @@ const ConfirmAccount = () => {
 
         const confirm = async () => {
             try {
+                console.log(`About to call verifyAccount. token: ${token}`);
                 await verifyAccount(token);
+                console.log("success - token verification");
                 setMessage('Account successfully verified!');
+                console.log(`message set to: ${message}`);
                 verifiedOnce.current = true;
+                console.log(`verified once: ${verifiedOnce.current}`);
                 setError('');
             } catch (err) {
                 if (!verifiedOnce.current) {
@@ -32,7 +36,13 @@ const ConfirmAccount = () => {
             }
         };
 
-        confirm();
+        // confirm();
+
+        const checkTokenAfterTime = setTimeout(() => {
+            confirm();
+        }, 1500);
+
+        return () => clearTimeout(checkTokenAfterTime);
     }, []);
 
     return (

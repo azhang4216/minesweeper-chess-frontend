@@ -39,9 +39,7 @@ export async function registerUser(email, username, password) {
 
 export async function verifyAccount(token) {
     try {
-        const response = await axios.get('/api/verify-email', { 
-            params: { token }
-        });
+        const response = await axios.post('/api/verify-email',  { token });
         return response.data;
     } catch (err) {
         const message = err.response?.data?.error || 'Verification failed';
