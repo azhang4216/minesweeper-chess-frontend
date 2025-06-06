@@ -13,3 +13,4 @@ export { default as SignInPage } from './sign-in-page';
 export { default as CreateAccountPage } from './create-account-page';
 export { default as UserMenu } from './user-menu';
 export { default as ConfirmAccountPage } from './confirm-account-page';
+export { default as NavigationSideBar } from './navigation-side-bar';
