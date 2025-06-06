@@ -9,7 +9,8 @@ import {
     SignInPage,
     CreateAccountPage,
     UserMenu,
-    ConfirmAccountPage
+    ConfirmAccountPage,
+    NavigationSideBar
 } from "./components";
 import { SocketProvider } from "./socket";
 
@@ -18,6 +19,7 @@ const App = () => {
         <Router>
             <SocketProvider>
                 <UserMenu />
+                <NavigationSideBar />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/create-room" element={<CreateRoomPage />} />

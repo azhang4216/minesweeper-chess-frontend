@@ -26,10 +26,11 @@ button:disabled {
 
 :root {
   --iwc-purple: #6a0dad;
-  --dark: rgb(47,46,47);
-  --invalid: rgb(76,76,76);
-  --wood-brown: rgb(235,179,100);
-  --pale-brown: rgb(249,234,213);
+  --dark: rgb(47, 46, 47);
+  --invalid: rgb(76, 76, 76);
+  --wood-brown: rgb(235, 179, 100);
+  --pale-brown: rgb(249, 234, 213);
+
   /* 
   rgb(171,67,219)
   rgb(110,110,109)
