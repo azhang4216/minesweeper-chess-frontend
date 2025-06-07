@@ -1,0 +1,38 @@
+.not-found-container {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--iwc-purple);
+    overflow: hidden;
+}
+
+.not-found-img {
+    position: absolute;
+    top: 50%;
+    left: calc(60% + 100px); 
+    transform: translate(-50%, -50%);
+    max-height: 25vh;
+    object-fit: contain;
+}
+
+.cat-img-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 90px;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+@media (max-width: 768px) {
+    .not-found-img {
+        top: 30%; /* Move 404 higher */
+        left: 70%; /* Shift more to the right */
+        max-height: 15vh; /* Shrink to avoid overlap */
+    }
+
+    .cat-img-bottom {
+        left: 50%;
+        transform: translateX(-50%);
+        max-height: 60vh;
+    }
+}

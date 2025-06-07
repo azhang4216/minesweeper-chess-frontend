@@ -97,13 +97,13 @@ const CreateRoomPage = () => {
 
     return (
         <div className="create-room-page">
-            <button
+            {/* <button
                 onClick={() => navigate("/")}
                 className="back-button"
                 disabled={loading}
             >
                 ← Back to Home
-            </button>
+            </button> */}
 
             <div className="create-room-container">
                 <h2>Create a New Room</h2>

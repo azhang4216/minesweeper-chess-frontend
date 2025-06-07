@@ -30,6 +30,7 @@ button:disabled {
   --invalid: rgb(76, 76, 76);
   --wood-brown: rgb(235, 179, 100);
   --pale-brown: rgb(249, 234, 213);
+  --light-lavender: #e0d7ec;
 
   /* 
   rgb(171,67,219)
