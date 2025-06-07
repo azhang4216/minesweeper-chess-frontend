@@ -4,6 +4,8 @@ import explosionGif from './images/explosion.gif';
 import happyCatGif from './images/happy-cat.gif';
 import officeHandshakeMeme from './images/office-handshake-meme.png';
 import sadHamsterGif from './images/sad-hamster.gif';
+import notFound404 from './images/404_error.png';
+import catSadgeLoadingGif from './images/sadge_cat_loading.gif';
 
 // sound effects
 import capture from './sounds/capture.mp3';
@@ -26,6 +28,8 @@ export const images = {
     happyCatGif,
     officeHandshakeMeme,
     sadHamsterGif,
+    catSadgeLoadingGif,
+    notFound404
 };
 
 export const sounds = {

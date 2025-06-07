@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './style.css';
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import API_BASE_URL from '../../config';
 
 const ResetPasswordPage = () => {
@@ -9,7 +9,7 @@ const ResetPasswordPage = () => {
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [message, setMessage] = useState('');
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -42,12 +42,12 @@ const ResetPasswordPage = () => {
 
     return (
         <div className="reset-password-page">
-            <button
+            {/* <button
                 onClick={() => navigate("/")}
                 className="back-button"
             >
                 ← Back to Home
-            </button>
+            </button> */}
             <div className="reset-container">
                 <h2 className="reset-title">Reset Your Password</h2>
                 <form className="reset-form" onSubmit={handleSubmit}>
