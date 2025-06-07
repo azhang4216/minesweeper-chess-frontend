@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
@@ -14,14 +14,32 @@ const UserMenu = () => {
     const username = useUsername();
     const isGuest = useIsPlayingAsGuest();
     const isLoggedIn = useIsLoggedIn();
-    console.log({ username, isGuest, isLoggedIn });
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const menuRef = useRef(null);  // Ref for the user menu div
 
     const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
     const closeDropdown = () => setDropdownOpen(false);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                closeDropdown();
+            }
+        }
+
+        if (dropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [dropdownOpen]);
 
     const handleSignIn = () => {
         navigate('/sign-in');
@@ -37,13 +55,11 @@ const UserMenu = () => {
     };
     const handleLogout = () => {
         dispatch(actions.logOut());
-        console.log("logged out");
         closeDropdown();
     };
     const handlePlayAsGuest = async () => {
         try {
             const assignedGuestID = await generateGuestUUID();
-            console.log(`Got assigned guest ID: ${assignedGuestID}`);
             dispatch(actions.playAsGuest(assignedGuestID));
         } catch (e) {
             console.error("Failed to generate guest UUID:", e);
@@ -54,7 +70,6 @@ const UserMenu = () => {
 
     const renderDropdown = () => {
         if (!isLoggedIn) {
-            // this person hasn't selected who to play as!
             return (
                 <div className="user-dropdown">
                     <button onClick={handleSignIn}>Sign In</button>
@@ -63,7 +78,6 @@ const UserMenu = () => {
                 </div>
             );
         } else if (!isGuest) {
-            // this user has logged into their account
             return (
                 <div className="user-dropdown">
                     <button onClick={handleProfile}>Profile</button>
@@ -71,8 +85,6 @@ const UserMenu = () => {
                 </div>
             );
         }
-
-        // this user is playing as a guest
         return (
             <div className="user-dropdown">
                 <button onClick={handleSignIn}>Sign In</button>
@@ -84,11 +96,11 @@ const UserMenu = () => {
     const renderLabel = () => {
         if (isLoggedIn && !isGuest) return username;
         if (isLoggedIn && isGuest) return 'Guest';
-        return 'Select Option';
+        return 'Login / Sign in';
     };
 
     return (
-        <div className="user-menu" tabIndex={0}>
+        <div className="user-menu" ref={menuRef} tabIndex={0}>
             <button className="user-menu-button" onClick={toggleDropdown}>
                 {renderLabel()} ▾
             </button>
