@@ -21,6 +21,8 @@ import premove from './sounds/premove.mp3';
 import promote from './sounds/promote.mp3';
 import shovel from './sounds/shovel_sound.mov';
 import tenSeconds from './sounds/tenseconds.mp3';
+import iwcPop from './sounds/iwc_pop.mp3';
+import iwcSwish from './sounds/iwc_swish.wav';
 
 export const images = {
     craterPng,
@@ -45,5 +47,7 @@ export const sounds = {
     premove,
     promote,
     shovel,
-    tenSeconds
+    tenSeconds,
+    iwcPop,
+    iwcSwish
 };

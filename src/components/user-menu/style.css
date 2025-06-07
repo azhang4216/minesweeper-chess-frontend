@@ -37,8 +37,16 @@
     width: 100%;
     font-size: 14px;
     cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    letter-spacing: 0;
 }
 
 .user-dropdown button:hover {
     background-color: #f0f0f0;
+}
+
+.user-dropdown button:hover:enabled {
+    transform: none; /* stop it from expanding out of the box */
 }

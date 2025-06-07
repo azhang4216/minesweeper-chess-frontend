@@ -50,7 +50,7 @@
 }
 
 .reset-button {
-    background-color: rgb(235, 179, 100);
+    background-color: var(--light-lavender);
     color: black;
     padding: 10px 20px;
     font-size: 18px;
