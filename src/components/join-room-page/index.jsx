@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { actions } from '../../redux';
 import { useNavigate } from "react-router-dom";
 import { GAME_STATES } from '../../constants';
+import { useUsername, useIsPlayingAsGuest } from '../../hooks';
 import "./style.css";
 
 const JoinRoomPage = () => {
@@ -16,6 +17,9 @@ const JoinRoomPage = () => {
     const [error, setError] = useState("");
     const [timeFilter, setTimeFilter] = useState(null);
     const [eloFilter, setEloFilter] = useState([0, 3000]);  // in seconds
+
+    const username = useUsername();
+    const isGuest = useIsPlayingAsGuest();
 
     // TODO: a way to search via pages
 
@@ -89,9 +93,10 @@ const JoinRoomPage = () => {
     };
 
     const joinRoom = (roomId) => {
-        socket.emit("joinRoom", roomId, (response) => {
+        // note: roomId and gameId are the same thing
+        socket.emit("joinRoom", roomId, username, isGuest, (response) => {
             if (!response.success) {
-                setError(response.message);
+                setError("Failed to join room.");
             }
         });
     };
