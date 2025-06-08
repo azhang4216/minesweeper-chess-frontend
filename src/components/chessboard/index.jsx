@@ -146,6 +146,7 @@ const ChessBoard = () => {
                 from: sourceSquare,
                 to: targetSquare,
                 promotion: piece[1]?.toLowerCase() ?? "q",
+                playerId
             });
         } else {
             // trying to move opponent's pieces

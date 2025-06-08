@@ -90,7 +90,7 @@ const BoardPage = () => {
         handleRoomCreated,
         // _handleRoomJoined,
         handleRoomJoinError,
-        handleDisconnect,
+        handleOpponentDisconnect,
         handleStartPlay,
         handleGameState,
         handleinvalidMove,
@@ -111,7 +111,7 @@ const BoardPage = () => {
     useEffect(() => {
         socket.on('roomCreated', handleRoomCreated);
         socket.on('roomJoinError', handleRoomJoinError);
-        socket.on('playerDisconnected', handleDisconnect);
+        socket.on('opponentDisconnected', handleOpponentDisconnect);
         socket.on('startPlay', handleStartPlay);
         socket.on('gameState', handleGameState);
         socket.on('invalidMove', handleinvalidMove);
@@ -123,7 +123,7 @@ const BoardPage = () => {
             socket.off('roomCreated', handleRoomCreated);
             // socket.off('roomJoined', handleRoomJoined);
             socket.off('roomJoinError', handleRoomJoinError);
-            socket.off('playerDisconnected', handleDisconnect);
+            socket.off('opponentDisconnected', handleOpponentDisconnect);
             socket.off('startPlay', handleStartPlay);
             socket.off('gameState', handleGameState);
             socket.off('invalidMove', handleinvalidMove);

@@ -66,11 +66,17 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
-    const handleDisconnect = ({ message }) => {
-        console.log("disconnecting");
-        setRoomMessage(message);
-        dispatch(actions.reset());
-        dispatch(actions.setGameState(GAME_STATES.inactive));
+    const handleOpponentDisconnect = ({ disconnectedPlayerId, myEloChange, oppEloChange }) => {
+        console.log(`Opponent ${disconnectedPlayerId} disconnected`);
+        setGameOverResult("You win");
+        setGameOverReason("abandonment");
+        setmyEloChange(myEloChange);
+        setOpponentEloChange(oppEloChange);
+        
+        setDisplayWinLossPopup(true);
+        playSound(sounds.gameEnd);
+
+        dispatch(actions.setGameState(GAME_STATES.game_over));
     };
 
     const handleStartPlay = ({ randomizedWhitePlayerBombs, randomizedBlackPlayerBombs }) => {
@@ -253,7 +259,7 @@ export const useBoardSocketHandlers = ({
         handleRoomCreated,
         // handleRoomJoined,
         handleRoomJoinError,
-        handleDisconnect,
+        handleOpponentDisconnect,
         handleStartPlay,
         handleGameState,
         handleinvalidMove,
