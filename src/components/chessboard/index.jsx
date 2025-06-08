@@ -12,7 +12,8 @@ import {
     useGameFen,
     useIsWhite,
     useMyBombs,
-    useGameState
+    useGameState,
+    useUsername
 } from '../../hooks';
 
 const highlightSquare = (square, colorRgba) => {
@@ -47,6 +48,7 @@ const ChessBoard = () => {
     const isWhite = useIsWhite();
     const myBombs = useMyBombs();
     const gameState = useGameState();
+    const playerId = useUsername();
 
     // need reference because socket handlers don't necessarily register updated isWhite value
     // const isWhiteRef = useRef(isWhite);
@@ -124,7 +126,7 @@ const ChessBoard = () => {
             !myBombs.includes(selectedSquare)
         ) {
             // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
-            socket.emit("placeBomb", selectedSquare);
+            socket.emit("placeBomb", selectedSquare, playerId);
         } else if (gameState === GAME_STATES.playing) {
             // left clicking clears are selected squares
             setSquaresToHighlight([]);

@@ -73,14 +73,14 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
-    const handleStartPlay = ({ whitePlayerBombs, blackPlayerBombs }) => {
-        if (whitePlayerBombs !== null && blackPlayerBombs !== null) {
+    const handleStartPlay = ({ randomizedWhitePlayerBombs, randomizedBlackPlayerBombs }) => {
+        if (randomizedWhitePlayerBombs !== null || randomizedBlackPlayerBombs !== null) {
             // we've received randomized bombs from timeout!
             setRoomMessage("Randomly placed bombs on timeout!");
-            console.log(`Setting white player bombs: ${whitePlayerBombs}`);
-            console.log(`Setting black player bombs: ${blackPlayerBombs}`);
+            console.log(`Setting white player bombs: ${randomizedWhitePlayerBombs}`);
+            console.log(`Setting black player bombs: ${randomizedBlackPlayerBombs}`);
             playSound(sounds.shovel);
-            dispatch(actions.setRandomizedBombs({ whitePlayerBombs, blackPlayerBombs }));
+            dispatch(actions.setRandomizedBombs({ randomizedWhitePlayerBombs, randomizedBlackPlayerBombs }));
         };
 
         console.log("Finished placing bombs. Now ready to play.");
