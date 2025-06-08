@@ -103,12 +103,6 @@ const JoinRoomPage = () => {
 
     return (
         <div className="join-room-page">
-            {/* <button
-                onClick={() => navigate("/")}
-                className="back-button"
-            >
-                ← Back to Home
-            </button> */}
             <div className="join-room-container">
                 <div className="join-room-title-row">
                     <h2 className="title-center">Active Rooms</h2>
