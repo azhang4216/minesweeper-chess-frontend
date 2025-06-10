@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import {
     BoardPage,
     HomePage,
-    ProtectedRoute,
+    ProtectedGameRoute, 
+    ProtectedLoginRoute,
     CreateRoomPage,
     JoinRoomPage,
     ResetPasswordPage,
@@ -39,12 +40,20 @@ const AppContent = () => {
             <NavigationSideBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/create-room" element={<CreateRoomPage />} />
-                <Route path="/join-room" element={<JoinRoomPage />} />
+                <Route path="/create-room" element={
+                    <ProtectedLoginRoute>
+                        <CreateRoomPage />
+                    </ProtectedLoginRoute>
+                } />
+                <Route path="/join-room" element={
+                    <ProtectedLoginRoute>
+                        <JoinRoomPage />
+                    </ProtectedLoginRoute>
+                } />
                 <Route path="/play-game" element={
-                    <ProtectedRoute>
+                    <ProtectedGameRoute>
                         <BoardPage />
-                    </ProtectedRoute>
+                    </ProtectedGameRoute>
                 } />
                 <Route path="/sign-in" element={<SignInPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />

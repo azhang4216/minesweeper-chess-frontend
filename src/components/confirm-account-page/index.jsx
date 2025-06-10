@@ -36,13 +36,12 @@ const ConfirmAccount = () => {
             }
         };
 
-        // confirm();
-
         const checkTokenAfterTime = setTimeout(() => {
             confirm();
         }, 1500);
 
         return () => clearTimeout(checkTokenAfterTime);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

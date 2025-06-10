@@ -59,7 +59,7 @@
 }
 
 .join-room-button {
-    background-color: rgb(235,179,100);
+    background-color: var(--light-lavender);
     color: black;
 }
 
