@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import {
     BoardPage,
     HomePage,
-    ProtectedGameRoute, 
+    ProtectedGameRoute,
     ProtectedLoginRoute,
     CreateRoomPage,
     JoinRoomPage,
@@ -12,27 +12,29 @@ import {
     UserMenu,
     ConfirmAccountPage,
     NavigationSideBar,
-    NotFoundPage
+    NotFoundPage,
+    ProfilePage
 } from "./components";
 import { SocketProvider } from "./socket";
 
-// This wrapper lets us access useLocation inside Router
+// Wrapper to access location inside Router
 const AppContent = () => {
     const location = useLocation();
 
-    // Define known paths
-    const knownPaths = new Set([
-        '/',
-        '/create-room',
-        '/join-room',
-        '/play-game',
-        '/sign-in',
-        '/reset-password',
-        '/create-account',
-        '/verify-email',
-    ]);
+    // Regular expressions for valid paths
+    const validPaths = [
+        /^\/$/,                        // Home
+        /^\/create-room$/,             // Create room
+        /^\/join-room$/,               // Join room
+        /^\/play-game$/,               // Game
+        /^\/sign-in$/,                 // Sign in
+        /^\/reset-password$/,          // Reset password
+        /^\/create-account$/,          // Create account
+        /^\/verify-email$/,            // Email verification
+        /^\/profile\/[^/]+$/           // Profile pages like /profile/username
+    ];
 
-    const isNotFound = !knownPaths.has(location.pathname);
+    const isNotFound = !validPaths.some((pattern) => pattern.test(location.pathname));
 
     return (
         <>
@@ -59,6 +61,7 @@ const AppContent = () => {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/create-account" element={<CreateAccountPage />} />
                 <Route path="/verify-email" element={<ConfirmAccountPage />} />
+                <Route path="/profile/:id" element={<ProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </>
