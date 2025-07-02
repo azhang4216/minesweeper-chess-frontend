@@ -16,9 +16,12 @@ import {
     ProfilePage
 } from "./components";
 import { SocketProvider } from "./socket";
+import { useInitializeSocket } from "./hooks";
 
 // Wrapper to access location inside Router
 const AppContent = () => {
+    useInitializeSocket();
+
     const location = useLocation();
 
     // Regular expressions for valid paths

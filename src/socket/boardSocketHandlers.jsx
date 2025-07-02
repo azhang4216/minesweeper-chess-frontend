@@ -66,11 +66,14 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
-    const handleDisconnect = ({ message }) => {
-        console.log("disconnecting");
+    const handleDisconnect = ({ disconnectedPlayerId, timeoutMs, message }) => {
+        console.log(`${disconnectedPlayerId} has disconnected from the game and will timeout in ${timeoutMs} ms.`);
         setRoomMessage(message);
-        dispatch(actions.reset());
-        dispatch(actions.setGameState(GAME_STATES.inactive));
+
+        // TODO: start a timeout timer for opponent
+        
+        // dispatch(actions.reset());
+        // dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
     const handleStartPlay = ({ whitePlayerBombs, blackPlayerBombs }) => {

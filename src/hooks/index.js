@@ -18,3 +18,5 @@ export {
     useIsLoggedIn,
     useIsPlayingAsGuest,
 } from './useAuthState';
+
+export { default as useInitializeSocket } from './useInitializeSocket';
