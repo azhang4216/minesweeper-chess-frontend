@@ -7,16 +7,15 @@ const Timer = ({ isActive, initialSeconds }) => {
     const timerRef = useRef(null);
     const tenSecondAlertPlayed = useRef(false);
 
+    // Reset timer and interval on initialSeconds change
     useEffect(() => {
-        // Update the secondsLeft whenever initialSeconds changes
         setSecondsLeft(initialSeconds);
-        console.log(`Display seconds on block set to: ${initialSeconds}`);
-    }, [initialSeconds]);
+        tenSecondAlertPlayed.current = false;
+        clearInterval(timerRef.current);
 
-    useEffect(() => {
-        if (isActive && secondsLeft > 0) {
+        if (isActive && initialSeconds > 0) {
             timerRef.current = setInterval(() => {
-                setSecondsLeft((prev) => {
+                setSecondsLeft(prev => {
                     const next = prev - 1;
                     if (next === 10 && !tenSecondAlertPlayed.current) {
                         playSound(sounds.tenSeconds);
@@ -28,19 +27,7 @@ const Timer = ({ isActive, initialSeconds }) => {
         }
 
         return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isActive]);
-
-    // Reset sound alert trigger if timer resets or is reactivated
-    useEffect(() => {
-        if (secondsLeft > 10) {
-            tenSecondAlertPlayed.current = false;
-        }
-    }, [secondsLeft]);
-
-    useEffect(() => {
-        if (!isActive) clearInterval(timerRef.current);
-    }, [isActive]);
+    }, [initialSeconds, isActive]);
 
     const formatTime = (s) => {
         const minutes = Math.floor(s / 60);

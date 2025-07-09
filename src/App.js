@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import {
     BoardPage,
     HomePage,
-    ProtectedRoute,
+    ProtectedGameRoute,
+    ProtectedLoginRoute,
     CreateRoomPage,
     JoinRoomPage,
     ResetPasswordPage,
@@ -11,27 +12,32 @@ import {
     UserMenu,
     ConfirmAccountPage,
     NavigationSideBar,
-    NotFoundPage
+    NotFoundPage,
+    ProfilePage
 } from "./components";
 import { SocketProvider } from "./socket";
+import { useInitializeSocket } from "./hooks";
 
-// This wrapper lets us access useLocation inside Router
+// Wrapper to access location inside Router
 const AppContent = () => {
+    useInitializeSocket();
+
     const location = useLocation();
 
-    // Define known paths
-    const knownPaths = new Set([
-        '/',
-        '/create-room',
-        '/join-room',
-        '/play-game',
-        '/sign-in',
-        '/reset-password',
-        '/create-account',
-        '/verify-email',
-    ]);
+    // Regular expressions for valid paths
+    const validPaths = [
+        /^\/$/,                        // Home
+        /^\/create-room$/,             // Create room
+        /^\/join-room$/,               // Join room
+        /^\/play-game$/,               // Game
+        /^\/sign-in$/,                 // Sign in
+        /^\/reset-password$/,          // Reset password
+        /^\/create-account$/,          // Create account
+        /^\/verify-email$/,            // Email verification
+        /^\/profile\/[^/]+$/           // Profile pages like /profile/username
+    ];
 
-    const isNotFound = !knownPaths.has(location.pathname);
+    const isNotFound = !validPaths.some((pattern) => pattern.test(location.pathname));
 
     return (
         <>
@@ -39,17 +45,26 @@ const AppContent = () => {
             <NavigationSideBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/create-room" element={<CreateRoomPage />} />
-                <Route path="/join-room" element={<JoinRoomPage />} />
+                <Route path="/create-room" element={
+                    <ProtectedLoginRoute>
+                        <CreateRoomPage />
+                    </ProtectedLoginRoute>
+                } />
+                <Route path="/join-room" element={
+                    <ProtectedLoginRoute>
+                        <JoinRoomPage />
+                    </ProtectedLoginRoute>
+                } />
                 <Route path="/play-game" element={
-                    <ProtectedRoute>
+                    <ProtectedGameRoute>
                         <BoardPage />
-                    </ProtectedRoute>
+                    </ProtectedGameRoute>
                 } />
                 <Route path="/sign-in" element={<SignInPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/create-account" element={<CreateAccountPage />} />
                 <Route path="/verify-email" element={<ConfirmAccountPage />} />
+                <Route path="/profile/:id" element={<ProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </>

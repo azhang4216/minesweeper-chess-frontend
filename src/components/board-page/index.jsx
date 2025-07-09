@@ -16,7 +16,8 @@ import {
     useOpponent,
     useIsMyTurn,
     useGameState,
-    useMoveHistory
+    useMoveHistory,
+    useUsername
 } from '../../hooks';
 
 // constant game states
@@ -33,53 +34,28 @@ import { sounds } from "../../assets";
 const BoardPage = () => {
     const socket = useSocket();
     const dispatch = useDispatch();
+    const myUsername = useUsername();
 
     // information about the game being passed in
     const location = useLocation();
     const { roomId, players, fen, secsToPlaceBomb, secsToPlay } = location.state || {};
-    console.log(`room id: ${roomId}; players: ${players}, fen: ${fen}, secsToPlaceBomb: ${secsToPlaceBomb}, secsToPlay: ${secsToPlay}`);
-
-    // if (roomId && players && fen) {
-    //     const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
-    //     const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
-
-    //     dispatch(actions.setOpponentInfo({
-    //         name: opponentInfo.user_id,
-    //         rating: 1500, // dummy placeholder for now
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     dispatch(actions.setPlayerInfo({
-    //         name: myInfo.user_id,
-    //         rating: 1500, // dummy placeholder for now
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
-
-    //     dispatch(actions.setGameFen(fen));
-    //     dispatch(actions.setOrientation(myInfo.is_white));
-    //     dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
-    //     playSound(sounds.gameStart);
-    // }
+    console.log(`room id: ${roomId}; players: ${JSON.stringify(players)}, fen: ${fen}, secsToPlaceBomb: ${secsToPlaceBomb}, secsToPlay: ${secsToPlay}`);
 
     useEffect(() => {
         if (roomId && players && fen) {
-            const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
-            const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
+            const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
+            const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.user_id,
-                rating: 1500, // dummy placeholder for now
+                rating: opponentInfo.elo,
                 bombs: [],
                 secondsLeft: secsToPlay,
             }));
 
             dispatch(actions.setPlayerInfo({
                 name: myInfo.user_id,
-                rating: 1500, // dummy placeholder for now
+                rating: opponentInfo.elo,
                 bombs: [],
                 secondsLeft: secsToPlay,
             }));
@@ -218,10 +194,10 @@ const BoardPage = () => {
     //     }
     // };
 
-    const handleNavigateHome = () => {
-        dispatch(actions.reset());
-        socket.emit("playerDisconnect");
-    };
+    // const handleNavigateHome = () => {
+    //     dispatch(actions.reset());
+    //     socket.emit("playerDisconnect");
+    // };
 
     if (!roomId) {
         return <p>Error: Missing game data</p>;
@@ -229,12 +205,12 @@ const BoardPage = () => {
 
     return (
         <div className="board-page-container">
-            <button
+            {/* <button
                 onClick={handleNavigateHome}
                 className="home-button"
             >
                 Go Home
-            </button>
+            </button> */}
             <div className="title">Landmine Chess</div>
             <div className="game-container">
                 {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (

@@ -23,6 +23,7 @@ const JoinRoomPage = () => {
     // for searching for all active rooms on load
     useEffect(() => {
         if (!socket) return;
+        console.log("Refreshing rooms");
         // Emit event to fetch all active rooms
         socket.emit("requestRoomsLookingForMatch", (response) => {
             if (response.success) {
@@ -71,6 +72,7 @@ const JoinRoomPage = () => {
     const refreshRooms = () => {
         setLoading(true);
         setError("");
+        console.log("Refreshing rooms");
         socket.emit("requestRoomsLookingForMatch", (response) => {
             if (response.success) {
                 setRooms(response.rooms);

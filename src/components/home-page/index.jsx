@@ -5,11 +5,13 @@ import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
 import { generateGuestUUID } from "../../api";
 import { useIsLoggedIn } from '../../hooks';
+import { useSocket } from "../../socket";
 import './style.css';
 
 const HomePage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const socket = useSocket();
     const gameState = useGameState();
     const isLoggedIn = useIsLoggedIn();
 
@@ -22,6 +24,7 @@ const HomePage = () => {
             const assignedGuestID = await generateGuestUUID();
             console.log(`Got assigned guest ID: ${assignedGuestID}`);
             dispatch(actions.playAsGuest(assignedGuestID));
+            socket.emit("authenticate", { playerId: assignedGuestID });
         } catch (e) {
             console.error("Failed to generate guest UUID:", e);
         }

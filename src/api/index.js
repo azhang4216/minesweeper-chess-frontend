@@ -8,6 +8,12 @@ import {
     generateGuestUUID 
 } from './auth';
 
+import {
+    getUserProfile,
+    addFriend,
+    deleteAccount
+} from './profile';
+
 export {
     loginUser,
     logoutUser, 
@@ -15,5 +21,8 @@ export {
     verifyAccount, 
     requestPasswordReset, 
     resetPassword,
-    generateGuestUUID
+    generateGuestUUID,
+    getUserProfile,
+    addFriend,
+    deleteAccount
 }

@@ -8,12 +8,14 @@ import {
     useIsPlayingAsGuest
 } from '../../hooks';
 import { generateGuestUUID } from "../../api";
+import { useSocket } from "../../socket";
 import './style.css';
 
 const UserMenu = () => {
     const username = useUsername();
     const isGuest = useIsPlayingAsGuest();
     const isLoggedIn = useIsLoggedIn();
+    const socket = useSocket();
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -61,6 +63,7 @@ const UserMenu = () => {
         try {
             const assignedGuestID = await generateGuestUUID();
             dispatch(actions.playAsGuest(assignedGuestID));
+            socket.emit("authenticate", { playerId: assignedGuestID });
         } catch (e) {
             console.error("Failed to generate guest UUID:", e);
         } finally {
