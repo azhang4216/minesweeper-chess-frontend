@@ -51,6 +51,7 @@ const CreateRoomPage = () => {
 
         // Emit event to backend to create a room with the specified roomId & time control
         socket.emit("createRoom", { roomId, timeControl }, (response) => {
+            console.log("Creating a room...")
             if (response.success) {
                 setLoading(true);
             } else {
