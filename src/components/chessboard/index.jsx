@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
-import { sounds } from '../../assets';
+import { sounds, pieces } from '../../assets';
 import { playSound } from '../../utils';
 import { GAME_STATES, RGBA } from '../../constants.js';
 
@@ -14,6 +14,8 @@ import {
     useMyBombs,
     useGameState
 } from '../../hooks';
+
+import { Chess } from 'chess.js';
 
 const highlightSquare = (square, colorRgba) => {
     const squareEl = document.querySelector(`[data-square="${square}"]`);
@@ -48,16 +50,13 @@ const ChessBoard = () => {
     const myBombs = useMyBombs();
     const gameState = useGameState();
 
-    // need reference because socket handlers don't necessarily register updated isWhite value
-    // const isWhiteRef = useRef(isWhite);
-    // useEffect(() => {
-    //     isWhiteRef.current = isWhite;
-    // }, [isWhite]);
-
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
     const [squaresToHighlight, setSquaresToHighlight] = useState([]);
+    const [lastMove, setLastMove] = useState({ from: null, to: null });
+    const [selectedSquare, setSelectedSquare] = useState(null);
+    const [legalMoves, setLegalMoves] = useState([]);
 
-    useEffect(() => {console.log(`player is set to white: ${isWhite}`)}, [isWhite]);
+    useEffect(() => { console.log(`player is set to white: ${isWhite}`) }, [isWhite]);
 
     useEffect(() => {
         const handleBombPlaced = (square) => {
@@ -101,7 +100,7 @@ const ChessBoard = () => {
                 }
             }
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [myBombs]);
 
     useEffect(() => {
@@ -117,41 +116,61 @@ const ChessBoard = () => {
 
     }, [squaresToHighlight]);
 
+    useEffect(() => {
+        socket.on('movePlayed', ({ from, to }) => {
+            setLastMove({ from, to });
+            setSelectedSquare(null);
+            setLegalMoves([]);
+        });
+
+        return () => {
+            socket.off('movePlayed');
+        };
+    }, [socket]);
+
     const handleClick = (_e) => {
-        const selectedSquare = squareMouseIsOver;  // accounting for sudden changes in mouse movement
+        const selected = squareMouseIsOver;  // accounting for sudden changes in mouse movement
+        const game = new Chess(gameFen);
+
         if (gameState === GAME_STATES.placing_bombs && myBombs.length < 3 &&
-            ((isWhite && (selectedSquare[1] === '3' || selectedSquare[1] === '4')) || (!isWhite && (selectedSquare[1] === '5' || selectedSquare[1] === '6'))) &&
-            !myBombs.includes(selectedSquare)
+            ((isWhite && (selected[1] === '3' || selected[1] === '4')) || (!isWhite && (selected[1] === '5' || selected[1] === '6'))) &&
+            !myBombs.includes(selected)
         ) {
             // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
-            socket.emit("placeBomb", selectedSquare);
+            socket.emit("placeBomb", selected);
         } else if (gameState === GAME_STATES.playing) {
-            // left clicking clears are selected squares
-            setSquaresToHighlight([]);
+            const piece = game.get(selected);
+            if (!piece || (isWhite && piece.color !== 'w') || (!isWhite && piece.color !== 'b')) {
+                setSelectedSquare(null);
+                setLegalMoves([]);
+            } else {
+                setSelectedSquare(selected);
+                const moves = game.moves({ square: selected, verbose: true });
+                setLegalMoves(moves.map(m => m.to));
+            }
         } else {
             playSound(sounds.illegal);
         }
 
-        console.log(`Clicked on square ${selectedSquare}`);
+        console.log(`Clicked on square ${selected}`);
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
         console.log(`Trying to make move: ${sourceSquare} to ${targetSquare} with ${piece}.`);
 
         if (GAME_STATES.playing && ((isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b'))) {
-            // trying to move own pieces
             socket.emit("makeMove", {
                 from: sourceSquare,
                 to: targetSquare,
                 promotion: piece[1]?.toLowerCase() ?? "q",
             });
         } else {
-            // trying to move opponent's pieces
             playSound(sounds.illegal);
+            setSelectedSquare(null);
+            setLegalMoves([]);
         }
     };
 
-    // keeps track of where our mouse is
     const onMouseoverSquare = (square, _pieceOnSquare) => {
         setSquareMouseIsOver(square);
 
@@ -163,21 +182,59 @@ const ChessBoard = () => {
 
     const onMouseoutSquare = (square, _pieceOnSquare) => {
         setSquaresToHighlight(squaresToHighlight.filter(s => s !== square));
-        // const squareEl = document.querySelector(`[data-square="${square}"]`);
-
-        // if (squareEl) {
-        //     const highlightDiv = squareEl.querySelector('.highlighted');
-        //     if (highlightDiv) {
-        //         highlightDiv.remove();
-        //     } else {
-        //         console.log(`${square} is not highlighted`);
-        //     }
-        // }
-
     };
 
     const onSquareRightClick = (square) => {
         setSquaresToHighlight([...squaresToHighlight, square]);
+    };
+
+    const customPieces = Object.fromEntries(
+        Object.entries(pieces).map(([pieceCode, imgSrc]) => [
+            pieceCode,
+            ({ squareWidth }) => (
+                <img
+                    src={imgSrc}
+                    alt={pieceCode}
+                    style={{
+                        width: squareWidth,
+                        height: squareWidth,
+                    }}
+                />
+            ),
+        ])
+    );
+
+    const getBaseSquareColors = () => {
+        const colors = {};
+        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        for (let rank = 1; rank <= 8; rank++) {
+            for (let fileIndex = 0; fileIndex < 8; fileIndex++) {
+                const square = files[fileIndex] + rank;
+                const isLight = (fileIndex + rank) % 2 === 0;
+                colors[square] = {
+                    backgroundColor: isLight ? "#e6ddee" : "#a78cc2"
+                };
+            }
+        }
+        return colors;
+    };
+
+    const customSquareStyles = {
+        ...getBaseSquareColors(),
+        ...(selectedSquare && { [selectedSquare]: { backgroundColor: "#c7edcc" } }),
+        ...(lastMove.from && { [lastMove.from]: { backgroundColor: "#c7edcc" } }),
+        ...(lastMove.to && { [lastMove.to]: { backgroundColor: "#c7edcc" } }),
+        ...legalMoves.reduce((acc, sq) => {
+            acc[sq] = {
+                backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                borderRadius: '50%'
+            };
+            return acc;
+        }, {}),
+        ...squaresToHighlight.reduce((acc, sq) => {
+            acc[sq] = { backgroundColor: RGBA.light_yellow };
+            return acc;
+        }, {}),
     };
 
     return (
@@ -192,6 +249,12 @@ const ChessBoard = () => {
                 arePremovesAllowed={true}
                 clearPremovesOnRightClick={true}
                 customArrowColor={RGBA.iwc_purple}
+                customPieces={customPieces}
+                boardStyle={{
+                    borderRadius: "4px",
+                    boxShadow: "0 0 10px #000",
+                }}
+                customSquareStyles={customSquareStyles}
             />
         </div>
     );

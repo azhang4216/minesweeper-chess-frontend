@@ -24,6 +24,20 @@ import tenSeconds from './sounds/tenseconds.mp3';
 import iwcPop from './sounds/iwc_pop.mp3';
 import iwcSwish from './sounds/iwc_swish.wav';
 
+// pieces
+import wK from './pieces/wK.svg';
+import wQ from './pieces/wQ.svg';
+import wR from './pieces/wR.svg';
+import wB from './pieces/wB.svg';
+import wN from './pieces/wN.svg';
+import wP from './pieces/wP.svg';
+import bK from './pieces/bK.svg';
+import bQ from './pieces/bQ.svg';
+import bR from './pieces/bR.svg';
+import bB from './pieces/bB.svg';
+import bN from './pieces/bN.svg';
+import bP from './pieces/bP.svg';
+
 export const images = {
     craterPng,
     explosionGif,
@@ -50,4 +64,19 @@ export const sounds = {
     tenSeconds,
     iwcPop,
     iwcSwish
+};
+
+export const pieces = {
+    wK,
+    wQ,
+    wR,
+    wB,
+    wN,
+    wP,
+    bK,
+    bQ,
+    bR,
+    bB,
+    bN,
+    bP
 };
