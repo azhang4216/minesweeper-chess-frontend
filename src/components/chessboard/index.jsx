@@ -15,8 +15,6 @@ import {
     useGameState
 } from '../../hooks';
 
-import { Chess } from 'chess.js';
-
 const highlightSquare = (square, colorRgba) => {
     const squareEl = document.querySelector(`[data-square="${square}"]`);
     if (squareEl && !squareEl.querySelector('.highlighted')) {
@@ -100,7 +98,7 @@ const ChessBoard = () => {
                 }
             }
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [myBombs]);
 
     useEffect(() => {
@@ -128,26 +126,14 @@ const ChessBoard = () => {
         };
     }, [socket]);
 
-    const handleClick = (_e) => {
-        const selected = squareMouseIsOver;  // accounting for sudden changes in mouse movement
-        const game = new Chess(gameFen);
+    const handleClick = async (_e) => {
+        const selected = squareMouseIsOver;
 
         if (gameState === GAME_STATES.placing_bombs && myBombs.length < 3 &&
             ((isWhite && (selected[1] === '3' || selected[1] === '4')) || (!isWhite && (selected[1] === '5' || selected[1] === '6'))) &&
             !myBombs.includes(selected)
         ) {
-            // bombs should only be placed on ranks 3-4 as white, and 5-6 as black
             socket.emit("placeBomb", selected);
-        } else if (gameState === GAME_STATES.playing) {
-            const piece = game.get(selected);
-            if (!piece || (isWhite && piece.color !== 'w') || (!isWhite && piece.color !== 'b')) {
-                setSelectedSquare(null);
-                setLegalMoves([]);
-            } else {
-                setSelectedSquare(selected);
-                const moves = game.moves({ square: selected, verbose: true });
-                setLegalMoves(moves.map(m => m.to));
-            }
         } else {
             playSound(sounds.illegal);
         }

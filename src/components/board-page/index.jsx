@@ -194,10 +194,10 @@ const BoardPage = () => {
     //     }
     // };
 
-    const handleNavigateHome = () => {
-        dispatch(actions.reset());
-        socket.emit("playerDisconnect");
-    };
+    // const handleNavigateHome = () => {
+    //     dispatch(actions.reset());
+    //     socket.emit("playerDisconnect");
+    // };
 
     if (!roomId) {
         return <p>Error: Missing game data</p>;
@@ -205,12 +205,12 @@ const BoardPage = () => {
 
     return (
         <div className="board-page-container">
-            <button
+            {/* <button
                 onClick={handleNavigateHome}
                 className="home-button"
             >
                 Go Home
-            </button>
+            </button> */}
             <div className="title">Landmine Chess</div>
             <div className="game-container">
                 {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
