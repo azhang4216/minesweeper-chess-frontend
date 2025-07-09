@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
 import { loginUser } from '../../api';
+import { useSocket } from "../../socket";
 import './style.css';
 
 const SignInPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const socket = useSocket();
 
     const [identifier, setIdentifier] = useState(''); // can be username or email
     const [password, setPassword] = useState('');
@@ -24,6 +26,7 @@ const SignInPage = () => {
         try {
             const data = await loginUser(identifier, password);
             dispatch(actions.logIn(data.user.username));
+            socket.emit("authenticate", { playerId: data.user.username });
             navigate('/');
         } catch (err) {
             setError(err.message);
