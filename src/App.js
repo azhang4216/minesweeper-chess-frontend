@@ -13,7 +13,8 @@ import {
     ConfirmAccountPage,
     NavigationSideBar,
     NotFoundPage,
-    ProfilePage
+    ProfilePage,
+    SearchPage
 } from "./components";
 import { SocketProvider } from "./socket";
 import { useInitializeSocket } from "./hooks";
@@ -34,7 +35,8 @@ const AppContent = () => {
         /^\/reset-password$/,          // Reset password
         /^\/create-account$/,          // Create account
         /^\/verify-email$/,            // Email verification
-        /^\/profile\/[^/]+$/           // Profile pages like /profile/username
+        /^\/profile\/[^/]+$/,          // Profile pages like /profile/username
+        /^\/search-user$/,             // Search for users
     ];
 
     const isNotFound = !validPaths.some((pattern) => pattern.test(location.pathname));
@@ -64,7 +66,8 @@ const AppContent = () => {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/create-account" element={<CreateAccountPage />} />
                 <Route path="/verify-email" element={<ConfirmAccountPage />} />
-                <Route path="/profile/:id" element={<ProfilePage />} />
+                <Route path="/profile/:username" element={<ProfilePage />} />
+                <Route path="/search" element={<SearchPage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </>
