@@ -24,8 +24,8 @@ const ProfilePage = () => {
         const fetchUserData = async () => {
             try {
                 setLoading(true);
-                const res = await getUserProfile(username);
-                setUserData(res.data);
+                const data = await getUserProfile(username);
+                setUserData(data);
                 setNotFound(false);
             } catch (err) {
                 if (err.response && err.response.status === 404) {
@@ -45,9 +45,7 @@ const ProfilePage = () => {
 
     return (
         <div style={{ padding: "2rem" }}>
-            <h1>Profile: {userData.username}</h1>
-            <p>Email: {userData.email}</p>
-            {/* Add more fields if needed */}
+            <h1>Username: {userData.username}</h1>
 
             <div style={{ margin: "1.5rem 0" }}>
                 <h2>Friends</h2>
