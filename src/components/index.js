@@ -17,3 +17,4 @@ export { default as NavigationSideBar } from './navigation-side-bar';
 export { default as NotFoundPage } from './not-found-page';
 export { ProtectedGameRoute, ProtectedLoginRoute } from './protected-route';
 export { default as ProfilePage } from './profile-page';
+export { default as SearchPage } from './search-page';

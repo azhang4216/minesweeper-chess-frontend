@@ -14,6 +14,10 @@ import {
     deleteAccount
 } from './profile';
 
+import {
+    findUsersByInputString
+} from './search';
+
 export {
     loginUser,
     logoutUser, 
@@ -24,5 +28,6 @@ export {
     generateGuestUUID,
     getUserProfile,
     addFriend,
-    deleteAccount
+    deleteAccount,
+    findUsersByInputString
 }
