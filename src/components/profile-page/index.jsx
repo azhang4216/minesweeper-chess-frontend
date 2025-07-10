@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useParams, Link } from "react-router-dom";
 import { 
     useUsername,
     useIsPlayingAsGuest,
     useIsLoggedIn
 } from "../../hooks";
+import { getUserProfile } from "../../api";
+import "./style.css";
 
 const ProfilePage = () => {
-    const { id } = useParams(); // :id from URL
+    const { username } = useParams(); // :username from URL
     const currentUsername = useUsername();
     const isGuest = useIsPlayingAsGuest();
     const isLoggedIn = useIsLoggedIn();
@@ -23,7 +24,7 @@ const ProfilePage = () => {
         const fetchUserData = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get(`/api/profile/${id}`);
+                const res = await getUserProfile(username);
                 setUserData(res.data);
                 setNotFound(false);
             } catch (err) {
@@ -36,7 +37,7 @@ const ProfilePage = () => {
         };
 
         fetchUserData();
-    }, [id]);
+    }, [username]);
 
     if (loading) return <div>Loading profile...</div>;
     if (notFound) return <div>User not found.</div>;
@@ -47,6 +48,23 @@ const ProfilePage = () => {
             <h1>Profile: {userData.username}</h1>
             <p>Email: {userData.email}</p>
             {/* Add more fields if needed */}
+
+            <div style={{ margin: "1.5rem 0" }}>
+                <h2>Friends</h2>
+                {userData.friends && userData.friends.length > 0 ? (
+                    <ul>
+                        {userData.friends.map(friend => (
+                            <li key={friend._id}>
+                                <Link to={`/profile/${friend._id}`}>
+                                    {friend.username}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No friends yet.</p>
+                )}
+            </div>
 
             {isOwnProfile ? (
                 <div>

@@ -64,7 +64,7 @@ const AppContent = () => {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/create-account" element={<CreateAccountPage />} />
                 <Route path="/verify-email" element={<ConfirmAccountPage />} />
-                <Route path="/profile/:id" element={<ProfilePage />} />
+                <Route path="/profile/:username" element={<ProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </>

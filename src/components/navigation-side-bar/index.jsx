@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useIsLoggedIn, useIsPlayingAsGuest } from '../../hooks';
+import { 
+    useIsLoggedIn, 
+    useIsPlayingAsGuest,
+    useUsername
+} from '../../hooks';
 import './style.css';
 
 const NavigationSidebar = () => {
@@ -9,9 +13,10 @@ const NavigationSidebar = () => {
 
     const isLoggedIn = useIsLoggedIn();
     const isGuest = useIsPlayingAsGuest();
+    const username = useUsername();
 
     const goHome = () => navigate('/');
-    const goToProfile = () => navigate('/profile');
+    const goToProfile = () => navigate(`/profile/${username}`);
     const goToSearch = () => navigate('/search');
     const goToPlay = () => {
         if (isLoggedIn || isGuest) {
