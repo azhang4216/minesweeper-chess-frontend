@@ -11,7 +11,8 @@ import {
 import {
     getUserProfile,
     addFriend,
-    deleteAccount
+    deleteAccount,
+    acceptFriend
 } from './profile';
 
 import {
@@ -29,5 +30,6 @@ export {
     getUserProfile,
     addFriend,
     deleteAccount,
-    findUsersByInputString
+    findUsersByInputString,
+    acceptFriend
 }

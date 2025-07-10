@@ -52,7 +52,7 @@ const UserMenu = () => {
         closeDropdown();
     };
     const handleProfile = () => {
-        navigate('/profile');
+        navigate(`/profile/${username}`);
         closeDropdown();
     };
     const handleLogout = () => {
