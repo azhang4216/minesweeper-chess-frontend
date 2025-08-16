@@ -6,38 +6,55 @@ import {
     useIsLoggedIn,
 } from "../../hooks";
 import {
-    getUserProfile,
+    getUserProfileByUsername,
     deleteAccount,
-    addFriend,
-    acceptFriend,
-    logoutUser
-} from "../../api";
+    sendFriendRequest,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    removeFriend,
+} from "../../api/profile";
 import ConfirmModal from "../confirm-modal";
 import "./style.css";
 
 const ProfilePage = () => {
-    const { username } = useParams();
-    const currentUsername = useUsername();
+    const username = useUsername();                    // the logged in user's username
+    const { username: profileUsername } = useParams(); // the profile being viewed
     const isGuest = useIsPlayingAsGuest();
     const isLoggedIn = useIsLoggedIn();
     const navigate = useNavigate();
 
-    const [userData, setUserData] = useState(null);
+    const [profileData, setProfileData] = useState(null);
     const [notFound, setNotFound] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [friendRequestsReceived, setFriendRequestsReceived] = useState([]);
+    const [friendsList, setFriendsList] = useState([]);
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-    const isOwnProfile =
-        userData && currentUsername && userData.username === currentUsername;
-
+    // Fetch profile data on mount
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchprofileData = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getUserProfile(username);
-                setUserData(data);
+                const data = await getUserProfileByUsername(profileUsername);
+                setProfileData(data);
+
+                // Fetch friend usernames for received requests
+                if (data.friendRequestsReceived?.length > 0) {
+                    setFriendRequestsReceived(data.friendRequestsReceived);
+                } else {
+                    setFriendRequestsReceived([]);
+                }
+
+                // Fetch friend usernames for friends list
+                if (data.friends?.length > 0) {
+                    setFriendsList(data.friends);
+                } else {
+                    setFriendsList([]);
+                }
+
                 setNotFound(false);
             } catch (err) {
                 if (err.response && err.response.status === 404) {
@@ -50,12 +67,20 @@ const ProfilePage = () => {
             }
         };
 
-        fetchUserData();
-    }, [username]);
+        fetchprofileData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profileUsername]);
 
-    const handleAddFriend = async () => {
+    useEffect(() => {
+        if (profileData && username) {
+            setIsOwnProfile(profileData.username === username);
+        }
+    }, [profileData, username]);
+
+    // Send friend request
+    const handleSendFriendRequest = async () => {
         try {
-            await addFriend(currentUsername, username);
+            await sendFriendRequest(profileUsername, username);
             alert("Friend request sent!");
         } catch (err) {
             console.error("Failed to send friend request:", err);
@@ -63,12 +88,58 @@ const ProfilePage = () => {
         }
     };
 
+    // Accept friend request
+    const handleAcceptFriend = async (requesterUsername) => {
+        try {
+            await acceptFriendRequest(username, requesterUsername);
+            alert(`Friend request from ${requesterUsername} accepted!`);
+            // Refresh profile data
+            const data = await getUserProfileByUsername(username);
+            setProfileData(data);
+            setFriendRequestsReceived(data.friendRequestsReceived || []);
+            setFriendsList(data.friends || []);
+        } catch (err) {
+            console.error("Failed to accept friend request:", err);
+            alert("Failed to accept friend request.");
+        }
+    };
+
+    // Reject friend request
+    const handleRejectFriend = async (requesterUsername) => {
+        try {
+            await rejectFriendRequest(username, requesterUsername);
+            alert(`Friend request from ${requesterUsername} rejected.`);
+            // Refresh profile data
+            const data = await getUserProfileByUsername(username);
+            setProfileData(data);
+            setFriendRequestsReceived(data.friendRequestsReceived || []);
+        } catch (err) {
+            console.error("Failed to reject friend request:", err);
+            alert("Failed to reject friend request.");
+        }
+    };
+
+    // Remove friend
+    const handleRemoveFriend = async (friendUsername) => {
+        try {
+            await removeFriend(username, friendUsername);
+            alert(`Removed ${friendUsername} from friends.`);
+            // Refresh profile data
+            const data = await getUserProfileByUsername(username);
+            setProfileData(data);
+            setFriendsList(data.friends || []);
+        } catch (err) {
+            console.error("Failed to remove friend:", err);
+            alert("Failed to remove friend.");
+        }
+    };
+
     const handleDeleteAccountConfirmed = async () => {
         setShowConfirmDelete(false);
         try {
-            await deleteAccount(currentUsername);
+            await deleteAccount(username);
             alert("Account deleted successfully.");
-            logoutUser();
+            // logoutUser(); // TODO: implement if needed
             navigate("/");
         } catch (err) {
             console.error("Failed to delete account:", err);
@@ -80,42 +151,35 @@ const ProfilePage = () => {
         setShowConfirmDelete(false);
     };
 
-    const handleAcceptFriend = async (friendUsername) => {
-        try {
-            await acceptFriend(currentUsername, friendUsername);
-            alert(`Friend request from ${friendUsername} accepted!`);
-            // Optionally refresh the profile data to update lists:
-            // You can trigger fetchUserData here or set state accordingly
-        } catch (err) {
-            console.error("Failed to accept friend request:", err);
-            alert("Failed to accept friend request.");
-        }
-    };
-
-    const handleRejectFriend = (friendUsername) => {
-        // Placeholder for now
-        alert(`Reject friend request from ${friendUsername} (functionality not implemented yet).`);
-    };
-
     if (loading)
         return <div className="profile-page-message">Loading profile...</div>;
     if (notFound)
         return <div className="profile-page-message">User not found.</div>;
     if (error)
         return <div className="profile-page-message">{error}</div>;
-    if (!userData)
+    if (!profileData)
         return <div className="profile-page-message">Something went wrong.</div>;
 
     return (
         <>
             <div className="profile-page-full">
-                <h1 className="profile-username">{userData.username}</h1>
-                <p className="profile-elo">ELO: {userData.elo}</p>
+                <h1 className="profile-username">{profileData.username}</h1>
+                <p className="profile-details">ELO: {profileData.elo}</p>
+                <p className="profile-details">Joined: {profileData.date_joined}</p>
 
                 <div className="profile-actions">
                     {isOwnProfile ? (
                         <>
-                            <button className="edit-button">Edit Profile</button>
+                            {/* TODO: edit profile feature */}
+                            <span className="tooltip-wrapper">
+                                <button
+                                    className="edit-button"
+                                    disabled
+                                >
+                                    Edit Profile
+                                </button>
+                                <span className="tooltip-text">Edit profile feature coming soon!</span>
+                            </span>
                             <button
                                 className="delete-button"
                                 onClick={() => setShowConfirmDelete(true)}
@@ -126,7 +190,7 @@ const ProfilePage = () => {
                     ) : (
                         isLoggedIn &&
                         !isGuest && (
-                            <button className="create-room-button" onClick={handleAddFriend}>
+                            <button className="create-room-button" onClick={handleSendFriendRequest}>
                                 Send Friend Request
                             </button>
                         )
@@ -136,23 +200,29 @@ const ProfilePage = () => {
                 {isOwnProfile && (
                     <div className="scroll-section">
                         <h2>Friend Requests Received</h2>
-                        {userData.friendRequestsReceived?.length > 0 ? (
+                        {friendRequestsReceived.length > 0 ? (
                             <ul className="scroll-list">
-                                {userData.friendRequestsReceived.map((req) => (
-                                    <li key={req._id} className="scroll-item friend-request-item">
-                                        <Link to={`/profile/${req.username}`} className="friend-link">
-                                            {req.username}
+                                {friendRequestsReceived.map((potentialFriend) => (
+                                    <li key={potentialFriend["id"]} className="scroll-item friend-request-item">
+                                        {potentialFriend["username"]}
+                                        <Link
+                                            to={`/profile/${potentialFriend["username"]}`}
+                                            className="friend-link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            (see profile here)
                                         </Link>
                                         <div className="friend-request-actions">
                                             <button
                                                 className="accept-button"
-                                                onClick={() => handleAcceptFriend(req.username)}
+                                                onClick={() => handleAcceptFriend(potentialFriend["username"])}
                                             >
                                                 Accept
                                             </button>
                                             <button
                                                 className="reject-button"
-                                                onClick={() => handleRejectFriend(req.username)}
+                                                onClick={() => handleRejectFriend(potentialFriend["username"])}
                                             >
                                                 Reject
                                             </button>
@@ -168,16 +238,26 @@ const ProfilePage = () => {
 
                 <div className="scroll-section">
                     <h2>Friends</h2>
-                    {userData.friends?.length > 0 ? (
+                    {friendsList.length > 0 ? (
                         <ul className="scroll-list">
-                            {userData.friends.map((friend) => (
-                                <li key={friend._id} className="scroll-item">
+                            {friendsList.map((friend) => (
+                                <li key={friend["id"]} className="scroll-item">
                                     <Link
-                                        to={`/profile/${friend.username}`}
+                                        to={`/profile/${friend["username"]}`}
                                         className="friend-link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                     >
-                                        {friend.username}
+                                        {friend["username"]}
                                     </Link>
+                                    {isOwnProfile && (
+                                        <button
+                                            className="remove-friend-button"
+                                            onClick={() => handleRemoveFriend(friend["username"])}
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -188,13 +268,24 @@ const ProfilePage = () => {
 
                 <div className="scroll-section">
                     <h2>Past Games</h2>
-                    {userData.past_games?.length > 0 ? (
+                    {profileData.past_games?.length > 0 ? (
                         <ul className="scroll-list">
-                            {userData.past_games.map((game) => (
+                            {profileData.past_games.map((game) => (
                                 <li key={game._id} className="scroll-item">
-                                    <Link to={`/game/${game._id}`} className="friend-link">
-                                        Game ID: {game._id}
-                                    </Link>
+                                    <span className="tooltip-wrapper">
+                                        <Link
+                                            to={`/game/${game._id}`}
+                                            className="friend-link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            tabIndex={-1}
+                                            style={{ pointerEvents: "none", color: "#aaa", cursor: "not-allowed" }}
+                                            aria-disabled="true"
+                                        >
+                                            Game ID: {game._id}
+                                        </Link>
+                                        <span className="tooltip-text">Game analysis coming soon!</span>
+                                    </span>
                                 </li>
                             ))}
                         </ul>
