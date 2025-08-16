@@ -5,18 +5,21 @@ import {
     verifyAccount, 
     requestPasswordReset, 
     resetPassword,
-    generateGuestUUID 
+    generateGuestUUID,
 } from './auth';
 
 import {
-    getUserProfile,
-    addFriend,
+    getUserProfileByUsername,
+    sendFriendRequest,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    removeFriend,
     deleteAccount,
-    acceptFriend
 } from './profile';
 
 import {
-    findUsersByInputString
+    findUsersByInputString,
+    getUsernameById,
 } from './search';
 
 export {
@@ -27,9 +30,12 @@ export {
     requestPasswordReset, 
     resetPassword,
     generateGuestUUID,
-    getUserProfile,
-    addFriend,
+    getUsernameById,
+    getUserProfileByUsername,
     deleteAccount,
     findUsersByInputString,
-    acceptFriend
+    sendFriendRequest,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    removeFriend,
 }
