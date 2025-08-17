@@ -52,7 +52,7 @@ export const removeFriend = async (requesteeUsername, requesterUsername) => {
 // Delete account
 export const deleteAccount = async (requesterUsername) => {
     const endpoint = getFullEndpoint('/api/profile/delete-account');
-    debugLog(`[API] DELETE ${endpoint}`, { requesterUsername });
-    const res = await axios.delete(`/api/profile/delete-account`, { data: { requesterUsername } });
+    debugLog(`[API] POST ${endpoint}`, { requesterUsername });
+    const res = await axios.post(`/api/profile/delete-account`, { requesterUsername });
     return res.data;
 };
