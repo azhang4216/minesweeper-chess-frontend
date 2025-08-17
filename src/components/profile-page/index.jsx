@@ -14,6 +14,8 @@ import {
     removeFriend,
 } from "../../api/profile";
 import ConfirmModal from "../confirm-modal";
+import { useDispatch } from 'react-redux';
+import { actions } from "../../redux";
 import "./style.css";
 
 const ProfilePage = () => {
@@ -22,6 +24,7 @@ const ProfilePage = () => {
     const isGuest = useIsPlayingAsGuest();
     const isLoggedIn = useIsLoggedIn();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const [profileData, setProfileData] = useState(null);
     const [notFound, setNotFound] = useState(false);
@@ -39,6 +42,7 @@ const ProfilePage = () => {
                 setLoading(true);
                 setError(null);
                 const data = await getUserProfileByUsername(profileUsername);
+                console.log(data);
                 setProfileData(data);
 
                 // Fetch friend usernames for received requests
@@ -51,6 +55,7 @@ const ProfilePage = () => {
                 // Fetch friend usernames for friends list
                 if (data.friends?.length > 0) {
                     setFriendsList(data.friends);
+                    console.log(data.friends);
                 } else {
                     setFriendsList([]);
                 }
@@ -139,7 +144,7 @@ const ProfilePage = () => {
         try {
             await deleteAccount(username);
             alert("Account deleted successfully.");
-            // logoutUser(); // TODO: implement if needed
+            dispatch(actions.logOut());
             navigate("/");
         } catch (err) {
             console.error("Failed to delete account:", err);
@@ -162,8 +167,13 @@ const ProfilePage = () => {
 
     return (
         <>
-            <div className="profile-page-full">
-                <h1 className="profile-username">{profileData.username}</h1>
+            <div className={`profile-page-full${profileData.status === "DELETED" ? " profile-deleted" : ""}`}>
+                <h1 className="profile-username">
+                    {profileData.username}
+                    {profileData.status === "DELETED" && (
+                        <span className="deleted-label"> (Deleted)</span>
+                    )}
+                </h1>
                 <p className="profile-details">ELO: {profileData.elo}</p>
                 <p className="profile-details">Joined: {profileData.date_joined}</p>
 
@@ -189,7 +199,8 @@ const ProfilePage = () => {
                         </>
                     ) : (
                         isLoggedIn &&
-                        !isGuest && (
+                        !isGuest && 
+                        profileData.status !== "DELETED" && (
                             <button className="create-room-button" onClick={handleSendFriendRequest}>
                                 Send Friend Request
                             </button>
@@ -204,15 +215,16 @@ const ProfilePage = () => {
                             <ul className="scroll-list">
                                 {friendRequestsReceived.map((potentialFriend) => (
                                     <li key={potentialFriend["id"]} className="scroll-item friend-request-item">
-                                        {potentialFriend["username"]}
+                                        {potentialFriend["username"]} {"("}
                                         <Link
                                             to={`/profile/${potentialFriend["username"]}`}
                                             className="friend-link"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            (see profile here)
+                                            see profile
                                         </Link>
+                                        {")"}
                                         <div className="friend-request-actions">
                                             <button
                                                 className="accept-button"
@@ -250,6 +262,7 @@ const ProfilePage = () => {
                                     >
                                         {friend["username"]}
                                     </Link>
+                                    {" "}
                                     {isOwnProfile && (
                                         <button
                                             className="remove-friend-button"

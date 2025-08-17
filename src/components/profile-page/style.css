@@ -122,3 +122,13 @@
     visibility: visible;
     opacity: 1;
 }
+
+.deleted-label {
+    color: #d32f2f;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.profile-deleted {
+    pointer-events: none;
+}

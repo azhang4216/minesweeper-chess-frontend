@@ -24,13 +24,17 @@ const CreateAccountPage = () => {
             setMessage('Passwords do not match.');
             return;
         }
-        
+
         try {
             const result = await registerUser(email, username, password);
             setMessage(result?.message);
+            if (result?.message) {
+                alert(result.message);
+            }
         } catch (err) {
             console.log(`${err}`);
             setMessage(err.message);
+            alert(err.message);
             return;
         }
     };
