@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { verifyAccount } from '../../api';
+import { Loader } from "../";
 import './style.css';
 
 const ConfirmAccount = () => {
@@ -49,6 +50,9 @@ const ConfirmAccount = () => {
             <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
             <div className="confirm-account-container">
                 <h2 className="confirm-account-title">Confirming Your Account</h2>
+                {!message && !error && (
+                    < Loader />
+                )}
                 {message && <p className="success-message">{message}</p>}
                 {error && <p className="error-message">{error}</p>}
                 {verifiedOnce.current && (
