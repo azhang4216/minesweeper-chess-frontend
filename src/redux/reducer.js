@@ -1,7 +1,7 @@
 // import { GAME_STATES } from '../constants';
 
 const initialState = {
-    // game: {
+    isAuthLoading: true, // we assume we are loading on reauth
     //     gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
     //     isWhite: true,
     //     gameState: GAME_STATES.inactive,
@@ -21,7 +21,6 @@ const initialState = {
     //         bombs: [],
     //         secondsLeft: 100
     //     }
-    // }
 }
 
 /*
@@ -185,6 +184,12 @@ export default function appReducer(state = initialState, action) {
 
         case "RESET":
             return initialState;
+        
+        case "SET_IS_AUTH_LOADING":
+            return {
+                ...state,
+                isAuthLoading: action.payload,
+            }
 
         default:
             return state;

@@ -74,3 +74,8 @@ export const playAsGuest = (guestID) => ({
 export const reset = () => ({
     type: "RESET",
 });
+
+export const setIsAuthLoading = (isAuthLoading) => ({
+    type: "SET_IS_AUTH_LOADING",
+    payload: isAuthLoading,
+});

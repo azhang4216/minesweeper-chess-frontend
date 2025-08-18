@@ -17,20 +17,34 @@ export const useIsPlayingAsGuest = () => {
     return useSelector((state) => state.playingAsGuest || false);
 };
 
+export const useIsAuthLoading = () => {
+    return useSelector((state) => state.isAuthLoading || false);
+}
+
 export const useAuthState = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem("authToken");
         console.log(`JWT found in localstorage on load: ${token}`);
+
         if (token) {
-            validateToken(token).then(user => {
+            dispatch(actions.setIsAuthLoading(true));
+
+            validateToken(token).then((user) => {
                 if (user) {
                     dispatch(actions.logIn(user.username));
                 } else {
-                    localStorage.removeItem('authToken');
+                    localStorage.removeItem("authToken");
+                    dispatch(actions.logOut());
                 }
+
+                // stop loading when finished
+                dispatch(actions.setIsAuthLoading(false));
             });
+        } else {
+            // no token, not loading
+            dispatch(actions.setIsAuthLoading(false));
         }
     }, [dispatch]);
 };

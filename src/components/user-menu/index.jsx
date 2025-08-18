@@ -97,7 +97,6 @@ const UserMenu = () => {
     };
 
     const renderLabel = () => {
-        console.log(`Render label: ${isLoggedIn} ${isGuest} ${username}`);
         if (isLoggedIn && !isGuest) return username;
         if (isLoggedIn && isGuest) return 'Guest';
         return 'Login / Sign in';
