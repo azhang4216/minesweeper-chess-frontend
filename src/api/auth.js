@@ -6,8 +6,8 @@ export async function loginUser(identifier, password) {
 
         const { token } = response.data;
         if (token) {
-            localStorage.setItem('token', token);
-            console.log('Set token in local storage');
+            localStorage.setItem('authToken', token);
+            console.log(`Set JWT (token) in local storage: ${token}`);
         } else {
             console.log('Failed to obtain a token');
         }
@@ -21,10 +21,29 @@ export async function loginUser(identifier, password) {
 export async function logoutUser() {
     try {
         const response = await axios.post('/api/logout');
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         return response.data;
     } catch (err) {
         throw new Error(err.response?.data?.message || 'Logout failed');
+    }
+}
+
+export async function validateToken(token) {
+    if (!token) return null;
+    console.log(`Sending over the follow token for validation: ${token}`);
+
+    try {
+        const response = await axios.get('/api/verify-token', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data?.user || null;
+    } catch (err) {
+        // If token is invalid, remove it
+        localStorage.removeItem('authToken');
+        return null;
     }
 }
 
@@ -39,7 +58,7 @@ export async function registerUser(email, username, password) {
 
 export async function verifyAccount(token) {
     try {
-        const response = await axios.post('/api/verify-email',  { token });
+        const response = await axios.post('/api/verify-email', { token });
         return response.data;
     } catch (err) {
         const message = err.response?.data?.error || 'Verification failed';

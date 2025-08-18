@@ -1,25 +1,27 @@
-import { GAME_STATES } from '../constants';
+// import { GAME_STATES } from '../constants';
 
 const initialState = {
-    gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
-    isWhite: true,
-    gameState: GAME_STATES.inactive,
-    placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
-    moveHistory: [],
-    loggedIn: false,          // playing as a guest also counts as logging in!
-    playingAsGuest: false,
-    player: {
-        name: "My Name",
-        rating: 0,
-        bombs: [],
-        secondsLeft: 100
-    },
-    opponent: {
-        name: "Opponent's Name",
-        rating: 0,
-        bombs: [],
-        secondsLeft: 100
-    }
+    // game: {
+    //     gameFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // starting position
+    //     isWhite: true,
+    //     gameState: GAME_STATES.inactive,
+    //     placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
+    //     moveHistory: [],
+    //     loggedIn: false,          // playing as a guest also counts as logging in!
+    //     playingAsGuest: false,
+    //     player: {
+    //         name: "My Name",
+    //         rating: 0,
+    //         bombs: [],
+    //         secondsLeft: 100
+    //     },
+    //     opponent: {
+    //         name: "Opponent's Name",
+    //         rating: 0,
+    //         bombs: [],
+    //         secondsLeft: 100
+    //     }
+    // }
 }
 
 /*
@@ -159,7 +161,7 @@ export default function appReducer(state = initialState, action) {
                     name: action.payload,
                 },
             }
-        
+
         case "LOG_OUT":
             console.log("reducer state: logging out");
             return {
@@ -168,7 +170,7 @@ export default function appReducer(state = initialState, action) {
                 playingAsGuest: false,
                 player: initialState.player,
             }
-        
+
         case "PLAY_AS_GUEST":
             console.log(`reducer state: playing as guest ${action.payload}`);
             return {

@@ -1,47 +1,47 @@
 import { useSelector } from 'react-redux';
 
 export const useGameFen = () => {
-    return useSelector((state) => state.game.gameFen);
+    return useSelector((state) => state.game?.gameFen);
 };
 
 export const useIsWhite = () => {
-    return useSelector((state) => state.game.isWhite);
+    return useSelector((state) => state.game?.isWhite);
 };
 
 export const useIsMyTurn = () => {
-    return useSelector((state) => (state.game.moveHistory.length % 2 === 0) === state.game.isWhite);
+    return useSelector((state) => (state.game?.moveHistory.length % 2 === 0) === state.game.isWhite);
 };
 
 export const useMoveHistory = () => {
-    return useSelector((state) => state.game.moveHistory);
+    return useSelector((state) => state.game?.moveHistory);
 };
 
 export const usePlayer = () => {
-    return useSelector((state) => state.game.player);
+    return useSelector((state) => state.game?.player);
 };
 
 export const useOpponent = () => {
-    return useSelector((state) => state.game.opponent);
+    return useSelector((state) => state.game?.opponent);
 };
 
 export const useMyBombs = () => {
-    return useSelector((state) => state.game.player.bombs);
+    return useSelector((state) => state.game?.player.bombs);
 };
 
 export const useMyTimeLeft = () => {
-    return useSelector((state) => state.game.player.secondsLeft);
+    return useSelector((state) => state.game?.player.secondsLeft);
 }
 
 export const useOpponentTimeLeft = () => {
-    return useSelector((state) => state.game.opponent.secondsLeft);
+    return useSelector((state) => state.game?.opponent.secondsLeft);
 }
 
 export const useBombPlantingTime = () => {
-    return useSelector((state) => state.game.placingBombsSeconds);
+    return useSelector((state) => state.game?.placingBombsSeconds);
 }
 
 export const useGameState = () => {
-    return useSelector((state) => state.game.gameState);
+    return useSelector((state) => state.game?.gameState);
 }
 
 // export const usePrompt = (when, message) => {
