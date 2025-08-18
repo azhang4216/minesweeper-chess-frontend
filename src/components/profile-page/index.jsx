@@ -88,8 +88,7 @@ const ProfilePage = () => {
             await sendFriendRequest(profileUsername, username);
             alert("Friend request sent!");
         } catch (err) {
-            console.error("Failed to send friend request:", err);
-            alert("Failed to send friend request.");
+            alert(err.response?.data?.error || "Failed to send friend request.");
         }
     };
 
@@ -104,8 +103,7 @@ const ProfilePage = () => {
             setFriendRequestsReceived(data.friendRequestsReceived || []);
             setFriendsList(data.friends || []);
         } catch (err) {
-            console.error("Failed to accept friend request:", err);
-            alert("Failed to accept friend request.");
+            alert(err.response?.data?.error || "Failed to accept friend request.");
         }
     };
 
@@ -119,8 +117,7 @@ const ProfilePage = () => {
             setProfileData(data);
             setFriendRequestsReceived(data.friendRequestsReceived || []);
         } catch (err) {
-            console.error("Failed to reject friend request:", err);
-            alert("Failed to reject friend request.");
+            alert(err.response?.data?.error || "Failed to reject friend request.");
         }
     };
 
@@ -134,8 +131,7 @@ const ProfilePage = () => {
             setProfileData(data);
             setFriendsList(data.friends || []);
         } catch (err) {
-            console.error("Failed to remove friend:", err);
-            alert("Failed to remove friend.");
+            alert(err.response?.data?.error || "Failed to remove friend.");
         }
     };
 
@@ -147,8 +143,7 @@ const ProfilePage = () => {
             dispatch(actions.logOut());
             navigate("/");
         } catch (err) {
-            console.error("Failed to delete account:", err);
-            alert("Failed to delete account.");
+            alert(err.response?.data?.error || "Failed to delete account.");
         }
     };
 
@@ -170,6 +165,20 @@ const ProfilePage = () => {
             <div className={`profile-page-full${profileData.status === "DELETED" ? " profile-deleted" : ""}`}>
                 <h1 className="profile-username">
                     {profileData.username}
+                    {profileData.role === "admin" && (
+                        // TODO: update with another custom emoji
+                        <span className="tooltip-wrapper">
+                            <span className="role-badge">🌟</span>
+                            <span className="tooltip-text-role">This user is an admin.</span>
+                        </span>
+                    )}
+                    {profileData.role === "mod" && (
+                        // TODO: update with another custom emoji
+                        <span className="tooltip-wrapper">
+                            <span className="role-badge">⭐️</span>
+                            <span className="tooltip-text-role">This user is a mod.</span>
+                        </span>
+                    )}
                     {profileData.status === "DELETED" && (
                         <span className="deleted-label"> (Deleted)</span>
                     )}

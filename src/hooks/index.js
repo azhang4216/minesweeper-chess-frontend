@@ -17,6 +17,8 @@ export {
     useUsername,
     useIsLoggedIn,
     useIsPlayingAsGuest,
+    useAuthState,
+    useIsAuthLoading,
 } from './useAuthState';
 
 export { default as useInitializeSocket } from './useInitializeSocket';
