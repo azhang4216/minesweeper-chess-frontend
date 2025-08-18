@@ -25,6 +25,11 @@ const CreateAccountPage = () => {
             return;
         }
 
+        if (/[\s\W]/.test(username)) {
+            setMessage('Username cannot contain any whitespace or special characters.');
+            return;
+        }
+
         try {
             const result = await registerUser(email, username, password);
             setMessage(result?.message);
