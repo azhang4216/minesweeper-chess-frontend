@@ -88,8 +88,7 @@ const ProfilePage = () => {
             await sendFriendRequest(profileUsername, username);
             alert("Friend request sent!");
         } catch (err) {
-            console.error("Failed to send friend request:", err);
-            alert("Failed to send friend request.");
+            alert(err.response?.data?.error || "Failed to send friend request.");
         }
     };
 
@@ -104,8 +103,7 @@ const ProfilePage = () => {
             setFriendRequestsReceived(data.friendRequestsReceived || []);
             setFriendsList(data.friends || []);
         } catch (err) {
-            console.error("Failed to accept friend request:", err);
-            alert("Failed to accept friend request.");
+            alert(err.response?.data?.error || "Failed to accept friend request.");
         }
     };
 
@@ -119,8 +117,7 @@ const ProfilePage = () => {
             setProfileData(data);
             setFriendRequestsReceived(data.friendRequestsReceived || []);
         } catch (err) {
-            console.error("Failed to reject friend request:", err);
-            alert("Failed to reject friend request.");
+            alert(err.response?.data?.error || "Failed to reject friend request.");
         }
     };
 
@@ -134,8 +131,7 @@ const ProfilePage = () => {
             setProfileData(data);
             setFriendsList(data.friends || []);
         } catch (err) {
-            console.error("Failed to remove friend:", err);
-            alert("Failed to remove friend.");
+            alert(err.response?.data?.error || "Failed to remove friend.");
         }
     };
 
@@ -147,8 +143,7 @@ const ProfilePage = () => {
             dispatch(actions.logOut());
             navigate("/");
         } catch (err) {
-            console.error("Failed to delete account:", err);
-            alert("Failed to delete account.");
+            alert(err.response?.data?.error || "Failed to delete account.");
         }
     };
 
