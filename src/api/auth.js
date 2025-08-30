@@ -66,6 +66,16 @@ export async function verifyAccount(token) {
     }
 }
 
+export async function resendVerificationEmail(usernameOrEmail) {
+    try {
+        const response = await axios.post('/api/resend-verification', { identifier: usernameOrEmail });
+        return response.data;
+    } catch (err) {
+        const message = err.response?.data?.error || 'Resending verification email failed';
+        throw new Error(message);
+    }
+}
+
 export async function requestPasswordReset(email) {
     try {
         const response = await axios.post('/api/reset-password-request', { email });

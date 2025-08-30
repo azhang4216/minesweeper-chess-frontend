@@ -6,6 +6,7 @@ import {
     requestPasswordReset, 
     resetPassword,
     generateGuestUUID,
+    resendVerificationEmail,
 } from './auth';
 
 import {
@@ -28,6 +29,7 @@ export {
     registerUser, 
     verifyAccount, 
     requestPasswordReset, 
+    resendVerificationEmail,
     resetPassword,
     generateGuestUUID,
     getUsernameById,

@@ -22,13 +22,9 @@ const ConfirmAccount = () => {
 
         const confirm = async () => {
             try {
-                console.log(`About to call verifyAccount. token: ${token}`);
                 await verifyAccount(token);
-                console.log("success - token verification");
                 setMessage('Account successfully verified!');
-                console.log(`message set to: ${message}`);
                 verifiedOnce.current = true;
-                console.log(`verified once: ${verifiedOnce.current}`);
                 setError('');
             } catch (err) {
                 if (!verifiedOnce.current) {
@@ -55,6 +51,14 @@ const ConfirmAccount = () => {
                 )}
                 {message && <p className="success-message">{message}</p>}
                 {error && <p className="error-message">{error}</p>}
+                {error === "Link has already expired." && (
+                    <p className="create-account-text">
+                        Send another verification email?{' '}
+                        <span className="create-account-link" onClick={() => navigate('/resend-verification')}>
+                            Go to Resend Verification Email page.
+                        </span>
+                    </p>
+                )}
                 {verifiedOnce.current && (
                     <p className="create-account-text">
                         Ready to log in with your new account?{' '}

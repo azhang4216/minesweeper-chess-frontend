@@ -1,0 +1,87 @@
+.resend-verification-email-page {
+    background-color: var(--iwc-purple);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.logo {
+    width: 500px;
+    max-width: 90vw;
+    height: auto;
+    animation: pop 1s ease forwards;
+    margin-bottom: 20px;
+}
+
+.resend-verification-email-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInUp 1.5s ease forwards;
+    max-width: 90vw;
+    gap: 15px;
+}
+
+.resend-verification-email-title {
+    font-size: 24px;
+    color: var(--iwc-purple);
+    font-weight: bold;
+    text-align: center;
+}
+
+.success-message {
+    font-size: 18px;
+    color: green;
+    text-align: center;
+}
+
+.error-message {
+    font-size: 18px;
+    color: red;
+    text-align: center;
+}
+
+.resend-verification-btn {
+    margin-left: 15px;
+    padding: 10px 25px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    min-width: 80px;
+    background-color: var(--wood-brown);
+    transition: background-color 0.1s ease;
+}
+
+/* Animations */
+@keyframes pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
