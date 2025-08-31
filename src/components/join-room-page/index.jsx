@@ -74,6 +74,7 @@ const JoinRoomPage = () => {
         setError("");
         console.log("Refreshing rooms");
         socket.emit("requestRoomsLookingForMatch", (response) => {
+            console.log(response);
             if (response.success) {
                 setRooms(response.rooms);
             } else {
