@@ -99,7 +99,7 @@ const UserMenu = () => {
     const renderLabel = () => {
         if (isLoggedIn && !isGuest) return username;
         if (isLoggedIn && isGuest) return 'Guest';
-        return 'Login / Sign in';
+        return 'Log in / Create Account';
     };
 
     return (

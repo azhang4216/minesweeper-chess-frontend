@@ -2,11 +2,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { actions } from '../redux';
 import { validateToken } from '../api/auth';
 import { useEffect } from 'react';
+import { useSocket } from '../socket';
 
 // note: need these extra checks because when page first loads,
 //       the reducer hasn't finished loading yet
 export const useUsername = () => {
-    return useSelector((state) => state.player?.name || '');
+    // return useSelector((state) => state.game?.player?.name || '');
+    return useSelector((state) => state.username || "");
 };
 
 export const useIsLoggedIn = () => {
@@ -23,6 +25,7 @@ export const useIsAuthLoading = () => {
 
 export const useAuthState = () => {
     const dispatch = useDispatch();
+    const socket = useSocket();
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
@@ -34,6 +37,7 @@ export const useAuthState = () => {
             validateToken(token).then((user) => {
                 if (user) {
                     dispatch(actions.logIn(user.username));
+                    socket.emit("authenticate", { playerId: user.username });
                 } else {
                     localStorage.removeItem("authToken");
                     dispatch(actions.logOut());

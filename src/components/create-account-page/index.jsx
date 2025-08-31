@@ -36,6 +36,7 @@ const CreateAccountPage = () => {
             if (result?.message) {
                 alert(result.message);
             }
+            navigate("/");
         } catch (err) {
             console.log(`${err}`);
             setMessage(err.message);

@@ -7,11 +7,18 @@
   align-items: stretch;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px;
+  /* padding: 20px; */
   gap: 40px;
   min-height: 100vh;
   color: white;
   font-family: "Segoe UI", sans-serif;
+}
+
+.title-logo {
+  /* height: 0; */
+  max-height: 200px;
+  display: block;
+  margin: auto;
 }
 
 .game-content-wrapper {
