@@ -239,7 +239,7 @@ const BoardPage = () => {
             >
                 Go Home
             </button> */}
-            <div className="title">Landmine Chess</div>
+            <img src="/landmine_purple.png" alt="Landmine Chess Logo" className="title-logo" />
             <div className="game-container">
                 {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
                 <div className="chess-wrapper">
