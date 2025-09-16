@@ -126,6 +126,14 @@ const ChessBoard = () => {
         };
     }, [socket]);
 
+
+    // Ensures that when we start playing, any highlighted squares are removed
+    useEffect(() => {
+        if (gameState === GAME_STATES.playing) {
+            setSquaresToHighlight([]);
+        }
+    }, [gameState]);
+
     const handleClick = async (_e) => {
         const selected = squareMouseIsOver;
 
@@ -185,6 +193,7 @@ const ChessBoard = () => {
                         width: squareWidth,
                         height: squareWidth,
                     }}
+                    draggable={false} // so that we don't get "double" pieces on drag for custom
                 />
             ),
         ])

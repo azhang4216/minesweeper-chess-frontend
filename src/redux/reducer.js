@@ -232,8 +232,14 @@ export default function appReducer(state = initialState, action) {
                 }
             }
 
-        case "RESET":
-            return initialState;
+        case "RESET_GAME":
+            return {
+                ...state,
+                game: {
+                    ...initialState.game,
+                    gameState: state.game.gameState, // preserve current gamestate
+                }
+            };
 
         case "SET_IS_AUTH_LOADING":
             return {

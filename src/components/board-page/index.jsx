@@ -74,6 +74,9 @@ const BoardPage = () => {
             const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
             console.log(`my info: ${myInfo}, opponent info: ${opponentInfo}`);
 
+            // make sure previous game state does not carry over
+            dispatch(actions.resetGame());
+
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
                 rating: opponentInfo.elo,
