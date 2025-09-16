@@ -12,6 +12,7 @@ import {
     acceptFriendRequest,
     rejectFriendRequest,
     removeFriend,
+    getGamesByUsername,
 } from "../../api/profile";
 import ConfirmModal from "../confirm-modal";
 import { useDispatch } from 'react-redux';
@@ -34,6 +35,11 @@ const ProfilePage = () => {
     const [friendRequestsReceived, setFriendRequestsReceived] = useState([]);
     const [friendsList, setFriendsList] = useState([]);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
+    const [pastGames, setPastGames] = useState([]);
+    const [gamesPage, setGamesPage] = useState(1);
+    // eslint-disable-next-line
+    const [gamesLimit, setGamesLimit] = useState(10); // TODO: allow users 25, 50, or 100
+    const [totalGames, setTotalGames] = useState(0);
 
     // Fetch profile data on mount
     useEffect(() => {
@@ -81,6 +87,20 @@ const ProfilePage = () => {
             setIsOwnProfile(profileData.username === username);
         }
     }, [profileData, username]);
+
+    // Fetch paginated past games
+    useEffect(() => {
+        const fetchPastGames = async () => {
+            try {
+                const data = await getGamesByUsername(profileUsername, gamesPage, gamesLimit);
+                setPastGames(data.games || []);
+                setTotalGames(data.totalGames || 0);
+            } catch (err) {
+                setPastGames([]);
+            }
+        };
+        fetchPastGames();
+    }, [profileUsername, gamesPage, gamesLimit]);
 
     // Send friend request
     const handleSendFriendRequest = async () => {
@@ -150,6 +170,9 @@ const ProfilePage = () => {
     const handleDeleteAccountCancel = () => {
         setShowConfirmDelete(false);
     };
+
+    // Pagination controls
+    const totalPages = Math.ceil(totalGames / gamesLimit);
 
     if (loading)
         return <div className="profile-page-message">Loading profile...</div>;
@@ -290,29 +313,104 @@ const ProfilePage = () => {
 
                 <div className="scroll-section">
                     <h2>Past Games</h2>
-                    {profileData.past_games?.length > 0 ? (
-                        <ul className="scroll-list">
-                            {profileData.past_games.map((game) => (
-                                <li key={game._id} className="scroll-item">
-                                    <span className="tooltip-wrapper">
-                                        <Link
-                                            to={`/game/${game._id}`}
-                                            className="friend-link"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            tabIndex={-1}
-                                            style={{ pointerEvents: "none", color: "#aaa", cursor: "not-allowed" }}
-                                            aria-disabled="true"
-                                        >
-                                            Game ID: {game._id}
-                                        </Link>
-                                        <span className="tooltip-text">Game analysis coming soon!</span>
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+                    {pastGames.length > 0 ? (
+                        <div className="games-table-wrapper">
+                            <table className="games-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>White Player</th>
+                                        <th>Black Player</th>
+                                        <th>Result</th>
+                                        <th>Bombs</th>
+                                        <th>Link</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pastGames.map((game) => (
+                                        <tr key={game._id}>
+                                            <td>
+                                                {new Date(game.date?.$date?.$numberLong || game.date).toLocaleString()}
+                                            </td>
+                                            <td>
+                                                {game.white_player.player_id} (
+                                                <span>
+                                                    {game.white_player.elo_before_game_start?.$numberInt || game.white_player.elo_before_game_start}
+                                                    {game.white_player.elo_change && (
+                                                        <>
+                                                            {" "}
+                                                            <span style={{ color: parseInt(game.white_player.elo_change?.$numberInt || game.white_player.elo_change) >= 0 ? "green" : "red" }}>
+                                                                {parseInt(game.white_player.elo_change?.$numberInt || game.white_player.elo_change) >= 0 ? "+" : ""}
+                                                                {game.white_player.elo_change?.$numberInt || game.white_player.elo_change}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </span>
+                                                )
+                                            </td>
+                                            <td>
+                                                {game.black_player.player_id} (
+                                                <span>
+                                                    {game.black_player.elo_before_game_start?.$numberInt || game.black_player.elo_before_game_start}
+                                                    {game.black_player.elo_change && (
+                                                        <>
+                                                            {" "}
+                                                            <span style={{ color: parseInt(game.black_player.elo_change?.$numberInt || game.black_player.elo_change) >= 0 ? "green" : "red" }}>
+                                                                {parseInt(game.black_player.elo_change?.$numberInt || game.black_player.elo_change) >= 0 ? "+" : ""}
+                                                                {game.black_player.elo_change?.$numberInt || game.black_player.elo_change}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </span>
+                                                )
+                                            </td>
+                                            <td>
+                                                {game.result} ({game.result_by})
+                                            </td>
+                                            <td>
+                                                {game.bombs.join(", ")}
+                                            </td>
+                                            <td>
+                                                <span className="tooltip-wrapper">
+                                                    <Link
+                                                        to={`/game/${game._id}`}
+                                                        className="friend-link"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        tabIndex={-1}
+                                                        style={{ pointerEvents: "none", color: "#aaa", cursor: "not-allowed" }}
+                                                        aria-disabled="true"
+                                                    >
+                                                        View Game
+                                                    </Link>
+                                                    <span className="tooltip-text">Game analysis coming soon!</span>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
                         <p className="no-results">No past games yet.</p>
+                    )}
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="pagination-controls">
+                            <button
+                                disabled={gamesPage === 1}
+                                onClick={() => setGamesPage(gamesPage - 1)}
+                            >
+                                Previous
+                            </button>
+                            <span>Page {gamesPage} of {totalPages}</span>
+                            <button
+                                disabled={gamesPage === totalPages}
+                                onClick={() => setGamesPage(gamesPage + 1)}
+                            >
+                                Next
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

@@ -56,3 +56,11 @@ export const deleteAccount = async (requesterUsername) => {
     const res = await axios.post(`/api/profile/delete-account`, { requesterUsername });
     return res.data;
 };
+
+// Pagination support to get games
+export const getGamesByUsername = async (username, page = 1, limit = 10) => {
+    const endpoint = `/api/profile/games-by-username?username=${encodeURIComponent(username)}&page=${page}&limit=${limit}`;
+    debugLog(`[API] GET ${endpoint}`);
+    const res = await axios.get(endpoint);
+    return res.data;
+};
