@@ -102,7 +102,7 @@
 
 .tooltip-text {
     visibility: hidden;
-    background-color: var(--iwc-purple);
+    background-color: #ff9800; /* orange for "coming soon" */
     color: #fff;
     text-align: center;
     border-radius: 4px;
@@ -160,4 +160,39 @@
 
 .profile-deleted {
     pointer-events: none;
+}
+
+.games-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.games-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--dark);
+    color: white;
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+.games-table th,
+.games-table td {
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.games-table th {
+    background-color: var(--iwc-purple);
+    color: #fff;
+    font-weight: bold;
+}
+
+.games-table tr:nth-child(even) {
+    background-color: rgba(255,255,255,0.03);
+}
+
+.games-table tr:hover {
+    background-color: rgba(255,255,255,0.08);
 }

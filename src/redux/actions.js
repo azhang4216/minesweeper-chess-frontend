@@ -71,8 +71,8 @@ export const playAsGuest = (guestID) => ({
     payload: guestID,
 });
 
-export const reset = () => ({
-    type: "RESET",
+export const resetGame = () => ({
+    type: "RESET_GAME",
 });
 
 export const setIsAuthLoading = (isAuthLoading) => ({
