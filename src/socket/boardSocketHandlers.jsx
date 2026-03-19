@@ -1,5 +1,4 @@
 import { useDispatch } from 'react-redux';
-// import { useSocket } from "./";
 import { images, sounds } from '../assets';
 import { actions } from '../redux';
 import { playSound } from '../utils';
@@ -17,8 +16,7 @@ export const useBoardSocketHandlers = ({
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
-    // const socket = useSocket();
-    
+
     // useRef needed because the is white is updated after handlers connected,
     // so we need updated reference to isWhite
     const isWhite = useIsWhite();
@@ -31,35 +29,6 @@ export const useBoardSocketHandlers = ({
         setRoomMessage(message);
         dispatch(actions.setGameState(GAME_STATES.matching));
     };
-
-    // const handleRoomJoined = ({ players, message, fen, secsToPlaceBomb, secsToPlay }) => {
-    //     setRoomMessage(message);
-
-    //     const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
-    //     const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
-
-    //     dispatch(actions.setOpponentInfo({
-    //         name: opponentInfo.user_id,
-    //         rating: 1500, // dummy placeholder for now
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     dispatch(actions.setPlayerInfo({
-    //         name: myInfo.user_id,
-    //         rating: 1500, // dummy placeholder for now
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
-
-    //     dispatch(actions.setGameState(GAME_STATES.placing_bombs));
-    //     dispatch(actions.setGameFen(fen));
-    //     dispatch(actions.setOrientation(myInfo.is_white));
-    //     dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
-    //     playSound(sounds.gameStart);
-    // };
 
     const handleRoomJoinError = ({ message }) => {
         setRoomMessage(message);
@@ -254,7 +223,6 @@ export const useBoardSocketHandlers = ({
 
     return {
         handleRoomCreated,
-        // handleRoomJoined,
         handleRoomJoinError,
         handleDisconnect,
         handleStartPlay,

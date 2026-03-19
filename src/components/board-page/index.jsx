@@ -42,32 +42,6 @@ const BoardPage = () => {
     console.log(`room id: ${roomId}; players: ${JSON.stringify(players)}, fen: ${fen}, secsToPlaceBomb: ${secsToPlaceBomb}, secsToPlay: ${secsToPlay}`);
 
     // Set up game!
-    // if (roomId && players && fen) {
-    //     const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
-    //     const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
-    //     console.log(`my info: ${myInfo}, opponent info: ${opponentInfo}`);
-
-    //     dispatch(actions.setOpponentInfo({
-    //         name: opponentInfo.username,
-    //         rating: opponentInfo.elo,
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     dispatch(actions.setPlayerInfo({
-    //         name: myInfo.username,
-    //         rating: opponentInfo.elo,
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
-
-    //     dispatch(actions.setGameFen(fen));
-    //     dispatch(actions.setOrientation(myInfo.is_white));
-    //     dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
-    //     playSound(sounds.gameStart);
-    // }
     useEffect(() => {
         if (roomId && players && fen) {
             const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
@@ -122,7 +96,6 @@ const BoardPage = () => {
     // board socket handlers
     const {
         handleRoomCreated,
-        // _handleRoomJoined,
         handleRoomJoinError,
         handleDisconnect,
         handleStartPlay,
@@ -140,8 +113,6 @@ const BoardPage = () => {
         setDisplayWinLossPopup
     });
 
-    // const [madeCustomCursors, setMadeCustomCursors] = useState(false);
-
     useEffect(() => {
         socket.on('roomCreated', handleRoomCreated);
         socket.on('roomJoinError', handleRoomJoinError);
@@ -155,7 +126,6 @@ const BoardPage = () => {
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
-            // socket.off('roomJoined', handleRoomJoined);
             socket.off('roomJoinError', handleRoomJoinError);
             socket.off('playerDisconnected', handleDisconnect);
             socket.off('startPlay', handleStartPlay);
@@ -168,97 +138,14 @@ const BoardPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
-    // this is for changing our cursor for planting bombs
-    // const changeCursor = () => {
-    //     console.log(`Placing bombs: ${placingBombs}`);
-    //     console.log(`Made custom cursors: ${madeCustomCursors}`);
-    //     if (placingBombs && !madeCustomCursors) {
-    //         // we haven't set our custom cursors yet! 
-    //         console.log("hello world!");
-
-    //         // we can shovel up the 3rd and 4th ranks as white, and 5th and 6th ranks as black
-    //         const squaresToChange = isWhite
-    //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
-    //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
-    //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
-    //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
-
-    //         const canvas = document.createElement('canvas');
-    //         canvas.width = 100;
-    //         canvas.height = 150;
-    //         const ctx = canvas.getContext('2d');
-
-    //         // Set font and draw emoji
-    //         ctx.font = '50px serif';
-    //         ctx.textBaseline = 'top';
-    //         ctx.fillText('🪏', 0, 0);
-
-    //         // Convert to image data URL
-    //         const dataURL = canvas.toDataURL('image/png');
-
-    //         squaresToChange.forEach((square, _index) => {
-    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
-    //             if (squareEl) {
-    //                 // squareEl.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='48' viewBox='0 0 100 100' style='fill:black;font-size:55px;'><text y='50%'>🪏</text></svg>") 16 0, auto`;
-    //                 squareEl.style.cursor = `url(${dataURL}) 32 32, auto`;
-    //                 console.log(`Set ${square} cursor`);
-    //             } else {
-    //                 console.log(`Couldn't find square ${square}`);
-    //             }
-    //         });
-
-    //         setMadeCustomCursors(true);
-    //     } else if (!placingBombs && madeCustomCursors) {
-    //         // get rid of custom cursors
-    //         const squaresToRevert = isWhite
-    //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
-    //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
-    //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
-    //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
-
-    //         squaresToRevert.forEach((square) => {
-    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
-    //             if (squareEl) {
-    //                 squareEl.style.removeProperty('cursor');
-    //             }
-    //         });
-    //     }
-    // };
-
-    // const handleNavigateHome = () => {
-    //     dispatch(actions.reset());
-    //     socket.emit("playerDisconnect");
-    // };
-
     if (!roomId) {
         return <p>Error: Missing game data</p>;
     }
 
     return (
         <div className="board-page-container">
-            {/* <button
-                onClick={handleNavigateHome}
-                className="home-button"
-            >
-                Go Home
-            </button> */}
             <img src="/landmine_purple.png" alt="Landmine Chess Logo" className="title-logo" />
             <div className="game-container">
-                {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
-                <div className="chess-wrapper">
-                    <div className="join-room-container">
-                        <input
-                            type="text"
-                            value={roomId}
-                            onChange={handleRoomIdChange}
-                            placeholder="Enter Room ID"
-                        />
-                        <button onClick={handleJoinRoom}>Join Room</button>
-                        {roomMessage && <p>{roomMessage}</p>}
-                        {gameState === GAME_STATES.matching && <Loader />}
-                    </div>
-                </div>
-            ) : ( */}
                 <div
                     className={gameState === GAME_STATES.placing_bombs ? "game-content-wrapper" : "game-content-wrapper"}
                 >
@@ -326,7 +213,6 @@ const BoardPage = () => {
                     </div>
                     <SidePanel />
                 </div>
-                {/* )} */}
             </div>
         </div>
 
