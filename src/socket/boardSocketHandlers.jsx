@@ -13,6 +13,7 @@ export const useBoardSocketHandlers = ({
     setmyEloChange,
     setOpponentEloChange,
     setDisplayWinLossPopup,
+    setDisconnectCountdown,   // add this
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
@@ -38,11 +39,13 @@ export const useBoardSocketHandlers = ({
     const handleDisconnect = ({ disconnectedPlayerId, timeoutMs, message }) => {
         console.log(`${disconnectedPlayerId} has disconnected from the game and will timeout in ${timeoutMs} ms.`);
         setRoomMessage(message);
+        setDisconnectCountdown(Math.floor(timeoutMs / 1000));
+    };
 
-        // TODO: start a timeout timer for opponent
-        
-        // dispatch(actions.reset());
-        // dispatch(actions.setGameState(GAME_STATES.inactive));
+    const handlePlayerRejoined = ({ playerId }) => {
+        console.log(`${playerId} reconnected.`);
+        setDisconnectCountdown(null);
+        setRoomMessage("");
     };
 
     const handleStartPlay = ({ whitePlayerBombs, blackPlayerBombs }) => {
@@ -230,7 +233,8 @@ export const useBoardSocketHandlers = ({
         handleinvalidMove,
         handleDrawGameOver,
         handleWinLossGameOver,
-        handleSyncTime
+        handleSyncTime,
+        handlePlayerRejoined
     };
 };
 

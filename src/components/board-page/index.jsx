@@ -86,6 +86,8 @@ const BoardPage = () => {
     useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
     useEffect(() => { console.log(`Game state: ${gameState}`) }, [gameState]);
 
+    const [disconnectCountdown, setDisconnectCountdown] = useState(null);
+
     // these are for the outcome at the end of the game
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
     const [gameOverReason, setGameOverReason] = useState("");
@@ -103,14 +105,16 @@ const BoardPage = () => {
         handleinvalidMove,
         handleDrawGameOver,
         handleWinLossGameOver,
-        handleSyncTime
+        handleSyncTime,
+        handlePlayerRejoined,   // add this
     } = useBoardSocketHandlers({
         setRoomMessage: (_x) => { }, // for now, we don't need it
         setGameOverReason,
         setGameOverResult,
         setmyEloChange,
         setOpponentEloChange,
-        setDisplayWinLossPopup
+        setDisplayWinLossPopup,
+        setDisconnectCountdown,   // add this
     });
 
     useEffect(() => {
@@ -123,6 +127,7 @@ const BoardPage = () => {
         socket.on('winLossGameOver', handleWinLossGameOver);
         socket.on('drawGameOver', handleDrawGameOver);
         socket.on('syncTime', handleSyncTime);
+        socket.on('playerRejoined', handlePlayerRejoined);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
@@ -134,9 +139,16 @@ const BoardPage = () => {
             socket.off('winLossGameOver', handleWinLossGameOver);
             socket.off('drawGameOver', handleDrawGameOver);
             socket.off('syncTime', handleSyncTime);
+            socket.off('playerRejoined', handlePlayerRejoined);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
+
+    useEffect(() => {
+        if (disconnectCountdown === null || disconnectCountdown <= 0) return;
+        const id = setTimeout(() => setDisconnectCountdown(prev => prev - 1), 1000);
+        return () => clearTimeout(id);
+    }, [disconnectCountdown]);
 
     if (!roomId) {
         return <p>Error: Missing game data</p>;
@@ -159,6 +171,11 @@ const BoardPage = () => {
                         />
                     )}
                     <div className="chess-wrapper">
+                        {disconnectCountdown !== null && disconnectCountdown > 0 && (
+                            <div className="disconnect-notice">
+                                Opponent disconnected — {disconnectCountdown}s to reconnect
+                            </div>
+                        )}
                         <div className="player-info top">
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
