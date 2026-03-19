@@ -54,7 +54,7 @@ export const setRandomizedBombs = ({ whitePlayerBombs, blackPlayerBombs }) => ({
 
 export const setTimers = ({ whiteTimeLeft, blackTimeLeft }) => ({
     type: "SET_TIMERS",
-    payload: { whiteTimeLeft, blackTimeLeft },
+    payload: { whiteTimeLeft, blackTimeLeft, syncedAt: Date.now() },
 });
 
 export const logIn = (username) => ({

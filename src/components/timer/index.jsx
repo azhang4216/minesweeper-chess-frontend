@@ -2,18 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import { sounds } from '../../assets';
 import { playSound } from '../../utils';
 
-const Timer = ({ isActive, initialSeconds }) => {
-    const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
+const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
+    const correctedSeconds = Math.max(
+        0,
+        serverSeconds - Math.floor((Date.now() - lastSyncAt) / 1000)
+    );
+    const [secondsLeft, setSecondsLeft] = useState(correctedSeconds);
     const timerRef = useRef(null);
     const tenSecondAlertPlayed = useRef(false);
 
-    // Reset timer and interval on initialSeconds change
     useEffect(() => {
-        setSecondsLeft(initialSeconds);
+        const corrected = Math.max(
+            0,
+            serverSeconds - Math.floor((Date.now() - lastSyncAt) / 1000)
+        );
+        setSecondsLeft(corrected);
         tenSecondAlertPlayed.current = false;
         clearInterval(timerRef.current);
 
-        if (isActive && initialSeconds > 0) {
+        if (isActive && corrected > 0) {
             timerRef.current = setInterval(() => {
                 setSecondsLeft(prev => {
                     const next = prev - 1;
@@ -27,7 +34,7 @@ const Timer = ({ isActive, initialSeconds }) => {
         }
 
         return () => clearInterval(timerRef.current);
-    }, [initialSeconds, isActive]);
+    }, [serverSeconds, lastSyncAt, isActive]);
 
     const formatTime = (s) => {
         const minutes = Math.floor(s / 60);

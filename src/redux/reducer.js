@@ -16,13 +16,15 @@ const initialState = {
             name: "My Name",
             rating: 0,
             bombs: [],
-            secondsLeft: 100
+            secondsLeft: 100,
+            lastSyncAt: Date.now(),
         },
         opponent: {
             name: "Opponent's Name",
             rating: 0,
             bombs: [],
-            secondsLeft: 100
+            secondsLeft: 100,
+            lastSyncAt: Date.now(),
         }
     }
 }
@@ -169,7 +171,7 @@ export default function appReducer(state = initialState, action) {
         }
 
         case "SET_TIMERS": {
-            const { whiteTimeLeft, blackTimeLeft } = action.payload;
+            const { whiteTimeLeft, blackTimeLeft, syncedAt } = action.payload;
             console.log(`Setting timers in Redux for white, black: ${whiteTimeLeft}, ${blackTimeLeft}`);
             return {
                 ...state,
@@ -178,10 +180,12 @@ export default function appReducer(state = initialState, action) {
                     player: {
                         ...state.game.player,
                         secondsLeft: state.game.isWhite ? whiteTimeLeft : blackTimeLeft,
+                        lastSyncAt: syncedAt,
                     },
                     opponent: {
                         ...state.game.opponent,
                         secondsLeft: state.game.isWhite ? blackTimeLeft : whiteTimeLeft,
+                        lastSyncAt: syncedAt,
                     }
                 }
             };

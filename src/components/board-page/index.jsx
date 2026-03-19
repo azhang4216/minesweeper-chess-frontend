@@ -164,7 +164,8 @@ const BoardPage = () => {
                             <span>{opponent.rating}</span>
                             <Timer
                                 isActive={!isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
-                                initialSeconds={opponent.secondsLeft}
+                                serverSeconds={opponent.secondsLeft}
+                                lastSyncAt={opponent.lastSyncAt}
                             />
                             <span>
                                 {gameState === GAME_STATES.placing_bombs
@@ -193,7 +194,8 @@ const BoardPage = () => {
                             <span>{player.rating}</span>
                             <Timer
                                 isActive={isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
-                                initialSeconds={player.secondsLeft}
+                                serverSeconds={player.secondsLeft}
+                                lastSyncAt={player.lastSyncAt}
                             />
                             <span>
                                 {gameState === GAME_STATES.placing_bombs
