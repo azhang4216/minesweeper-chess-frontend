@@ -86,7 +86,7 @@ const BoardPage = () => {
 
             dispatch(actions.setPlayerInfo({
                 name: myInfo.username,
-                rating: opponentInfo.elo,
+                rating: myInfo.elo,
                 bombs: [],
                 secondsLeft: secsToPlay,
             }));
