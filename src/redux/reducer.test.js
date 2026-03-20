@@ -268,5 +268,13 @@ describe('appReducer', () => {
             const state = appReducer(playing, { type: 'RESET_GAME' });
             expect(state.game.gameState).toBe(GAME_STATES.playing);
         });
+
+        test('preserves auth state (username, loggedIn) after reset', () => {
+            const loggedIn = appReducer(init(), { type: 'LOG_IN', payload: 'alice' });
+            const state = appReducer(loggedIn, { type: 'RESET_GAME' });
+            expect(state.username).toBe('alice');
+            expect(state.loggedIn).toBe(true);
+            expect(state.playingAsGuest).toBe(false);
+        });
     });
 });
