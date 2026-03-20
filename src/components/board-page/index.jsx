@@ -54,6 +54,8 @@ const BoardPage = () => {
             dispatch(actions.resetGame());
             setStartingFen(fen);
             setViewIndex(null);
+            setDrawOfferPending(false);
+            setDrawOfferDeclinedMsg('');
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
