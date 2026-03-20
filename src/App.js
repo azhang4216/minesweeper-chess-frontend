@@ -4,8 +4,6 @@ import {
     HomePage,
     ProtectedGameRoute,
     ProtectedLoginRoute,
-    CreateRoomPage,
-    JoinRoomPage,
     ResetPasswordPage,
     SignInPage,
     CreateAccountPage,
@@ -31,8 +29,6 @@ const AppContent = () => {
     // Regular expressions for valid paths
     const validPaths = [
         /^\/$/,                        // Home
-        /^\/create-room$/,             // Create room
-        /^\/join-room$/,               // Join room
         /^\/play-game$/,               // Game
         /^\/sign-in$/,                 // Sign in
         /^\/reset-password$/,          // Reset password
@@ -52,16 +48,6 @@ const AppContent = () => {
             <NavigationSideBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/create-room" element={
-                    <ProtectedLoginRoute>
-                        <CreateRoomPage />
-                    </ProtectedLoginRoute>
-                } />
-                <Route path="/join-room" element={
-                    <ProtectedLoginRoute>
-                        <JoinRoomPage />
-                    </ProtectedLoginRoute>
-                } />
                 <Route path="/play-game" element={
                     <ProtectedGameRoute>
                         <BoardPage />
