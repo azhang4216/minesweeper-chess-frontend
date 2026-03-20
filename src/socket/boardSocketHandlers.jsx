@@ -1,5 +1,4 @@
-import { useDispatch } from 'react-redux';
-// import { useSocket } from "./";
+import { useDispatch, useSelector } from 'react-redux';
 import { images, sounds } from '../assets';
 import { actions } from '../redux';
 import { playSound } from '../utils';
@@ -14,11 +13,16 @@ export const useBoardSocketHandlers = ({
     setmyEloChange,
     setOpponentEloChange,
     setDisplayWinLossPopup,
+    setDisconnectCountdown,   // add this
+    setDrawOfferPending,
+    setDrawOfferDeclinedMsg,
+    setRematchOffered,
+    onRematchReady,
+    onExplosion,
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
-    // const socket = useSocket();
-    
+
     // useRef needed because the is white is updated after handlers connected,
     // so we need updated reference to isWhite
     const isWhite = useIsWhite();
@@ -27,66 +31,41 @@ export const useBoardSocketHandlers = ({
         isWhiteRef.current = isWhite;
     }, [isWhite]);
 
+    // Track move history length so we know which history index an explosion falls on
+    const moveHistory = useSelector(state => state.game.moveHistory);
+    const moveHistoryLengthRef = useRef(moveHistory.length);
+    useEffect(() => {
+        moveHistoryLengthRef.current = moveHistory.length;
+    }, [moveHistory]);
+
     const handleRoomCreated = ({ message }) => {
         setRoomMessage(message);
         dispatch(actions.setGameState(GAME_STATES.matching));
     };
-
-    // const handleRoomJoined = ({ players, message, fen, secsToPlaceBomb, secsToPlay }) => {
-    //     setRoomMessage(message);
-
-    //     const myInfo = (players[0].user_id === socket.id) ? players[0] : players[1];
-    //     const opponentInfo = (players[1].user_id === socket.id) ? players[0] : players[1];
-
-    //     dispatch(actions.setOpponentInfo({
-    //         name: opponentInfo.user_id,
-    //         rating: 1500, // dummy placeholder for now
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     dispatch(actions.setPlayerInfo({
-    //         name: myInfo.user_id,
-    //         rating: 1500, // dummy placeholder for now
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
-
-    //     dispatch(actions.setGameState(GAME_STATES.placing_bombs));
-    //     dispatch(actions.setGameFen(fen));
-    //     dispatch(actions.setOrientation(myInfo.is_white));
-    //     dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
-    //     playSound(sounds.gameStart);
-    // };
 
     const handleRoomJoinError = ({ message }) => {
         setRoomMessage(message);
         dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
-    const handleDisconnect = ({ disconnectedPlayerId, timeoutMs, message }) => {
-        console.log(`${disconnectedPlayerId} has disconnected from the game and will timeout in ${timeoutMs} ms.`);
+    const handleDisconnect = ({ timeoutMs, message }) => {
         setRoomMessage(message);
+        setDisconnectCountdown(Math.floor(timeoutMs / 1000));
+    };
 
-        // TODO: start a timeout timer for opponent
-        
-        // dispatch(actions.reset());
-        // dispatch(actions.setGameState(GAME_STATES.inactive));
+    const handlePlayerRejoined = () => {
+        setDisconnectCountdown(null);
+        setRoomMessage("");
     };
 
     const handleStartPlay = ({ whitePlayerBombs, blackPlayerBombs }) => {
         if (whitePlayerBombs !== null && blackPlayerBombs !== null) {
             // we've received randomized bombs from timeout!
             setRoomMessage("Randomly placed bombs on timeout!");
-            console.log(`Setting white player bombs: ${whitePlayerBombs}`);
-            console.log(`Setting black player bombs: ${blackPlayerBombs}`);
             playSound(sounds.shovel);
             dispatch(actions.setRandomizedBombs({ whitePlayerBombs, blackPlayerBombs }));
         };
 
-        console.log("Finished placing bombs. Now ready to play.");
         playSound(sounds.gameStart);
 
         // double check every highlighted square is removed
@@ -118,6 +97,9 @@ export const useBoardSocketHandlers = ({
                 // if it is our own bomb, we need to remove the X
                 dispatch(actions.detonateBomb(squareToExplode));
 
+                // Capture move count now (before the timeout) — this move will be moveHistory.length + 1
+                const explosionMoveCount = moveHistoryLengthRef.current + 1;
+
                 setTimeout(() => {
                     // we get rid of the exploded piece a bit later for syncing with "oh no" sound
                     dispatch(actions.updateGameFromServer(gameFen, moveSan));
@@ -138,27 +120,10 @@ export const useBoardSocketHandlers = ({
                     squareEl.style.position = 'relative';
                     squareEl.appendChild(explosion);
 
-                    // after animation, the scorched overlay is added
+                    // after animation, notify board-page to record this explosion in state
                     setTimeout(() => {
                         explosion.remove();
-
-                        const crater = document.createElement('img');
-                        crater.src = images.craterPng;
-                        crater.className = 'scorched';
-                        Object.assign(crater.style, {
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            width: '85%',
-                            height: '85%',
-                            objectFit: 'cover',
-                            pointerEvents: 'none',
-                            zIndex: '1',
-                            opacity: '0.9',
-                            transform: 'translate(-50%, -50%)', // offset to center the crater
-                        });
-
-                        squareEl.appendChild(crater);
+                        onExplosion(squareToExplode, explosionMoveCount);
                     }, 1000);                                   // adjust time to match GIF length
                 }, 900);                                        // delay time before we play explosion
             } else {
@@ -208,13 +173,11 @@ export const useBoardSocketHandlers = ({
         // if the reason the game ended is cuz a piece blew up leading to insufficient material, 
         // we delay the popup a little so that we can watch the piece blow up
         if (by.includes("explode")) {
-            console.log(`explosive ending! waiting for animation`);
             setTimeout(() => {
                 setDisplayWinLossPopup(true);
             }, 2000);
             playSound(sounds.gameEnd);
         } else {
-            console.log(`regular ending! no need to wait for animation`);
             setDisplayWinLossPopup(true);
             playSound(sounds.gameEnd);
         };
@@ -225,10 +188,6 @@ export const useBoardSocketHandlers = ({
     const handleWinLossGameOver = ({ winner, by, whiteEloChange, blackEloChange }) => {
         const isWinner = ((winner === 'w') && isWhiteRef.current) || ((winner === 'b') && !isWhiteRef.current);
         setGameOverResult(isWinner ? "You win" : "You lose");
-        console.log(`Winner: ${winner}`);
-        console.log(`Winner is white ? : ${winner === 'w'}`);
-        console.log(`is white? : ${isWhiteRef.current}`);
-        console.log(`set game over result: ${isWinner ? "You win" : "You lose"}`);
         setGameOverReason(by);
         setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
@@ -252,9 +211,19 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setTimers({ whiteTimeLeft, blackTimeLeft }));
     };
 
+    const handleDrawOffer = () => {
+        setDrawOfferPending(true);
+    };
+
+    const handleDrawOfferDeclined = () => {
+        setDrawOfferDeclinedMsg('Your draw offer was declined.');
+    };
+
+    const handleRematchOffered = () => setRematchOffered(true);
+    const handleRematchReady = (gameData) => onRematchReady(gameData);
+
     return {
         handleRoomCreated,
-        // handleRoomJoined,
         handleRoomJoinError,
         handleDisconnect,
         handleStartPlay,
@@ -262,7 +231,12 @@ export const useBoardSocketHandlers = ({
         handleinvalidMove,
         handleDrawGameOver,
         handleWinLossGameOver,
-        handleSyncTime
+        handleSyncTime,
+        handlePlayerRejoined,
+        handleDrawOffer,
+        handleDrawOfferDeclined,
+        handleRematchOffered,
+        handleRematchReady,
     };
 };
 

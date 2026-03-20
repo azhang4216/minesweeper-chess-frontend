@@ -1,0 +1,80 @@
+.game-view-container {
+    min-height: calc(100vh - var(--nav-h));
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    box-sizing: border-box;
+    color: var(--text);
+}
+
+.game-view-content {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.game-view-loading,
+.game-view-error {
+    min-height: calc(100vh - var(--nav-h));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+/* ── Result banner ─────────────────────────────── */
+
+.game-result-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.result-text {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.result-by {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+/* ── Meta row (date + time control) ───────────── */
+
+.game-view-meta {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ── Back link ─────────────────────────────────── */
+
+.game-view-back {
+    display: block;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.game-view-back:hover {
+    color: var(--accent-light);
+}

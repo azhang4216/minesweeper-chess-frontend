@@ -1,9 +1,10 @@
 .profile-page-full {
-    background-color: var(--dark);
-    min-height: 100vh;
-    color: white;
-    padding: 60px 40px 60px 100px;
+    background-color: var(--bg);
+    min-height: calc(100vh - var(--nav-h));
+    color: var(--text);
+    padding: 48px 40px 48px 60px;
     overflow-y: auto;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .profile-username {
@@ -170,10 +171,11 @@
 .games-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: var(--dark);
-    color: white;
+    background-color: var(--surface);
+    color: var(--text);
     margin-top: 10px;
-    font-size: 16px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .games-table th,

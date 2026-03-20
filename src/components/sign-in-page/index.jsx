@@ -34,10 +34,10 @@ const SignInPage = () => {
     };
 
     return (
-        <div className="front-page">
+        <div className="sign-in-page">
             <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
 
-            <div className="join-create-room-container">
+            <div className="sign-in-card">
                 <h2 className="sign-in-title">Sign In</h2>
                 <form onSubmit={handleSubmit} className="sign-in-form">
                     <input

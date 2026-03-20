@@ -1,14 +1,14 @@
 h1 {
-    color: var(--dark);
+    color: var(--text);
 }
 
 .user-search-container {
-    background-color: var(--iwc-purple);
-    min-height: 100vh;
+    background-color: var(--bg);
+    min-height: calc(100vh - var(--nav-h));
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 40px 20px;
 }
 
 .input-group {
@@ -31,28 +31,31 @@ h1 {
 }
 
 .user-result {
-    padding: 10px 20px;
-    background-color: #f5f5f5;
+    padding: 12px 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    font-size: 18px;
-    animation: fadeInUp 0.5s ease;
+    font-size: 15px;
     cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
 }
 
+.user-result:hover { background: var(--panel-hover); border-color: var(--accent); }
+
 .username {
-    font-weight: bold;
-    color: var(--iwc-purple);
+    font-weight: 600;
+    color: var(--text);
 }
 
 .elo {
-    color: #555;
+    color: var(--text-muted);
 }
 
 .no-results {
     margin-top: 10px;
-    color: #555;
+    color: var(--text-muted);
     font-style: italic;
+    font-size: 14px;
 }

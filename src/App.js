@@ -3,9 +3,6 @@ import {
     BoardPage,
     HomePage,
     ProtectedGameRoute,
-    ProtectedLoginRoute,
-    CreateRoomPage,
-    JoinRoomPage,
     ResetPasswordPage,
     SignInPage,
     CreateAccountPage,
@@ -15,7 +12,8 @@ import {
     NotFoundPage,
     ProfilePage,
     SearchPage,
-    ResendVerificationEmailPage
+    ResendVerificationEmailPage,
+    GameViewPage
 } from "./components";
 import { SocketProvider } from "./socket";
 import { useInitializeSocket, useAuthState } from "./hooks";
@@ -30,8 +28,6 @@ const AppContent = () => {
     // Regular expressions for valid paths
     const validPaths = [
         /^\/$/,                        // Home
-        /^\/create-room$/,             // Create room
-        /^\/join-room$/,               // Join room
         /^\/play-game$/,               // Game
         /^\/sign-in$/,                 // Sign in
         /^\/reset-password$/,          // Reset password
@@ -39,7 +35,8 @@ const AppContent = () => {
         /^\/verify-email$/,            // Email verification
         /^\/profile\/[^/]+$/,          // Profile pages like /profile/username
         /^\/search-user$/,             // Search for users
-        /^\/resend-verification$/      // Resend account verification email
+        /^\/resend-verification$/,      // Resend account verification email
+        /^\/game\/[^/]+$/,             // View past game
     ];
 
     const isNotFound = !validPaths.some((pattern) => pattern.test(location.pathname));
@@ -50,16 +47,6 @@ const AppContent = () => {
             <NavigationSideBar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/create-room" element={
-                    <ProtectedLoginRoute>
-                        <CreateRoomPage />
-                    </ProtectedLoginRoute>
-                } />
-                <Route path="/join-room" element={
-                    <ProtectedLoginRoute>
-                        <JoinRoomPage />
-                    </ProtectedLoginRoute>
-                } />
                 <Route path="/play-game" element={
                     <ProtectedGameRoute>
                         <BoardPage />
@@ -72,6 +59,7 @@ const AppContent = () => {
                 <Route path="/profile/:username" element={<ProfilePage />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/resend-verification" element={<ResendVerificationEmailPage />} />
+                <Route path="/game/:id" element={<GameViewPage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </>

@@ -54,7 +54,7 @@ export const setRandomizedBombs = ({ whitePlayerBombs, blackPlayerBombs }) => ({
 
 export const setTimers = ({ whiteTimeLeft, blackTimeLeft }) => ({
     type: "SET_TIMERS",
-    payload: { whiteTimeLeft, blackTimeLeft },
+    payload: { whiteTimeLeft, blackTimeLeft, syncedAt: Date.now() },
 });
 
 export const logIn = (username) => ({
@@ -69,6 +69,11 @@ export const logOut = () => ({
 export const playAsGuest = (guestID) => ({
     type: "PLAY_AS_GUEST",
     payload: guestID,
+});
+
+export const setMoveHistory = (moveHistory) => ({
+    type: "SET_MOVE_HISTORY",
+    payload: moveHistory,
 });
 
 export const resetGame = () => ({

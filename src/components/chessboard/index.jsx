@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
-import { sounds, pieces } from '../../assets';
+import { sounds, pieces, images } from '../../assets';
 import { playSound } from '../../utils';
 import { GAME_STATES, RGBA } from '../../constants.js';
 
@@ -11,6 +11,7 @@ import { GAME_STATES, RGBA } from '../../constants.js';
 import {
     useGameFen,
     useIsWhite,
+    useIsMyTurn,
     useMyBombs,
     useGameState
 } from '../../hooks';
@@ -38,23 +39,26 @@ const highlightSquare = (square, colorRgba) => {
     }
 };
 
-const ChessBoard = () => {
+const ChessBoard = ({ displayFen, visibleCraters = [] }) => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
     // extract state from redux 
     const gameFen = useGameFen();
     const isWhite = useIsWhite();
+    const isMyTurn = useIsMyTurn();
     const myBombs = useMyBombs();
     const gameState = useGameState();
 
+    const isHistory = !!displayFen;
+
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
     const [squaresToHighlight, setSquaresToHighlight] = useState([]);
+    const [rightClickHighlights, setRightClickHighlights] = useState(new Set());
+    const [customArrows, setCustomArrows] = useState([]);
     const [lastMove, setLastMove] = useState({ from: null, to: null });
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [legalMoves, setLegalMoves] = useState([]);
-
-    useEffect(() => { console.log(`player is set to white: ${isWhite}`) }, [isWhite]);
 
     useEffect(() => {
         const handleBombPlaced = (square) => {
@@ -101,6 +105,35 @@ const ChessBoard = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [myBombs]);
 
+    // Sync crater overlays with visibleCraters. Re-runs on displayFen change too so craters
+    // are re-applied after react-chessboard repaints on history navigation.
+    useEffect(() => {
+        document.querySelectorAll('.scorched').forEach(el => el.remove());
+
+        visibleCraters.forEach(square => {
+            const squareEl = document.querySelector(`[data-square="${square}"]`);
+            if (!squareEl || squareEl.querySelector('.scorched')) return;
+            const crater = document.createElement('img');
+            crater.src = images.craterPng;
+            crater.className = 'scorched';
+            Object.assign(crater.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '85%',
+                height: '85%',
+                objectFit: 'cover',
+                pointerEvents: 'none',
+                zIndex: '1',
+                opacity: '0.9',
+                transform: 'translate(-50%, -50%)',
+            });
+            squareEl.style.position = 'relative';
+            squareEl.appendChild(crater);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visibleCraters, displayFen]);
+
     useEffect(() => {
         // remove all existing highlighted squares
         document.querySelectorAll('.highlighted').forEach((x) => {
@@ -146,23 +179,27 @@ const ChessBoard = () => {
             playSound(sounds.illegal);
         }
 
-        console.log(`Clicked on square ${selected}`);
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
-        console.log(`Trying to make move: ${sourceSquare} to ${targetSquare} with ${piece}.`);
+        if (isHistory) return false;
 
-        if (GAME_STATES.playing && ((isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b'))) {
-            socket.emit("makeMove", {
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: piece[1]?.toLowerCase() ?? "q",
-            });
-        } else {
-            playSound(sounds.illegal);
-            setSelectedSquare(null);
-            setLegalMoves([]);
+        if (gameState !== GAME_STATES.playing) return false;
+
+        const isMyPiece = (isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b');
+        if (!isMyPiece) return false;
+
+        if (!isMyTurn) {
+            // queue as premove — library re-fires onPieceDrop when position updates
+            return true;
         }
+
+        socket.emit("makeMove", {
+            from: sourceSquare,
+            to: targetSquare,
+            promotion: piece[1]?.toLowerCase() ?? "q",
+        });
+        return true;
     };
 
     const onMouseoverSquare = (square, _pieceOnSquare) => {
@@ -179,7 +216,17 @@ const ChessBoard = () => {
     };
 
     const onSquareRightClick = (square) => {
-        setSquaresToHighlight([...squaresToHighlight, square]);
+        setRightClickHighlights(prev => {
+            const next = new Set(prev);
+            if (next.has(square)) next.delete(square);
+            else next.add(square);
+            return next;
+        });
+    };
+
+    const clearAnnotations = () => {
+        setRightClickHighlights(new Set());
+        setCustomArrows([]); // new reference triggers library's internal clearArrows()
     };
 
     const customPieces = Object.fromEntries(
@@ -230,19 +277,26 @@ const ChessBoard = () => {
             acc[sq] = { backgroundColor: RGBA.light_yellow };
             return acc;
         }, {}),
+        ...[...rightClickHighlights].reduce((acc, sq) => {
+            acc[sq] = { backgroundColor: 'rgba(235, 97, 80, 0.6)' };
+            return acc;
+        }, {}),
     };
 
     return (
         <div onClick={handleClick}>
             <Chessboard
-                position={gameFen}
+                position={displayFen ?? gameFen}
                 onPieceDrop={onDrop}
+                arePiecesDraggable={!isHistory}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
-                {...(gameState === GAME_STATES.playing ? { onSquareRightClick: onSquareRightClick } : {})}
+                onSquareRightClick={gameState === GAME_STATES.playing ? onSquareRightClick : undefined}
+                onSquareClick={gameState === GAME_STATES.playing && !isHistory ? clearAnnotations : undefined}
                 boardOrientation={isWhite ? "white" : "black"}
                 arePremovesAllowed={true}
                 clearPremovesOnRightClick={true}
+                customArrows={customArrows}
                 customArrowColor={RGBA.iwc_purple}
                 customPieces={customPieces}
                 boardStyle={{

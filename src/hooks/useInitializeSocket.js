@@ -1,29 +1,64 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
+import { actions } from "../redux";
+import { GAME_STATES } from "../constants";
+import { useUsername } from "./";
 
 const useInitializeSocket = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const myUsername = useUsername();
+    const myUsernameRef = useRef(myUsername);
     useEffect(() => {
-        const playerId = localStorage.getItem("playerId");
-        if (!playerId) return;
+        myUsernameRef.current = myUsername;
+    }, [myUsername]);
 
-        // Set auth before connecting
-        socket.auth = { playerId };
-        socket.connect();
+    useEffect(() => {
+        const handleRejoined = (data) => {
+            if (data.gameFen && data.players) {
+                const me = data.players.find(p => p.user_id === myUsernameRef.current);
+                const opponent = data.players.find(p => p.user_id !== myUsernameRef.current);
+                if (!me || !opponent) return;
 
-        socket.on("connect", () => {
-            console.log("Socket connected:", socket.id);
-            socket.emit("rejoin", playerId);
-        });
+                dispatch(actions.resetGame());
+                dispatch(actions.setGameFen(data.gameFen));
+                dispatch(actions.setOrientation(me.is_white));
+                dispatch(actions.setGameState(data.gameState ?? GAME_STATES.playing));
 
-        socket.on("rejoined", (data) => {
-            console.log("Rejoined room:", data.roomId);
-        });
+                dispatch(actions.setPlayerInfo({
+                    name: me.username,
+                    rating: me.elo,
+                    bombs: me.bombs ?? [],
+                    secondsLeft: me.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
+                }));
 
-        return () => {
-            socket.off("connect");
-            socket.off("rejoined");
-            socket.disconnect();
+                dispatch(actions.setOpponentInfo({
+                    name: opponent.username,
+                    rating: opponent.elo,
+                    bombs: opponent.bombs ?? [],
+                    secondsLeft: opponent.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
+                }));
+
+                if (Array.isArray(data.moveHistory)) {
+                    dispatch(actions.setMoveHistory(data.moveHistory));
+                }
+
+                dispatch(actions.setTimers({
+                    whiteTimeLeft: data.whiteTimeLeft,
+                    blackTimeLeft: data.blackTimeLeft,
+                }));
+
+                navigate("/play-game");
+            }
         };
+
+        socket.on("rejoined", handleRejoined);
+        return () => {
+            socket.off("rejoined", handleRejoined);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 };
 

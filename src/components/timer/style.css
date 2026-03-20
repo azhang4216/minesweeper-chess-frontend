@@ -1,19 +1,49 @@
 .timer {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1.5rem;
-    font-family: monospace;
-    width: 120px;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 1.3rem;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    width: 100px;
     text-align: center;
-    transition: background-color 0.3s;
+    font-variant-numeric: tabular-nums;
+    transition: background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
 }
 
 .active {
-    background-color: #fff;
-    color: black;
+    background: rgba(240, 240, 248, 0.10);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
 }
 
 .inactive {
-    background-color: #888;
-    color: black;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid transparent;
+}
+
+/* ── Urgency states ────────────────────────────── */
+
+.timer.active.warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.timer.active.low {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.4);
+    animation: timerPulse 0.65s ease-in-out infinite alternate;
+}
+
+.timer.active.critical {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.6);
+    animation: timerPulse 0.28s ease-in-out infinite alternate;
+}
+
+@keyframes timerPulse {
+    from { opacity: 1; box-shadow: none; }
+    to   { opacity: 0.72; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
 }

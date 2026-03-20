@@ -9,13 +9,11 @@ const ResendVerification = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent page refresh
-        console.log(`handling submit form for ${usernameOrEmail}`);
         if (!usernameOrEmail) {
             setError("Please enter your username or email to resend a verification email.");
         }
         try {
-            const res = await resendVerificationEmail(usernameOrEmail);
-            console.log(res);
+            await resendVerificationEmail(usernameOrEmail);
             setResentVerificationEmail(true);
             setError("");
         } catch (err) {

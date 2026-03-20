@@ -1,0 +1,130 @@
+/* ── Nav controls row ──────────────────────────── */
+
+.move-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.moves-label {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.nav-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.nav-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 3px 6px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    line-height: 1;
+}
+
+.nav-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--panel);
+}
+
+/* ── Active move highlight ──────────────────────── */
+
+.move-white,
+.move-black {
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.1s;
+}
+
+.move-white:hover,
+.move-black:hover {
+    background: var(--panel-hover);
+}
+
+.move-active {
+    background: var(--accent-dim) !important;
+    color: var(--accent-light) !important;
+    font-weight: 600;
+}
+
+/* ── Action buttons ─────────────────────────────── */
+
+.game-actions {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-direction: row;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    border: 1px solid transparent;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.action-btn--danger {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+.action-btn--danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+}
+
+.action-btn--ghost {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--text-muted);
+}
+
+.action-btn--ghost:hover {
+    background: var(--panel);
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+.action-btn--primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.action-btn--primary:hover {
+    background: var(--accent-light);
+    border-color: var(--accent-light);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.action-btn--waiting {
+    opacity: 0.5;
+    cursor: default;
+    transform: none !important;
+    box-shadow: none !important;
+}

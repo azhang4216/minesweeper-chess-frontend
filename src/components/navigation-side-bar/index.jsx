@@ -1,71 +1,174 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-    useIsLoggedIn, 
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import {
+    useIsLoggedIn,
     useIsPlayingAsGuest,
     useUsername
 } from '../../hooks';
+import { actions } from '../../redux';
+import { generateGuestUUID } from '../../api';
+import { useSocket } from '../../socket';
 import './style.css';
 
-const NavigationSidebar = () => {
-    const [expanded, setExpanded] = useState(false);
-    const navigate = useNavigate();
+const NavigationSideBar = () => {
+    const [userOpen, setUserOpen]   = useState(false);
+    const userRef = useRef(null);
+
+    const navigate   = useNavigate();
+    const location   = useLocation();
+    const dispatch   = useDispatch();
+    const socket     = useSocket();
 
     const isLoggedIn = useIsLoggedIn();
-    const isGuest = useIsPlayingAsGuest();
-    const username = useUsername();
+    const isGuest    = useIsPlayingAsGuest();
+    const username   = useUsername();
 
-    const goHome = () => navigate('/');
-    const goToProfile = () => navigate(`/profile/${username}`);
-    const goToSearch = () => navigate('/search');
-    const goToPlay = () => {
-        if (isLoggedIn || isGuest) {
-            // signed in & guests -> join game page
-            navigate('/join-room');
-        } else {
-            // not signed in -> sign in page
-            navigate('/sign-in');
+    // Close dropdowns on outside click
+    useEffect(() => {
+        const handler = (e) => {
+            if (userRef.current && !userRef.current.contains(e.target)) setUserOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    // Close dropdowns on route change
+    useEffect(() => {
+        setUserOpen(false);
+    }, [location.pathname]);
+
+    const isActive = (path) => location.pathname === path;
+
+    const go = (path) => () => navigate(path);
+
+    const handlePlayAsGuest = async () => {
+        try {
+            const guestId = await generateGuestUUID();
+            dispatch(actions.playAsGuest(guestId));
+            socket.emit('authenticate', { playerId: guestId });
+            navigate('/');
+        } catch (e) {
+            console.error('Failed to generate guest UUID:', e);
+        } finally {
+            setUserOpen(false);
         }
     };
 
+    const handleLogout = () => {
+        dispatch(actions.logOut());
+        setUserOpen(false);
+        navigate('/');
+    };
+
+    const userLabel = isLoggedIn && !isGuest ? username
+        : isGuest ? 'Guest'
+        : 'Sign in';
+
     return (
-        <div
-            className={`sidebar ${expanded ? 'expanded' : ''}`}
-            onMouseEnter={() => setExpanded(true)}
-            onMouseLeave={() => setExpanded(false)}
-        >
-            <div className="sidebar-buttons">
-                <div className="sidebar-item" onClick={goHome}>
-                    <div className="sidebar-content">
-                        <span className="sidebar-icon">
-                            <img src="/landmine_logo.png" alt="Home" className="sidebar-logo" />
-                        </span>
-                        {expanded && <span className="sidebar-label">Home</span>}
-                    </div>
-                </div>
-                <div className="sidebar-item" onClick={goToPlay}>
-                    <div className="sidebar-content">
-                        <span className="sidebar-icon">♟️</span>
-                        {expanded && <span className="sidebar-label">Play Game</span>}
-                    </div>
-                </div>
+        <nav className="topnav">
+            {/* Brand */}
+            <div className="topnav-brand" onClick={go('/')}>
+                <img src="/landmine_logo.png" alt="Landmine Chess" className="topnav-logo" />
+                <span className="topnav-wordmark">LANDMINE CHESS</span>
+            </div>
+
+            {/* Nav links */}
+            <div className="topnav-links">
+                <button
+                    className={`nav-link${isActive('/') ? ' nav-link--active' : ''}`}
+                    onClick={go('/')}
+                >
+                    Home
+                </button>
+
+                {/* Play — navigates to home where matchmaking lives */}
+                <button
+                    className="nav-link"
+                    onClick={go('/')}
+                >
+                    Play
+                </button>
+
+                <button
+                    className={`nav-link${isActive('/search') ? ' nav-link--active' : ''}`}
+                    onClick={go('/search')}
+                >
+                    Search
+                </button>
+
                 {isLoggedIn && !isGuest && (
-                    <div className="sidebar-item" onClick={goToProfile}>
-                        <div className="sidebar-content">
-                            <span className="sidebar-icon">👤</span>
-                            {expanded && <span className="sidebar-label">Profile</span>}
-                        </div>
+                    <button
+                        className={`nav-link${isActive(`/profile/${username}`) ? ' nav-link--active' : ''}`}
+                        onClick={go(`/profile/${username}`)}
+                    >
+                        Profile
+                    </button>
+                )}
+            </div>
+
+            {/* User menu */}
+            <div className="nav-dropdown-wrap nav-user" ref={userRef}>
+                <button
+                    className={`nav-user-btn${userOpen ? ' open' : ''}`}
+                    onClick={() => setUserOpen(v => !v)}
+                >
+                    <span className="nav-user-avatar">
+                        {isLoggedIn ? (isGuest ? 'G' : username.charAt(0).toUpperCase()) : '?'}
+                    </span>
+                    <span className="nav-user-label">{userLabel}</span>
+                    <span className={`nav-chevron${userOpen ? ' open' : ''}`}>▾</span>
+                </button>
+
+                {userOpen && (
+                    <div className="nav-dropdown nav-dropdown--right">
+                        {!isLoggedIn ? (
+                            <>
+                                <button className="nav-dropdown-item" onClick={() => { navigate('/sign-in'); setUserOpen(false); }}>
+                                    <span className="nav-dropdown-icon">🔐</span>
+                                    <span><strong>Sign In</strong></span>
+                                </button>
+                                <div className="nav-dropdown-divider" />
+                                <button className="nav-dropdown-item" onClick={() => { navigate('/create-account'); setUserOpen(false); }}>
+                                    <span className="nav-dropdown-icon">✨</span>
+                                    <span><strong>Create Account</strong></span>
+                                </button>
+                                <div className="nav-dropdown-divider" />
+                                <button className="nav-dropdown-item" onClick={handlePlayAsGuest}>
+                                    <span className="nav-dropdown-icon">👾</span>
+                                    <span><strong>Play as Guest</strong></span>
+                                </button>
+                            </>
+                        ) : isGuest ? (
+                            <>
+                                <button className="nav-dropdown-item" onClick={() => { navigate('/sign-in'); setUserOpen(false); }}>
+                                    <span className="nav-dropdown-icon">🔐</span>
+                                    <span><strong>Sign In</strong></span>
+                                </button>
+                                <div className="nav-dropdown-divider" />
+                                <button className="nav-dropdown-item" onClick={() => { navigate('/create-account'); setUserOpen(false); }}>
+                                    <span className="nav-dropdown-icon">✨</span>
+                                    <span><strong>Create Account</strong></span>
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button className="nav-dropdown-item" onClick={() => { navigate(`/profile/${username}`); setUserOpen(false); }}>
+                                    <span className="nav-dropdown-icon">👤</span>
+                                    <span><strong>Profile</strong></span>
+                                </button>
+                                <div className="nav-dropdown-divider" />
+                                <button className="nav-dropdown-item nav-dropdown-item--danger" onClick={handleLogout}>
+                                    <span className="nav-dropdown-icon">↩</span>
+                                    <span><strong>Sign Out</strong></span>
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
-                <div className="sidebar-item" onClick={goToSearch}>
-                    <div className="sidebar-content">
-                        <span className="sidebar-icon">🔍</span>
-                        {expanded && <span className="sidebar-label">Search User</span>}
-                    </div>
-                </div>
             </div>
-        </div>
+        </nav>
     );
 };
 
-export default NavigationSidebar;
+export default NavigationSideBar;

@@ -7,9 +7,6 @@ export async function loginUser(identifier, password) {
         const { token } = response.data;
         if (token) {
             localStorage.setItem('authToken', token);
-            console.log(`Set JWT (token) in local storage: ${token}`);
-        } else {
-            console.log('Failed to obtain a token');
         }
 
         return response.data;
@@ -30,7 +27,6 @@ export async function logoutUser() {
 
 export async function validateToken(token) {
     if (!token) return null;
-    console.log(`Sending over the follow token for validation: ${token}`);
 
     try {
         const response = await axios.get('/api/verify-token', {

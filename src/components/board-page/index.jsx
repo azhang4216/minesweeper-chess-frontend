@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from "react-router-dom";
+import { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from "react-router-dom";
 
 // styling
 import './style.css';
@@ -9,6 +9,7 @@ import Chessboard from '../chessboard';
 import SidePanel from '../side-panel';
 import WinLossPopup from '../win-loss-popup';
 import Timer from '../timer';
+import ConfirmModal from '../confirm-modal';
 
 // hooks
 import {
@@ -16,6 +17,7 @@ import {
     useOpponent,
     useIsMyTurn,
     useGameState,
+    useGameFen,
     useMoveHistory,
     useUsername
 } from '../../hooks';
@@ -28,54 +30,35 @@ import { useSocket, useBoardSocketHandlers } from "../../socket";
 import { useDispatch } from 'react-redux';
 import { actions } from '../../redux';
 
-import { playSound } from "../../utils";
+import { playSound, getFenAtIndex } from "../../utils";
 import { sounds } from "../../assets";
 
 const BoardPage = () => {
     const socket = useSocket();
     const dispatch = useDispatch();
     const myUsername = useUsername();
+    const navigate = useNavigate();
 
     // information about the game being passed in
     const location = useLocation();
     const { roomId, players, fen, secsToPlaceBomb, secsToPlay } = location.state || {};
-    console.log(`room id: ${roomId}; players: ${JSON.stringify(players)}, fen: ${fen}, secsToPlaceBomb: ${secsToPlaceBomb}, secsToPlay: ${secsToPlay}`);
 
     // Set up game!
-    // if (roomId && players && fen) {
-    //     const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
-    //     const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
-    //     console.log(`my info: ${myInfo}, opponent info: ${opponentInfo}`);
-
-    //     dispatch(actions.setOpponentInfo({
-    //         name: opponentInfo.username,
-    //         rating: opponentInfo.elo,
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     dispatch(actions.setPlayerInfo({
-    //         name: myInfo.username,
-    //         rating: opponentInfo.elo,
-    //         bombs: [],
-    //         secondsLeft: secsToPlay,
-    //     }));
-
-    //     console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
-
-    //     dispatch(actions.setGameFen(fen));
-    //     dispatch(actions.setOrientation(myInfo.is_white));
-    //     dispatch(actions.setPlacingBombSeconds(secsToPlaceBomb));
-    //     playSound(sounds.gameStart);
-    // }
     useEffect(() => {
         if (roomId && players && fen) {
             const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
             const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
-            console.log(`my info: ${myInfo}, opponent info: ${opponentInfo}`);
 
             // make sure previous game state does not carry over
             dispatch(actions.resetGame());
+            setStartingFen(fen);
+            setViewIndex(null);
+            setDrawOfferPending(false);
+            setDrawOfferDeclinedMsg('');
+            setDrawCooldown(0);
+            setRematchOffered(false);
+            setRematchRequested(false);
+            setExplosionHistory([]);
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
@@ -86,12 +69,10 @@ const BoardPage = () => {
 
             dispatch(actions.setPlayerInfo({
                 name: myInfo.username,
-                rating: opponentInfo.elo,
+                rating: myInfo.elo,
                 bombs: [],
                 secondsLeft: secsToPlay,
             }));
-
-            console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
 
             dispatch(actions.setGameFen(fen));
             dispatch(actions.setOrientation(myInfo.is_white));
@@ -105,24 +86,94 @@ const BoardPage = () => {
     const player = usePlayer();
     const opponent = useOpponent();
     const gameState = useGameState();
+    const gameFen = useGameFen();
     const moveHistory = useMoveHistory();
 
-    // for timer display logic
-    const isMyMove = useIsMyTurn();
-    useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
-    useEffect(() => { console.log(`Game state: ${gameState}`) }, [gameState]);
-
-    // these are for the outcome at the end of the game
+    const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
+    const [startingFen, setStartingFen] = useState(null);
+    const [explosionHistory, setExplosionHistory] = useState([]); // [{ square, moveCount }]
+    const [disconnectCountdown, setDisconnectCountdown] = useState(null);
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
     const [gameOverReason, setGameOverReason] = useState("");
     const [gameOverResult, setGameOverResult] = useState("");
     const [myEloChange, setmyEloChange] = useState(0);
     const [opponentEloChange, setOpponentEloChange] = useState(0);
+    const [confirmAction, setConfirmAction] = useState(null); // null | 'resign' | 'draw'
+    const [drawOfferPending, setDrawOfferPending] = useState(false);
+    const [drawOfferDeclinedMsg, setDrawOfferDeclinedMsg] = useState('');
+    const [drawCooldown, setDrawCooldown] = useState(0);
+    const [rematchOffered, setRematchOffered] = useState(false);
+    const [rematchRequested, setRematchRequested] = useState(false);
+
+    // viewIndex === null means "at latest" — use live gameFen
+    const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
+
+    // Craters that should be visible at the current history position
+    const visibleCraters = useMemo(() => {
+        const currentCount = viewIndex ?? moveHistory.length;
+        return explosionHistory
+            .filter(e => e.moveCount <= currentCount)
+            .map(e => e.square);
+    }, [explosionHistory, viewIndex, moveHistory.length]);
+    const displayFen = isViewingHistory
+        ? getFenAtIndex(startingFen ?? gameFen, moveHistory, Math.max(0, viewIndex))
+        : gameFen;
+
+    // When any new move arrives, snap back to the live position
+    useEffect(() => {
+        setViewIndex(null);
+    }, [moveHistory.length]);
+
+    const goToStart = () => setViewIndex(0);
+    const goBack = () => setViewIndex(v => {
+        const current = v ?? moveHistory.length;
+        return Math.max(0, current - 1);
+    });
+    const goForward = () => {
+        setViewIndex(v => {
+            const current = v ?? moveHistory.length;
+            const next = current + 1;
+            return next >= moveHistory.length ? null : next;
+        });
+    };
+    const goToLatest = () => setViewIndex(null);
+    const goToMove = (idx) => setViewIndex(idx);
+
+    const handleResign = () => setConfirmAction('resign');
+    const handleResignConfirm = () => {
+        socket.emit('resign');
+        setConfirmAction(null);
+    };
+    const handleOfferDraw = () => setConfirmAction('draw');
+    const handleDrawConfirm = () => {
+        socket.emit('offerDraw');
+        setConfirmAction(null);
+    };
+
+    const handleRequestRematch = () => {
+        socket.emit('requestRematch');
+        setRematchRequested(true);
+    };
+    const handleNewGame = () => navigate('/');
+    const onRematchReady = (newGameData) => {
+        navigate('/play-game', { state: newGameData, replace: true });
+    };
+
+    const handleAcceptDraw = () => {
+        socket.emit('drawResponse', { accepted: true });
+        setDrawOfferPending(false);
+    };
+    const handleDeclineDraw = () => {
+        socket.emit('drawResponse', { accepted: false });
+        setDrawOfferPending(false);
+    };
+
+    // for timer display logic
+    const isMyMove = useIsMyTurn();
 
     // board socket handlers
     const {
         handleRoomCreated,
-        // _handleRoomJoined,
         handleRoomJoinError,
         handleDisconnect,
         handleStartPlay,
@@ -130,17 +181,26 @@ const BoardPage = () => {
         handleinvalidMove,
         handleDrawGameOver,
         handleWinLossGameOver,
-        handleSyncTime
+        handleSyncTime,
+        handlePlayerRejoined,   // add this
+        handleDrawOffer,
+        handleDrawOfferDeclined,
+        handleRematchOffered,
+        handleRematchReady,
     } = useBoardSocketHandlers({
         setRoomMessage: (_x) => { }, // for now, we don't need it
         setGameOverReason,
         setGameOverResult,
         setmyEloChange,
         setOpponentEloChange,
-        setDisplayWinLossPopup
+        setDisplayWinLossPopup,
+        setDisconnectCountdown,   // add this
+        setDrawOfferPending,
+        setDrawOfferDeclinedMsg,
+        setRematchOffered,
+        onRematchReady,
+        onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
     });
-
-    // const [madeCustomCursors, setMadeCustomCursors] = useState(false);
 
     useEffect(() => {
         socket.on('roomCreated', handleRoomCreated);
@@ -152,10 +212,14 @@ const BoardPage = () => {
         socket.on('winLossGameOver', handleWinLossGameOver);
         socket.on('drawGameOver', handleDrawGameOver);
         socket.on('syncTime', handleSyncTime);
+        socket.on('playerRejoined', handlePlayerRejoined);
+        socket.on('drawOffer', handleDrawOffer);
+        socket.on('drawOfferDeclined', handleDrawOfferDeclined);
+        socket.on('rematchOffered', handleRematchOffered);
+        socket.on('rematchReady', handleRematchReady);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
-            // socket.off('roomJoined', handleRoomJoined);
             socket.off('roomJoinError', handleRoomJoinError);
             socket.off('playerDisconnected', handleDisconnect);
             socket.off('startPlay', handleStartPlay);
@@ -164,71 +228,31 @@ const BoardPage = () => {
             socket.off('winLossGameOver', handleWinLossGameOver);
             socket.off('drawGameOver', handleDrawGameOver);
             socket.off('syncTime', handleSyncTime);
+            socket.off('playerRejoined', handlePlayerRejoined);
+            socket.off('drawOffer', handleDrawOffer);
+            socket.off('drawOfferDeclined', handleDrawOfferDeclined);
+            socket.off('rematchOffered', handleRematchOffered);
+            socket.off('rematchReady', handleRematchReady);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
 
-    // this is for changing our cursor for planting bombs
-    // const changeCursor = () => {
-    //     console.log(`Placing bombs: ${placingBombs}`);
-    //     console.log(`Made custom cursors: ${madeCustomCursors}`);
-    //     if (placingBombs && !madeCustomCursors) {
-    //         // we haven't set our custom cursors yet! 
-    //         console.log("hello world!");
+    useEffect(() => {
+        if (disconnectCountdown === null || disconnectCountdown <= 0) return;
+        const id = setTimeout(() => setDisconnectCountdown(prev => prev - 1), 1000);
+        return () => clearTimeout(id);
+    }, [disconnectCountdown]);
 
-    //         // we can shovel up the 3rd and 4th ranks as white, and 5th and 6th ranks as black
-    //         const squaresToChange = isWhite
-    //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
-    //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
-    //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
-    //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
+    // Start 30s cooldown whenever our draw offer is declined
+    useEffect(() => {
+        if (drawOfferDeclinedMsg) setDrawCooldown(30);
+    }, [drawOfferDeclinedMsg]);
 
-    //         const canvas = document.createElement('canvas');
-    //         canvas.width = 100;
-    //         canvas.height = 150;
-    //         const ctx = canvas.getContext('2d');
-
-    //         // Set font and draw emoji
-    //         ctx.font = '50px serif';
-    //         ctx.textBaseline = 'top';
-    //         ctx.fillText('🪏', 0, 0);
-
-    //         // Convert to image data URL
-    //         const dataURL = canvas.toDataURL('image/png');
-
-    //         squaresToChange.forEach((square, _index) => {
-    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
-    //             if (squareEl) {
-    //                 // squareEl.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='48' viewBox='0 0 100 100' style='fill:black;font-size:55px;'><text y='50%'>🪏</text></svg>") 16 0, auto`;
-    //                 squareEl.style.cursor = `url(${dataURL}) 32 32, auto`;
-    //                 console.log(`Set ${square} cursor`);
-    //             } else {
-    //                 console.log(`Couldn't find square ${square}`);
-    //             }
-    //         });
-
-    //         setMadeCustomCursors(true);
-    //     } else if (!placingBombs && madeCustomCursors) {
-    //         // get rid of custom cursors
-    //         const squaresToRevert = isWhite
-    //             ? ['a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
-    //                 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4']
-    //             : ['a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
-    //                 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6'];
-
-    //         squaresToRevert.forEach((square) => {
-    //             const squareEl = document.querySelector(`[data-square="${square}"]`);
-    //             if (squareEl) {
-    //                 squareEl.style.removeProperty('cursor');
-    //             }
-    //         });
-    //     }
-    // };
-
-    // const handleNavigateHome = () => {
-    //     dispatch(actions.reset());
-    //     socket.emit("playerDisconnect");
-    // };
+    useEffect(() => {
+        if (drawCooldown <= 0) return;
+        const id = setTimeout(() => setDrawCooldown(prev => prev - 1), 1000);
+        return () => clearTimeout(id);
+    }, [drawCooldown]);
 
     if (!roomId) {
         return <p>Error: Missing game data</p>;
@@ -236,32 +260,8 @@ const BoardPage = () => {
 
     return (
         <div className="board-page-container">
-            {/* <button
-                onClick={handleNavigateHome}
-                className="home-button"
-            >
-                Go Home
-            </button> */}
-            <img src="/landmine_purple.png" alt="Landmine Chess Logo" className="title-logo" />
             <div className="game-container">
-                {/* {gameState === GAME_STATES.inactive || gameState === GAME_STATES.matching ? (
-                <div className="chess-wrapper">
-                    <div className="join-room-container">
-                        <input
-                            type="text"
-                            value={roomId}
-                            onChange={handleRoomIdChange}
-                            placeholder="Enter Room ID"
-                        />
-                        <button onClick={handleJoinRoom}>Join Room</button>
-                        {roomMessage && <p>{roomMessage}</p>}
-                        {gameState === GAME_STATES.matching && <Loader />}
-                    </div>
-                </div>
-            ) : ( */}
-                <div
-                    className={gameState === GAME_STATES.placing_bombs ? "game-content-wrapper" : "game-content-wrapper"}
-                >
+                <div className="game-content-wrapper">
                     {displayWinLossPopup && (
                         <WinLossPopup
                             result={gameOverResult}
@@ -271,13 +271,49 @@ const BoardPage = () => {
                             onClose={() => setDisplayWinLossPopup(false)}
                         />
                     )}
+                    {confirmAction && (
+                        <ConfirmModal
+                            message={confirmAction === 'resign'
+                                ? 'Are you sure you want to resign?'
+                                : 'Offer a draw to your opponent?'}
+                            onConfirm={confirmAction === 'resign' ? handleResignConfirm : handleDrawConfirm}
+                            onCancel={() => setConfirmAction(null)}
+                        />
+                    )}
+                    {drawOfferPending && (
+                        <ConfirmModal
+                            message="Your opponent offers a draw. Accept?"
+                            onConfirm={handleAcceptDraw}
+                            onCancel={handleDeclineDraw}
+                        />
+                    )}
+                    {drawOfferDeclinedMsg && (
+                        <ConfirmModal
+                            message={drawOfferDeclinedMsg}
+                            confirmText="OK"
+                            onConfirm={() => setDrawOfferDeclinedMsg('')}
+                        />
+                    )}
+                    {rematchOffered && (
+                        <ConfirmModal
+                            message={`${opponent.name} would like a rematch. Accept?`}
+                            onConfirm={() => { handleRequestRematch(); setRematchOffered(false); }}
+                            onCancel={() => setRematchOffered(false)}
+                        />
+                    )}
                     <div className="chess-wrapper">
-                        <div className="player-info top">
+                        {disconnectCountdown !== null && disconnectCountdown > 0 && (
+                            <div className="disconnect-notice">
+                                Opponent disconnected — {disconnectCountdown}s to reconnect
+                            </div>
+                        )}
+                        <div className={`player-info top${!isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
                             <Timer
-                                isActive={!isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
-                                initialSeconds={opponent.secondsLeft}
+                                isActive={!isMyMove && gameState === GAME_STATES.playing}
+                                serverSeconds={opponent.secondsLeft}
+                                lastSyncAt={opponent.lastSyncAt}
                             />
                             <span>
                                 {gameState === GAME_STATES.placing_bombs
@@ -298,15 +334,19 @@ const BoardPage = () => {
                         <div
                             className="chess-board-container"
                         >
-                            <Chessboard />
+                            <Chessboard
+                                displayFen={isViewingHistory ? displayFen : undefined}
+                                visibleCraters={visibleCraters}
+                            />
                         </div>
 
-                        <div className="player-info bottom">
+                        <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
                             <span>{player.name}</span>
                             <span>{player.rating}</span>
                             <Timer
-                                isActive={isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
-                                initialSeconds={player.secondsLeft}
+                                isActive={isMyMove && gameState === GAME_STATES.playing}
+                                serverSeconds={player.secondsLeft}
+                                lastSyncAt={player.lastSyncAt}
                             />
                             <span>
                                 {gameState === GAME_STATES.placing_bombs
@@ -324,9 +364,21 @@ const BoardPage = () => {
                             </span>
                         </div>
                     </div>
-                    <SidePanel />
+                    <SidePanel
+                        viewIndex={viewIndex ?? moveHistory.length}
+                        onGoToStart={goToStart}
+                        onGoBack={goBack}
+                        onGoForward={goForward}
+                        onGoToLatest={goToLatest}
+                        onGoToMove={goToMove}
+                        onResign={gameState === GAME_STATES.playing ? handleResign : undefined}
+                        onOfferDraw={gameState === GAME_STATES.playing ? handleOfferDraw : undefined}
+                        drawCooldown={drawCooldown}
+                        onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
+                        onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
+                        rematchRequested={rematchRequested}
+                    />
                 </div>
-                {/* )} */}
             </div>
         </div>
 

@@ -1,155 +1,195 @@
 .board-page-container {
-  background-color: #2e2e2e;
+    min-height: calc(100vh - var(--nav-h));
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    box-sizing: border-box;
 }
 
 .game-container {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  align-items: flex-start;
-  /* padding: 20px; */
-  gap: 40px;
-  min-height: 100vh;
-  color: white;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.title-logo {
-  /* height: 0; */
-  max-height: 200px;
-  display: block;
-  margin: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    color: var(--text);
 }
 
 .game-content-wrapper {
-  display: flex;
-  gap: 40px;
-  align-items: stretch;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
 }
+
+/* ── Chess column ──────────────────────────────── */
 
 .chess-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
+
+/* ── Player info bar ───────────────────────────── */
 
 .player-info {
-  width: 480px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  font-size: 16px;
-  font-weight: 500;
-  background-color: #3a3a3a;
-  border-radius: 8px;
+    width: 480px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    border-left: 3px solid transparent;
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    user-select: none;
 }
 
-.player-info.top {
-  margin-bottom: 8px;
+.player-info .player-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
 }
 
-.player-info.bottom {
-  margin-top: 8px;
+.player-info .player-rating {
+    font-size: 12px;
+    color: var(--text-muted);
 }
+
+.player-info.active-turn {
+    background: var(--panel-hover);
+    border-left-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ── Board container ───────────────────────────── */
 
 .chess-board-container {
-  width: 480px;
-  height: 480px;
+    width: 480px;
+    height: 480px;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
+/* ── Side panel ────────────────────────────────── */
+
 .side-panel {
-  width: 180px;
-  background: #3a3a3a;
-  border-radius: 8px;
-  padding: 12px;
-  overflow-y: auto;
+    width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 560px;
+    flex-shrink: 0;
 }
 
 .side-panel h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 18px;
-  text-align: center;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
 }
 
+/* ── Move history ──────────────────────────────── */
+
 .move-history-table {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .move-history-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', monospace;
+    font-size: 13px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    transition: background 0.1s;
 }
+
+.move-history-row:hover { background: var(--panel); }
 
 .move-turn {
-  width: 30px;
-  text-align: right;
+    width: 24px;
+    text-align: right;
+    color: var(--text-dim);
+    font-size: 11px;
+    flex-shrink: 0;
 }
 
-.move-white, .move-black {
-  width: 60px;
-  text-align: left;
+.move-white,
+.move-black {
+    width: 56px;
+    color: var(--text);
 }
 
-/* for bomb planted X overlay */
+/* ── Bomb placement side panel ─────────────────── */
+
+.bomb-placement-info h3 {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.bomb-placement-info p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 12px;
+}
+
+/* ── Bomb overlay marker ───────────────────────── */
+
 .red-x {
-  position: absolute;
-  color: red;
-  font-size: 36px;
-  font-weight: bold;
-  pointer-events: none;
-  /* So it doesn't interfere with clicking the square */
-  z-index: 5;
+    position: absolute;
+    color: #ef4444;
+    font-size: 30px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 5;
+    text-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
 }
 
-.title {
-  font-size: 30px; /* Adjust the size to make it stand out more */
-  font-weight: bold;
-  color: white;
-  margin-bottom: 40px;
-  padding-top: 5%;
-  display: flex;
-  justify-content: center;
-  text-align: center; /* Ensure the text is centered */
-  font-family: "Segoe UI", sans-serif; /* Make sure the font family is consistent */
-  letter-spacing: 2px; /* Optional: adds a bit of space between letters */
+/* ── Disconnect notice ─────────────────────────── */
+
+.disconnect-notice {
+    width: 480px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 9px 16px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    box-sizing: border-box;
+    animation: slideDown 0.2s ease;
 }
 
-.home-button {
-  position: absolute;
-  top: 20px; /* Distance from the top of the page */
-  left: 20px; /* Distance from the left of the page */
-  padding: 12px 24px;
-  background-color: #4CAF50; /* Green background */
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.2s ease;
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-
-.home-button:hover {
-  background-color: #45a049; /* Darker green on hover */
-  transform: scale(1.05); /* Slightly enlarge on hover */
-}
-
-.home-button:focus {
-  outline: none; /* Remove the focus outline */
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.5); /* Add focus ring */
-}
-
-
-/* custom cursor for planting bombs
-.bomb-planting-cursor {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'  width='40' height='48' viewBox='0 0 100 100' style='fill:black;font-size:24px;'><text y='50%'>🦄</text></svg>") 16 0,
-    auto !important;
-} */

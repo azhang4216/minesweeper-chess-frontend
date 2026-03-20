@@ -29,7 +29,6 @@ export const useAuthState = () => {
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
-        console.log(`JWT found in localstorage on load: ${token}`);
 
         if (token) {
             dispatch(actions.setIsAuthLoading(true));
@@ -38,6 +37,7 @@ export const useAuthState = () => {
                 if (user) {
                     dispatch(actions.logIn(user.username));
                     socket.emit("authenticate", { playerId: user.username });
+                    socket.emit("rejoin", user.username);
                 } else {
                     localStorage.removeItem("authToken");
                     dispatch(actions.logOut());
@@ -50,7 +50,7 @@ export const useAuthState = () => {
             // no token, not loading
             dispatch(actions.setIsAuthLoading(false));
         }
-    }, [dispatch]);
+    }, [dispatch, socket]);
 };
 
 // import { useState } from "react";
