@@ -95,6 +95,8 @@ const BoardPage = () => {
     const [myEloChange, setmyEloChange] = useState(0);
     const [opponentEloChange, setOpponentEloChange] = useState(0);
     const [confirmAction, setConfirmAction] = useState(null); // null | 'resign' | 'draw'
+    const [drawOfferPending, setDrawOfferPending] = useState(false);
+    const [drawOfferDeclinedMsg, setDrawOfferDeclinedMsg] = useState('');
 
     // viewIndex === null means "at latest" — use live gameFen
     const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
@@ -133,6 +135,15 @@ const BoardPage = () => {
         setConfirmAction(null);
     };
 
+    const handleAcceptDraw = () => {
+        socket.emit('drawResponse', { accepted: true });
+        setDrawOfferPending(false);
+    };
+    const handleDeclineDraw = () => {
+        socket.emit('drawResponse', { accepted: false });
+        setDrawOfferPending(false);
+    };
+
     // for timer display logic
     const isMyMove = useIsMyTurn();
     useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
@@ -150,6 +161,8 @@ const BoardPage = () => {
         handleWinLossGameOver,
         handleSyncTime,
         handlePlayerRejoined,   // add this
+        handleDrawOffer,
+        handleDrawOfferDeclined,
     } = useBoardSocketHandlers({
         setRoomMessage: (_x) => { }, // for now, we don't need it
         setGameOverReason,
@@ -158,6 +171,8 @@ const BoardPage = () => {
         setOpponentEloChange,
         setDisplayWinLossPopup,
         setDisconnectCountdown,   // add this
+        setDrawOfferPending,
+        setDrawOfferDeclinedMsg,
     });
 
     useEffect(() => {
@@ -171,6 +186,8 @@ const BoardPage = () => {
         socket.on('drawGameOver', handleDrawGameOver);
         socket.on('syncTime', handleSyncTime);
         socket.on('playerRejoined', handlePlayerRejoined);
+        socket.on('drawOffer', handleDrawOffer);
+        socket.on('drawOfferDeclined', handleDrawOfferDeclined);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
@@ -183,6 +200,8 @@ const BoardPage = () => {
             socket.off('drawGameOver', handleDrawGameOver);
             socket.off('syncTime', handleSyncTime);
             socket.off('playerRejoined', handlePlayerRejoined);
+            socket.off('drawOffer', handleDrawOffer);
+            socket.off('drawOfferDeclined', handleDrawOfferDeclined);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
@@ -217,6 +236,20 @@ const BoardPage = () => {
                                 : 'Offer a draw to your opponent?'}
                             onConfirm={confirmAction === 'resign' ? handleResignConfirm : handleDrawConfirm}
                             onCancel={() => setConfirmAction(null)}
+                        />
+                    )}
+                    {drawOfferPending && (
+                        <ConfirmModal
+                            message="Your opponent offers a draw. Accept?"
+                            onConfirm={handleAcceptDraw}
+                            onCancel={handleDeclineDraw}
+                        />
+                    )}
+                    {drawOfferDeclinedMsg && (
+                        <ConfirmModal
+                            message={drawOfferDeclinedMsg}
+                            onConfirm={() => setDrawOfferDeclinedMsg('')}
+                            onCancel={() => setDrawOfferDeclinedMsg('')}
                         />
                     )}
                     <div className="chess-wrapper">

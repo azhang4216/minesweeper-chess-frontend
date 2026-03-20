@@ -14,6 +14,8 @@ export const useBoardSocketHandlers = ({
     setOpponentEloChange,
     setDisplayWinLossPopup,
     setDisconnectCountdown,   // add this
+    setDrawOfferPending,
+    setDrawOfferDeclinedMsg,
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
@@ -224,6 +226,14 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setTimers({ whiteTimeLeft, blackTimeLeft }));
     };
 
+    const handleDrawOffer = () => {
+        setDrawOfferPending(true);
+    };
+
+    const handleDrawOfferDeclined = () => {
+        setDrawOfferDeclinedMsg('Your draw offer was declined.');
+    };
+
     return {
         handleRoomCreated,
         handleRoomJoinError,
@@ -234,7 +244,9 @@ export const useBoardSocketHandlers = ({
         handleDrawGameOver,
         handleWinLossGameOver,
         handleSyncTime,
-        handlePlayerRejoined
+        handlePlayerRejoined,
+        handleDrawOffer,
+        handleDrawOfferDeclined,
     };
 };
 
