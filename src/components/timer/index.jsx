@@ -3,38 +3,37 @@ import { sounds } from '../../assets';
 import { playSound } from '../../utils';
 
 const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
-    const correctedSeconds = Math.max(
-        0,
-        serverSeconds - Math.floor((Date.now() - lastSyncAt) / 1000)
-    );
-    const [secondsLeft, setSecondsLeft] = useState(correctedSeconds);
-    const timerRef = useRef(null);
+    // Ref always holds latest server values without re-triggering the tick interval
+    const syncRef = useRef({ serverSeconds, lastSyncAt });
     const tenSecondAlertPlayed = useRef(false);
 
+    const getDisplaySeconds = () => {
+        const elapsed = (Date.now() - syncRef.current.lastSyncAt) / 1000;
+        return Math.max(0, Math.floor(syncRef.current.serverSeconds - elapsed));
+    };
+
+    const [secondsLeft, setSecondsLeft] = useState(getDisplaySeconds);
+
+    // Keep ref current and snap the static display when server pushes new values
     useEffect(() => {
-        const corrected = Math.max(
-            0,
-            serverSeconds - Math.floor((Date.now() - lastSyncAt) / 1000)
-        );
-        setSecondsLeft(corrected);
+        syncRef.current = { serverSeconds, lastSyncAt };
+        setSecondsLeft(getDisplaySeconds());
         tenSecondAlertPlayed.current = false;
-        clearInterval(timerRef.current);
+    }, [serverSeconds, lastSyncAt]);
 
-        if (isActive && corrected > 0) {
-            timerRef.current = setInterval(() => {
-                setSecondsLeft(prev => {
-                    const next = prev - 1;
-                    if (next === 10 && !tenSecondAlertPlayed.current) {
-                        playSound(sounds.tenSeconds);
-                        tenSecondAlertPlayed.current = true;
-                    }
-                    return next >= 0 ? next : 0;
-                });
-            }, 1000);
-        }
-
-        return () => clearInterval(timerRef.current);
-    }, [serverSeconds, lastSyncAt, isActive]);
+    // Tick at 250ms while active — always derived from server sync values, never drifts
+    useEffect(() => {
+        if (!isActive) return;
+        const id = setInterval(() => {
+            const s = getDisplaySeconds();
+            if (s <= 10 && !tenSecondAlertPlayed.current) {
+                playSound(sounds.tenSeconds);
+                tenSecondAlertPlayed.current = true;
+            }
+            setSecondsLeft(s);
+        }, 250);
+        return () => clearInterval(id);
+    }, [isActive]);
 
     const formatTime = (s) => {
         const minutes = Math.floor(s / 60);
@@ -42,8 +41,15 @@ const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
+    const urgencyClass = isActive && secondsLeft <= 5 ? 'critical'
+        : isActive && secondsLeft <= 10 ? 'low'
+        : isActive && secondsLeft <= 30 ? 'warning'
+        : '';
+
+    if (isNaN(secondsLeft)) return null;
+
     return (
-        <div className={`timer ${isActive ? 'active' : 'inactive'}`}>
+        <div className={`timer ${isActive ? 'active' : 'inactive'} ${urgencyClass}`}>
             {formatTime(secondsLeft)}
         </div>
     );

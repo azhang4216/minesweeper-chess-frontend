@@ -1,53 +1,198 @@
-body {
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+:root {
+  /* ── Brand ─────────────────────────────────── */
+  --accent:        #7c3aed;
+  --accent-light:  #9f62f5;
+  --accent-dim:    rgba(124, 58, 237, 0.18);
+  --accent-glow:   rgba(124, 58, 237, 0.35);
+  --danger:        #ef4444;
+  --success:       #22c55e;
+  --warning:       #f59e0b;
+
+  /* ── Surfaces ──────────────────────────────── */
+  --bg:            #0c0c14;
+  --surface:       #13131e;
+  --panel:         #1a1a28;
+  --panel-hover:   #21212f;
+  --overlay:       rgba(0, 0, 0, 0.65);
+
+  /* ── Borders ───────────────────────────────── */
+  --border:        rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+
+  /* ── Text ──────────────────────────────────── */
+  --text:          #f0eff8;
+  --text-muted:    #7a7894;
+  --text-dim:      #44425a;
+
+  /* ── Legacy compat (keep existing pages working) */
+  --iwc-purple:    #7c3aed;
+  --light-lavender:#ede9fe;
+  --dark:          #f0eff8;    /* inverted for dark theme */
+  --wood-brown:    rgb(235, 179, 100);
+  --pale-brown:    rgb(249, 234, 213);
+  --invalid:       rgba(255, 255, 255, 0.07);
+
+  /* ── Nav ───────────────────────────────────── */
+  --nav-h:         58px;
+}
+
+/* ── Reset & Base ──────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
-  font-family: Impact, Charcoal, sans-serif;
-  letter-spacing: 0.02em;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Apply Impact font to all buttons */
-button {
-  font-family: Impact, Charcoal, sans-serif;
-  letter-spacing: 0.02em;
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  padding-top: var(--nav-h);
 }
 
-input,
-textarea,
+/* ── Typography ────────────────────────────────── */
+
+h1, h2, h3, h4 {
+  font-family: 'Rajdhani', Impact, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  margin: 0;
+}
+
 p {
-  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+input, textarea, select {
+  font-family: 'DM Sans', sans-serif;
   letter-spacing: 0;
 }
 
-/* code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-} */
+/* ── Buttons ───────────────────────────────────── */
+
+button {
+  font-family: 'Rajdhani', Impact, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
 
 button:hover:enabled {
-  transform: scale(1.1);
-  /* box-shadow: 0 0 8px yellow, 0 0 20px orange; */
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+button:active:enabled {
+  transform: translateY(0);
 }
 
 button:disabled {
-  background-color: #d3d3d3;
-  color: #a1a1a1;
-  border: 1px solid #a1a1a1;
+  background-color: var(--panel);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
-:root {
-  --iwc-purple: #6a0dad;
-  --dark: rgb(47, 46, 47);
-  --invalid: rgb(76, 76, 76);
-  --wood-brown: rgb(235, 179, 100);
-  --pale-brown: rgb(249, 234, 213);
-  --light-lavender: #e0d7ec;
+/* ── Shared page shell ─────────────────────────── */
 
-  /* 
-  rgb(171,67,219)
-  rgb(110,110,109)
-  */
+.page-shell {
+  min-height: calc(100vh - var(--nav-h));
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
 }
+
+/* ── Shared card ───────────────────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 36px 40px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Shared form elements ──────────────────────── */
+
+.field {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.field::placeholder {
+  color: var(--text-dim);
+}
+
+/* ── Shared primary button ─────────────────────── */
+
+.btn-primary {
+  width: 100%;
+  padding: 13px 24px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.btn-primary:hover:enabled {
+  box-shadow: 0 6px 20px var(--accent-glow);
+  background: var(--accent-light);
+}
+
+.btn-ghost {
+  width: 100%;
+  padding: 13px 24px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.btn-ghost:hover:enabled {
+  background: var(--panel-hover);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+/* ── Scrollbar ─────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }

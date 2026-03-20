@@ -1,95 +1,110 @@
 .create-room-page {
-    background-color: var(--iwc-purple);
-    min-height: 100vh;
-    width: 100vw;
-    min-height: 100vh;
+    min-height: calc(100vh - var(--nav-h));
+    background: var(--bg);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    position: relative;
-}
-
-.back-button {
-    position: absolute;
-    top: 30px;
-    left: 30px;
-    background-color: var(--pale-brown);
-    color: var(--dark);
-    font-size: 16px;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.2s;
-    z-index: 10;
+    padding: 40px 20px;
 }
 
 .create-room-container {
-    background-color: white;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    align-items: center;
-    animation: fadeInUp 1.5s ease forwards;
-    max-width: 90vw;
+    gap: 16px;
+    animation: cardReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardReveal {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .create-room-container h2 {
-    font-size: 24px;
-    color: var(--dark);
-    margin-bottom: 10px;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 4px;
 }
 
 .create-room-container input[type="text"],
 .create-room-container select {
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 10px;
-    border: 2px solid var(--iwc-purple);
-    width: 250px;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
+    appearance: none;
 }
+
+.create-room-container input[type="text"]:focus,
+.create-room-container select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.create-room-container input[type="text"]::placeholder { color: var(--text-dim); }
 
 .create-room-container select {
-    background-color: white;
-    color: var(--dark);
-    appearance: none; /* removes native arrow in some browsers */
-    background-image: url("data:image/svg+xml;utf8,<svg fill='%23999' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%237a7894' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
     background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 20px;
+    background-position: right 12px center;
     cursor: pointer;
-    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.create-room-container select:focus {
-    border-color: var(--pale-brown);
-    box-shadow: 0 0 5px var(--pale-brown);
-    outline: none;
+.create-room-container select option {
+    background: #1a1a28;
+    color: var(--text);
 }
 
 .create-room-container button {
-    background-color: var(--iwc-purple);
-    color: white;
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 10px;
+    width: 100%;
+    padding: 13px 24px;
+    background: var(--accent);
+    color: #fff;
     border: none;
+    border-radius: 8px;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    min-width: 160px;
-    text-align: center;
+    box-shadow: 0 4px 14px var(--accent-glow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.create-room-container button:hover:enabled {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+    background: var(--accent-light);
+}
+
+/* Cancel button variant */
+.create-room-container button:only-of-type:not(:first-of-type),
+.create-room-container button[onClick*="cancel"] {
+    background: var(--panel);
+    color: var(--text-muted);
+    border: 1px solid var(--border-strong);
+    box-shadow: none;
 }
 
 .create-room-container p {
-    font-size: 16px;
-    color: red;
+    font-size: 13px;
+    color: #f87171;
+    text-align: center;
 }

@@ -1,116 +1,155 @@
 .sign-in-page {
-    background-color: var(--iwc-purple);
-    min-height: 100vh;
+    min-height: calc(100vh - var(--nav-h));
+    background: var(--bg);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    padding: 40px 20px;
     position: relative;
 }
 
-.logo {
-    width: 500px;
-    max-width: 90vw;
-    height: auto;
-    animation: pop 1s ease forwards;
-    margin-bottom: 20px;
+.sign-in-page::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%);
+    pointer-events: none;
 }
 
-.sign-in-container {
-    background-color: white;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+/* Reuse logo style from homepage but smaller on sign-in */
+.sign-in-page .logo {
+    width: 280px;
+    max-width: 80vw;
+    margin-bottom: 32px;
+    animation: logoReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 30px var(--accent-glow));
+}
+
+@keyframes logoReveal {
+    from { opacity: 0; transform: scale(0.9) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.sign-in-card {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    animation: cardReveal 0.6s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    animation: fadeInUp 1.5s ease forwards;
-    max-width: 90vw;
-    gap: 15px;
+    gap: 20px;
+}
+
+@keyframes cardReveal {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .sign-in-title {
-    font-size: 24px;
-    color: var(--iwc-purple);
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
     text-align: center;
+    margin: 0;
 }
 
 .sign-in-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    align-items: center;
-    width: 100%;
+    gap: 12px;
 }
 
-.input-field {
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 10px;
-    border: 2px solid var(--iwc-purple);
-    width: 250px;
+/* inputs share .room-input from home-page historically; override here */
+.sign-in-page .room-input,
+.sign-in-page .input-field {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.sign-in-page .room-input:focus,
+.sign-in-page .input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.sign-in-page .room-input::placeholder,
+.sign-in-page .input-field::placeholder {
+    color: var(--text-dim);
 }
 
 .sign-in-button {
-    background-color: var(--iwc-purple);
-    color: white;
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 10px;
+    width: 100%;
+    padding: 13px 24px;
+    background: var(--accent);
+    color: #fff;
     border: none;
+    border-radius: 8px;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    min-width: 160px;
-    text-align: center;
+    box-shadow: 0 4px 14px var(--accent-glow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    margin-top: 4px;
 }
 
-.sign-in-button:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+.sign-in-button:hover:enabled {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+    background: var(--accent-light);
 }
 
+.room-message,
 .error-message {
-    color: red;
-    font-size: 16px;
+    color: #f87171;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
 }
 
-.create-account-text {
-    font-size: 14px;
-    color: #333;
-    margin-top: 10px;
+.create-account-text,
+.sign-in-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
 }
 
-.create-account-link {
-    color: rgb(68, 131, 255);
+.create-account-link,
+.sign-in-link {
+    color: var(--accent-light);
     cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s;
+}
+
+.create-account-link:hover,
+.sign-in-link:hover {
+    color: var(--text);
     text-decoration: underline;
-}
-
-/* Animations */
-@keyframes pop {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes fadeInUp {
-    0% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }

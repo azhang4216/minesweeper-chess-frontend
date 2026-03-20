@@ -71,6 +71,11 @@ export const playAsGuest = (guestID) => ({
     payload: guestID,
 });
 
+export const setMoveHistory = (moveHistory) => ({
+    type: "SET_MOVE_HISTORY",
+    payload: moveHistory,
+});
+
 export const resetGame = () => ({
     type: "RESET_GAME",
 });

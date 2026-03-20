@@ -14,6 +14,7 @@ const WinLossPopup = ({ result, reason, myEloChange, opponentEloChange, onClose 
 
     return (
         <div className="popup-overlay">
+            <div className="popup-backdrop" onClick={onClose} />
             <div className="popup-content">
                 <button className="close-button" onClick={onClose}>
                     &times;
