@@ -16,6 +16,7 @@ import {
     useOpponent,
     useIsMyTurn,
     useGameState,
+    useGameFen,
     useMoveHistory,
     useUsername
 } from '../../hooks';
@@ -28,7 +29,7 @@ import { useSocket, useBoardSocketHandlers } from "../../socket";
 import { useDispatch } from 'react-redux';
 import { actions } from '../../redux';
 
-import { playSound } from "../../utils";
+import { playSound, getFenAtIndex } from "../../utils";
 import { sounds } from "../../assets";
 
 const BoardPage = () => {
@@ -50,6 +51,8 @@ const BoardPage = () => {
 
             // make sure previous game state does not carry over
             dispatch(actions.resetGame());
+            setStartingFen(fen);
+            setViewIndex(null);
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
@@ -79,7 +82,37 @@ const BoardPage = () => {
     const player = usePlayer();
     const opponent = useOpponent();
     const gameState = useGameState();
+    const gameFen = useGameFen();
     const moveHistory = useMoveHistory();
+
+    const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
+    const [startingFen, setStartingFen] = useState(null);
+
+    // viewIndex === null means "at latest" — use live gameFen
+    const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
+    const displayFen = isViewingHistory
+        ? getFenAtIndex(startingFen ?? gameFen, moveHistory, Math.max(0, viewIndex))
+        : gameFen;
+
+    // When opponent plays, snap back to the live position
+    useEffect(() => {
+        setViewIndex(null);
+    }, [moveHistory.length]);
+
+    const goToStart = () => setViewIndex(0);
+    const goBack = () => setViewIndex(v => {
+        const current = v ?? moveHistory.length;
+        return Math.max(0, current - 1);
+    });
+    const goForward = () => {
+        setViewIndex(v => {
+            const current = v ?? moveHistory.length;
+            const next = current + 1;
+            return next >= moveHistory.length ? null : next;
+        });
+    };
+    const goToLatest = () => setViewIndex(null);
+    const goToMove = (idx) => setViewIndex(idx);
 
     // for timer display logic
     const isMyMove = useIsMyTurn();
@@ -156,11 +189,8 @@ const BoardPage = () => {
 
     return (
         <div className="board-page-container">
-            <img src="/landmine_purple.png" alt="Landmine Chess Logo" className="title-logo" />
             <div className="game-container">
-                <div
-                    className={gameState === GAME_STATES.placing_bombs ? "game-content-wrapper" : "game-content-wrapper"}
-                >
+                <div className="game-content-wrapper">
                     {displayWinLossPopup && (
                         <WinLossPopup
                             result={gameOverResult}
@@ -176,7 +206,7 @@ const BoardPage = () => {
                                 Opponent disconnected — {disconnectCountdown}s to reconnect
                             </div>
                         )}
-                        <div className="player-info top">
+                        <div className={`player-info top${!isMyMove && gameState === GAME_STATES.playing && moveHistory.length > 0 ? ' active-turn' : ''}`}>
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
                             <Timer
@@ -203,10 +233,10 @@ const BoardPage = () => {
                         <div
                             className="chess-board-container"
                         >
-                            <Chessboard />
+                            <Chessboard displayFen={isViewingHistory ? displayFen : undefined} />
                         </div>
 
-                        <div className="player-info bottom">
+                        <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing && moveHistory.length > 0 ? ' active-turn' : ''}`}>
                             <span>{player.name}</span>
                             <span>{player.rating}</span>
                             <Timer
@@ -230,7 +260,14 @@ const BoardPage = () => {
                             </span>
                         </div>
                     </div>
-                    <SidePanel />
+                    <SidePanel
+                        viewIndex={viewIndex ?? moveHistory.length}
+                        onGoToStart={goToStart}
+                        onGoBack={goBack}
+                        onGoForward={goForward}
+                        onGoToLatest={goToLatest}
+                        onGoToMove={goToMove}
+                    />
                 </div>
             </div>
         </div>
