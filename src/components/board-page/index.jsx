@@ -87,6 +87,12 @@ const BoardPage = () => {
 
     const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
     const [startingFen, setStartingFen] = useState(null);
+    const [disconnectCountdown, setDisconnectCountdown] = useState(null);
+    const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
+    const [gameOverReason, setGameOverReason] = useState("");
+    const [gameOverResult, setGameOverResult] = useState("");
+    const [myEloChange, setmyEloChange] = useState(0);
+    const [opponentEloChange, setOpponentEloChange] = useState(0);
 
     // viewIndex === null means "at latest" — use live gameFen
     const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
@@ -94,7 +100,7 @@ const BoardPage = () => {
         ? getFenAtIndex(startingFen ?? gameFen, moveHistory, Math.max(0, viewIndex))
         : gameFen;
 
-    // When opponent plays, snap back to the live position
+    // When any new move arrives, snap back to the live position
     useEffect(() => {
         setViewIndex(null);
     }, [moveHistory.length]);
@@ -118,15 +124,6 @@ const BoardPage = () => {
     const isMyMove = useIsMyTurn();
     useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
     useEffect(() => { console.log(`Game state: ${gameState}`) }, [gameState]);
-
-    const [disconnectCountdown, setDisconnectCountdown] = useState(null);
-
-    // these are for the outcome at the end of the game
-    const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
-    const [gameOverReason, setGameOverReason] = useState("");
-    const [gameOverResult, setGameOverResult] = useState("");
-    const [myEloChange, setmyEloChange] = useState(0);
-    const [opponentEloChange, setOpponentEloChange] = useState(0);
 
     // board socket handlers
     const {
