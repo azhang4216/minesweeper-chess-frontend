@@ -276,17 +276,24 @@ const BoardPage = () => {
                             onCancel={() => setDrawOfferDeclinedMsg('')}
                         />
                     )}
+                    {rematchOffered && (
+                        <ConfirmModal
+                            message={`${opponent.name} would like a rematch. Accept?`}
+                            onConfirm={() => { handleRequestRematch(); setRematchOffered(false); }}
+                            onCancel={() => setRematchOffered(false)}
+                        />
+                    )}
                     <div className="chess-wrapper">
                         {disconnectCountdown !== null && disconnectCountdown > 0 && (
                             <div className="disconnect-notice">
                                 Opponent disconnected — {disconnectCountdown}s to reconnect
                             </div>
                         )}
-                        <div className={`player-info top${!isMyMove && gameState === GAME_STATES.playing && moveHistory.length > 0 ? ' active-turn' : ''}`}>
+                        <div className={`player-info top${!isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
                             <span>{opponent.name}</span>
                             <span>{opponent.rating}</span>
                             <Timer
-                                isActive={!isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
+                                isActive={!isMyMove && gameState === GAME_STATES.playing}
                                 serverSeconds={opponent.secondsLeft}
                                 lastSyncAt={opponent.lastSyncAt}
                             />
@@ -312,11 +319,11 @@ const BoardPage = () => {
                             <Chessboard displayFen={isViewingHistory ? displayFen : undefined} />
                         </div>
 
-                        <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing && moveHistory.length > 0 ? ' active-turn' : ''}`}>
+                        <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
                             <span>{player.name}</span>
                             <span>{player.rating}</span>
                             <Timer
-                                isActive={isMyMove && (gameState === GAME_STATES.playing) && moveHistory.length > 0}
+                                isActive={isMyMove && gameState === GAME_STATES.playing}
                                 serverSeconds={player.secondsLeft}
                                 lastSyncAt={player.lastSyncAt}
                             />
@@ -348,7 +355,6 @@ const BoardPage = () => {
                         onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
                         onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
                         rematchRequested={rematchRequested}
-                        rematchOffered={rematchOffered}
                     />
                 </div>
             </div>
