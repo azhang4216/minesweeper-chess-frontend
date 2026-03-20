@@ -12,9 +12,7 @@ import { useSocket } from '../../socket';
 import './style.css';
 
 const NavigationSideBar = () => {
-    const [playOpen, setPlayOpen]   = useState(false);
     const [userOpen, setUserOpen]   = useState(false);
-    const playRef = useRef(null);
     const userRef = useRef(null);
 
     const navigate   = useNavigate();
@@ -29,7 +27,6 @@ const NavigationSideBar = () => {
     // Close dropdowns on outside click
     useEffect(() => {
         const handler = (e) => {
-            if (playRef.current && !playRef.current.contains(e.target)) setPlayOpen(false);
             if (userRef.current && !userRef.current.contains(e.target)) setUserOpen(false);
         };
         document.addEventListener('mousedown', handler);
@@ -38,7 +35,6 @@ const NavigationSideBar = () => {
 
     // Close dropdowns on route change
     useEffect(() => {
-        setPlayOpen(false);
         setUserOpen(false);
     }, [location.pathname]);
 
@@ -85,37 +81,15 @@ const NavigationSideBar = () => {
                     Home
                 </button>
 
-                {/* Play dropdown */}
-                <div className="nav-dropdown-wrap" ref={playRef}>
-                    <button
-                        className={`nav-link nav-link--chevron${playOpen ? ' nav-link--active' : ''}`}
-                        onClick={() => setPlayOpen(v => !v)}
-                        disabled={!isLoggedIn && !isGuest}
-                        title={!isLoggedIn && !isGuest ? 'Sign in to play' : undefined}
-                    >
-                        Play
-                        <span className={`nav-chevron${playOpen ? ' open' : ''}`}>▾</span>
-                    </button>
-                    {playOpen && (
-                        <div className="nav-dropdown">
-                            <button className="nav-dropdown-item" onClick={go('/create-room')}>
-                                <span className="nav-dropdown-icon">🏠</span>
-                                <span>
-                                    <strong>Create Room</strong>
-                                    <small>Host a private game</small>
-                                </span>
-                            </button>
-                            <div className="nav-dropdown-divider" />
-                            <button className="nav-dropdown-item" onClick={go('/join-room')}>
-                                <span className="nav-dropdown-icon">🔍</span>
-                                <span>
-                                    <strong>Join Room</strong>
-                                    <small>Browse open games</small>
-                                </span>
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {/* Play — navigates to home where matchmaking lives */}
+                <button
+                    className={`nav-link${isActive('/') ? ' nav-link--active' : ''}`}
+                    onClick={go('/')}
+                    disabled={!isLoggedIn && !isGuest}
+                    title={!isLoggedIn && !isGuest ? 'Sign in to play' : undefined}
+                >
+                    Play
+                </button>
 
                 <button
                     className={`nav-link${isActive('/search') ? ' nav-link--active' : ''}`}
