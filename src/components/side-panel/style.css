@@ -69,11 +69,11 @@
     border-top: 1px solid var(--border);
     display: flex;
     gap: 8px;
-    flex-direction: column;
+    flex-direction: row;
 }
 
 .action-btn {
-    width: 100%;
+    flex: 1;
     padding: 9px 12px;
     border-radius: 7px;
     font-size: 13px;

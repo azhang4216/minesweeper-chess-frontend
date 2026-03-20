@@ -121,7 +121,7 @@ const SidePanel = ({
                     )}
                     {onOfferDraw && (
                         <button className="action-btn action-btn--ghost" onClick={onOfferDraw}>
-                            Offer Draw
+                            Draw
                         </button>
                     )}
                 </div>
