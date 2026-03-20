@@ -50,7 +50,7 @@ export const useAuthState = () => {
             // no token, not loading
             dispatch(actions.setIsAuthLoading(false));
         }
-    }, [dispatch]);
+    }, [dispatch, socket]);
 };
 
 // import { useState } from "react";
