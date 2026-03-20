@@ -37,6 +37,7 @@ export const useAuthState = () => {
                 if (user) {
                     dispatch(actions.logIn(user.username));
                     socket.emit("authenticate", { playerId: user.username });
+                    socket.emit("rejoin", user.username);
                 } else {
                     localStorage.removeItem("authToken");
                     dispatch(actions.logOut());

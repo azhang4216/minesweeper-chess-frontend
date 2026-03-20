@@ -3,7 +3,6 @@ import {
     BoardPage,
     HomePage,
     ProtectedGameRoute,
-    ProtectedLoginRoute,
     ResetPasswordPage,
     SignInPage,
     CreateAccountPage,

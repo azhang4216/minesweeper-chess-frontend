@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { socket } from "../socket";
 import { actions } from "../redux";
 import { GAME_STATES } from "../constants";
@@ -7,23 +8,18 @@ import { useUsername } from "./";
 
 const useInitializeSocket = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const myUsername = useUsername();
+    const myUsernameRef = useRef(myUsername);
+    useEffect(() => {
+        myUsernameRef.current = myUsername;
+    }, [myUsername]);
 
     useEffect(() => {
-        const playerId = localStorage.getItem("playerId");
-        if (!playerId) return;
-
-        socket.auth = { playerId };
-        socket.connect();
-
-        socket.on("connect", () => {
-            socket.emit("rejoin", playerId);
-        });
-
-        socket.on("rejoined", (data) => {
+        const handleRejoined = (data) => {
             if (data.gameFen && data.players) {
-                const me = data.players.find(p => p.user_id === myUsername);
-                const opponent = data.players.find(p => p.user_id !== myUsername);
+                const me = data.players.find(p => p.user_id === myUsernameRef.current);
+                const opponent = data.players.find(p => p.user_id !== myUsernameRef.current);
                 if (!me || !opponent) return;
 
                 dispatch(actions.resetGame());
@@ -53,15 +49,15 @@ const useInitializeSocket = () => {
                     whiteTimeLeft: data.whiteTimeLeft,
                     blackTimeLeft: data.blackTimeLeft,
                 }));
-            }
-        });
 
-        return () => {
-            socket.off("connect");
-            socket.off("rejoined");
-            socket.disconnect();
+                navigate("/play-game");
+            }
         };
-    // myUsername is stable (set at login, doesn't change mid-session)
+
+        socket.on("rejoined", handleRejoined);
+        return () => {
+            socket.off("rejoined", handleRejoined);
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 };
