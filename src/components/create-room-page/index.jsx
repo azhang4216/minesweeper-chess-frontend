@@ -19,8 +19,6 @@ const CreateRoomPage = () => {
     // for listening for when we join a room
     useEffect(() => {
         const handleRoomJoined = (data) => {
-            console.log("Joined room:", data);
-
             // set our game state before navigating over, so our protected route doesn't reroute to home
             dispatch(actions.setGameState(GAME_STATES.placing_bombs));
 
@@ -51,7 +49,6 @@ const CreateRoomPage = () => {
 
         // Emit event to backend to create a room with the specified roomId & time control
         socket.emit("createRoom", { roomId, timeControl }, (response) => {
-            console.log("Creating a room...")
             if (response.success) {
                 setLoading(true);
             } else {

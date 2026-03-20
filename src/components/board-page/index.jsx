@@ -42,14 +42,12 @@ const BoardPage = () => {
     // information about the game being passed in
     const location = useLocation();
     const { roomId, players, fen, secsToPlaceBomb, secsToPlay } = location.state || {};
-    console.log(`room id: ${roomId}; players: ${JSON.stringify(players)}, fen: ${fen}, secsToPlaceBomb: ${secsToPlaceBomb}, secsToPlay: ${secsToPlay}`);
 
     // Set up game!
     useEffect(() => {
         if (roomId && players && fen) {
             const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
             const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
-            console.log(`my info: ${myInfo}, opponent info: ${opponentInfo}`);
 
             // make sure previous game state does not carry over
             dispatch(actions.resetGame());
@@ -74,8 +72,6 @@ const BoardPage = () => {
                 bombs: [],
                 secondsLeft: secsToPlay,
             }));
-
-            console.log(`In handle room joined, player is white? : ${myInfo.is_white}`);
 
             dispatch(actions.setGameFen(fen));
             dispatch(actions.setOrientation(myInfo.is_white));
@@ -164,8 +160,6 @@ const BoardPage = () => {
 
     // for timer display logic
     const isMyMove = useIsMyTurn();
-    useEffect(() => { console.log(`it is my move: ${isMyMove}`) }, [isMyMove]);
-    useEffect(() => { console.log(`Game state: ${gameState}`) }, [gameState]);
 
     // board socket handlers
     const {

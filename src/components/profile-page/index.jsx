@@ -48,7 +48,6 @@ const ProfilePage = () => {
                 setLoading(true);
                 setError(null);
                 const data = await getUserProfileByUsername(profileUsername);
-                console.log(data);
                 setProfileData(data);
 
                 // Fetch friend usernames for received requests
@@ -61,7 +60,6 @@ const ProfilePage = () => {
                 // Fetch friend usernames for friends list
                 if (data.friends?.length > 0) {
                     setFriendsList(data.friends);
-                    console.log(data.friends);
                 } else {
                     setFriendsList([]);
                 }
@@ -333,7 +331,7 @@ const ProfilePage = () => {
                                                 {new Date(game.date?.$date?.$numberLong || game.date).toLocaleString()}
                                             </td>
                                             <td>
-                                                {game.white_player.player_id} (
+                                                {game.white_player.is_guest ? 'Guest Player' : game.white_player.player_id} (
                                                 <span>
                                                     {game.white_player.elo_before_game_start?.$numberInt || game.white_player.elo_before_game_start}
                                                     {game.white_player.elo_change && (
@@ -349,7 +347,7 @@ const ProfilePage = () => {
                                                 )
                                             </td>
                                             <td>
-                                                {game.black_player.player_id} (
+                                                {game.black_player.is_guest ? 'Guest Player' : game.black_player.player_id} (
                                                 <span>
                                                     {game.black_player.elo_before_game_start?.$numberInt || game.black_player.elo_before_game_start}
                                                     {game.black_player.elo_change && (
@@ -371,20 +369,14 @@ const ProfilePage = () => {
                                                 {game.bombs.join(", ")}
                                             </td>
                                             <td>
-                                                <span className="tooltip-wrapper">
-                                                    <Link
-                                                        to={`/game/${game._id}`}
-                                                        className="friend-link"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        tabIndex={-1}
-                                                        style={{ pointerEvents: "none", color: "#aaa", cursor: "not-allowed" }}
-                                                        aria-disabled="true"
-                                                    >
-                                                        View Game
-                                                    </Link>
-                                                    <span className="tooltip-text">Game analysis coming soon!</span>
-                                                </span>
+                                                <Link
+                                                    to={`/game/${game._id}`}
+                                                    className="friend-link"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    View Game
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

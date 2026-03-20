@@ -23,7 +23,6 @@ const JoinRoomPage = () => {
     // for searching for all active rooms on load
     useEffect(() => {
         if (!socket) return;
-        console.log("Refreshing rooms");
         // Emit event to fetch all active rooms
         socket.emit("requestRoomsLookingForMatch", (response) => {
             if (response.success) {
@@ -53,8 +52,6 @@ const JoinRoomPage = () => {
     // for listening for when we join a room
     useEffect(() => {
         const handleRoomJoined = (data) => {
-            console.log("Joined room:", data);
-
             // set our game state before navigating over, so our protected route doesn't reroute to home
             dispatch(actions.setGameState(GAME_STATES.placing_bombs));
 
@@ -72,9 +69,7 @@ const JoinRoomPage = () => {
     const refreshRooms = () => {
         setLoading(true);
         setError("");
-        console.log("Refreshing rooms");
         socket.emit("requestRoomsLookingForMatch", (response) => {
-            console.log(response);
             if (response.success) {
                 setRooms(response.rooms);
             } else {

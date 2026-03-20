@@ -39,7 +39,6 @@ export default function appReducer(state = initialState, action) {
     switch (action.type) {
         case "UPDATE_GAME": {
             const { gameFen, moveSan, temporaryUpdate } = action.payload;
-            console.log(`Updating game: ${gameFen}, ${moveSan}, ${temporaryUpdate}`);
             return {
                 ...state,
                 game: {
@@ -76,7 +75,6 @@ export default function appReducer(state = initialState, action) {
         case "DETONATE_BOMB": {
             const squareToExplode = action.payload;
             const isMyBomb = (state.game.isWhite && (squareToExplode[1] === '3' || squareToExplode[1] === '4')) || (!state.game.isWhite && (squareToExplode[1] === '5' || squareToExplode[1] === '6'));
-            console.log(`Denotating bomb on ${squareToExplode}, and it is ${isMyBomb ? "" : "not "}my bomb.`)
             return {
                 ...state,
                 game: {
@@ -134,7 +132,6 @@ export default function appReducer(state = initialState, action) {
             };
 
         case "SET_ORIENTATION":
-            console.log(`In reducer, setting orientation to white: ${action.payload}`);
             return {
                 ...state,
                 game: {
@@ -172,7 +169,6 @@ export default function appReducer(state = initialState, action) {
 
         case "SET_TIMERS": {
             const { whiteTimeLeft, blackTimeLeft, syncedAt } = action.payload;
-            console.log(`Setting timers in Redux for white, black: ${whiteTimeLeft}, ${blackTimeLeft}`);
             return {
                 ...state,
                 game: {
@@ -192,7 +188,6 @@ export default function appReducer(state = initialState, action) {
         }
 
         case "LOG_IN":
-            console.log(`reducer state: logging in as ${action.payload}`);
             return {
                 ...state,
                 username: action.payload,
@@ -208,7 +203,6 @@ export default function appReducer(state = initialState, action) {
             }
 
         case "LOG_OUT":
-            console.log("reducer state: logging out");
             return {
                 ...state,
                 username: "",
@@ -221,7 +215,6 @@ export default function appReducer(state = initialState, action) {
             }
 
         case "PLAY_AS_GUEST":
-            console.log(`reducer state: playing as guest ${action.payload}`);
             return {
                 ...state,
                 username: action.payload,
@@ -235,6 +228,15 @@ export default function appReducer(state = initialState, action) {
                     },
                 }
             }
+
+        case "SET_MOVE_HISTORY":
+            return {
+                ...state,
+                game: {
+                    ...state.game,
+                    moveHistory: action.payload,
+                }
+            };
 
         case "RESET_GAME":
             return {

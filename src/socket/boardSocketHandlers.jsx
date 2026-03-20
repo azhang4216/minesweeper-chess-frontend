@@ -40,14 +40,12 @@ export const useBoardSocketHandlers = ({
         dispatch(actions.setGameState(GAME_STATES.inactive));
     };
 
-    const handleDisconnect = ({ disconnectedPlayerId, timeoutMs, message }) => {
-        console.log(`${disconnectedPlayerId} has disconnected from the game and will timeout in ${timeoutMs} ms.`);
+    const handleDisconnect = ({ timeoutMs, message }) => {
         setRoomMessage(message);
         setDisconnectCountdown(Math.floor(timeoutMs / 1000));
     };
 
-    const handlePlayerRejoined = ({ playerId }) => {
-        console.log(`${playerId} reconnected.`);
+    const handlePlayerRejoined = () => {
         setDisconnectCountdown(null);
         setRoomMessage("");
     };
@@ -56,13 +54,10 @@ export const useBoardSocketHandlers = ({
         if (whitePlayerBombs !== null && blackPlayerBombs !== null) {
             // we've received randomized bombs from timeout!
             setRoomMessage("Randomly placed bombs on timeout!");
-            console.log(`Setting white player bombs: ${whitePlayerBombs}`);
-            console.log(`Setting black player bombs: ${blackPlayerBombs}`);
             playSound(sounds.shovel);
             dispatch(actions.setRandomizedBombs({ whitePlayerBombs, blackPlayerBombs }));
         };
 
-        console.log("Finished placing bombs. Now ready to play.");
         playSound(sounds.gameStart);
 
         // double check every highlighted square is removed
@@ -184,13 +179,11 @@ export const useBoardSocketHandlers = ({
         // if the reason the game ended is cuz a piece blew up leading to insufficient material, 
         // we delay the popup a little so that we can watch the piece blow up
         if (by.includes("explode")) {
-            console.log(`explosive ending! waiting for animation`);
             setTimeout(() => {
                 setDisplayWinLossPopup(true);
             }, 2000);
             playSound(sounds.gameEnd);
         } else {
-            console.log(`regular ending! no need to wait for animation`);
             setDisplayWinLossPopup(true);
             playSound(sounds.gameEnd);
         };
@@ -201,10 +194,6 @@ export const useBoardSocketHandlers = ({
     const handleWinLossGameOver = ({ winner, by, whiteEloChange, blackEloChange }) => {
         const isWinner = ((winner === 'w') && isWhiteRef.current) || ((winner === 'b') && !isWhiteRef.current);
         setGameOverResult(isWinner ? "You win" : "You lose");
-        console.log(`Winner: ${winner}`);
-        console.log(`Winner is white ? : ${winner === 'w'}`);
-        console.log(`is white? : ${isWhiteRef.current}`);
-        console.log(`set game over result: ${isWinner ? "You win" : "You lose"}`);
         setGameOverReason(by);
         setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);

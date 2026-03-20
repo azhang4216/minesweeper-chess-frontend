@@ -60,8 +60,6 @@ const ChessBoard = ({ displayFen }) => {
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [legalMoves, setLegalMoves] = useState([]);
 
-    useEffect(() => { console.log(`player is set to white: ${isWhite}`) }, [isWhite]);
-
     useEffect(() => {
         const handleBombPlaced = (square) => {
             dispatch(actions.placeBomb(square));
@@ -152,12 +150,10 @@ const ChessBoard = ({ displayFen }) => {
             playSound(sounds.illegal);
         }
 
-        console.log(`Clicked on square ${selected}`);
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
         if (isHistory) return false;
-        console.log(`Trying to make move: ${sourceSquare} to ${targetSquare} with ${piece}.`);
 
         if (gameState !== GAME_STATES.playing) return false;
 

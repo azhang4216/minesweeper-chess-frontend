@@ -64,3 +64,9 @@ export const getGamesByUsername = async (username, page = 1, limit = 10) => {
     const res = await axios.get(endpoint);
     return res.data;
 };
+
+// Get a single game by ID
+export const getGameById = async (id) => {
+    const res = await axios.get(`/api/profile/game/${id}`);
+    return res.data;
+};

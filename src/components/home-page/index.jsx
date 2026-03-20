@@ -22,7 +22,6 @@ const HomePage = () => {
     const handlePlayAsGuest = async () => {
         try {
             const assignedGuestID = await generateGuestUUID();
-            console.log(`Got assigned guest ID: ${assignedGuestID}`);
             dispatch(actions.playAsGuest(assignedGuestID));
             socket.emit("authenticate", { playerId: assignedGuestID });
         } catch (e) {
@@ -71,16 +70,14 @@ const HomePage = () => {
     return (
         <div className="front-page">
             <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
-            <div className="chess-wrapper">
-                <div className="join-create-room-container">
-                    {ButtonGroups()}
-                </div>
+            <div className="join-create-room-container">
+                {ButtonGroups()}
             </div>
 
-            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
-            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
-            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
-            <img src="/landmine_logo.png" alt="Floating Bomb" className="bomb" />
+            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
         </div>
     );
 };

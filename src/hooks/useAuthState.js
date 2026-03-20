@@ -29,7 +29,6 @@ export const useAuthState = () => {
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
-        console.log(`JWT found in localstorage on load: ${token}`);
 
         if (token) {
             dispatch(actions.setIsAuthLoading(true));

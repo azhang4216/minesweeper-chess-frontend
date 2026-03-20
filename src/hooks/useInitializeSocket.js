@@ -17,13 +17,10 @@ const useInitializeSocket = () => {
         socket.connect();
 
         socket.on("connect", () => {
-            console.log("Socket connected:", socket.id);
             socket.emit("rejoin", playerId);
         });
 
         socket.on("rejoined", (data) => {
-            console.log("Rejoined room:", data.roomId);
-
             if (data.gameFen && data.players) {
                 const me = data.players.find(p => p.user_id === myUsername);
                 const opponent = data.players.find(p => p.user_id !== myUsername);
@@ -49,9 +46,7 @@ const useInitializeSocket = () => {
                 }));
 
                 if (Array.isArray(data.moveHistory)) {
-                    data.moveHistory.forEach(san => {
-                        dispatch(actions.updateGameFromServer(null, san));
-                    });
+                    dispatch(actions.setMoveHistory(data.moveHistory));
                 }
 
                 dispatch(actions.setTimers({

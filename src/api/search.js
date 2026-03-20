@@ -11,6 +11,5 @@ export const findUsersByInputString = async (inputStr) => {
 
 export const getUsernameById = async (id) => {
     const res = await axios.get(`api/search/${id}`);
-    console.log(`getUsernameById Res: ${res}`);
     return res.data;
 };
