@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 
 // styling
@@ -58,6 +58,7 @@ const BoardPage = () => {
             setDrawCooldown(0);
             setRematchOffered(false);
             setRematchRequested(false);
+            setExplosionHistory([]);
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
@@ -90,6 +91,7 @@ const BoardPage = () => {
 
     const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
     const [startingFen, setStartingFen] = useState(null);
+    const [explosionHistory, setExplosionHistory] = useState([]); // [{ square, moveCount }]
     const [disconnectCountdown, setDisconnectCountdown] = useState(null);
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
     const [gameOverReason, setGameOverReason] = useState("");
@@ -105,6 +107,14 @@ const BoardPage = () => {
 
     // viewIndex === null means "at latest" — use live gameFen
     const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
+
+    // Craters that should be visible at the current history position
+    const visibleCraters = useMemo(() => {
+        const currentCount = viewIndex ?? moveHistory.length;
+        return explosionHistory
+            .filter(e => e.moveCount <= currentCount)
+            .map(e => e.square);
+    }, [explosionHistory, viewIndex, moveHistory.length]);
     const displayFen = isViewingHistory
         ? getFenAtIndex(startingFen ?? gameFen, moveHistory, Math.max(0, viewIndex))
         : gameFen;
@@ -189,6 +199,7 @@ const BoardPage = () => {
         setDrawOfferDeclinedMsg,
         setRematchOffered,
         onRematchReady,
+        onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
     });
 
     useEffect(() => {
@@ -323,7 +334,10 @@ const BoardPage = () => {
                         <div
                             className="chess-board-container"
                         >
-                            <Chessboard displayFen={isViewingHistory ? displayFen : undefined} />
+                            <Chessboard
+                                displayFen={isViewingHistory ? displayFen : undefined}
+                                visibleCraters={visibleCraters}
+                            />
                         </div>
 
                         <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>

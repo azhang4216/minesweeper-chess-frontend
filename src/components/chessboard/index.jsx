@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
-import { sounds, pieces } from '../../assets';
+import { sounds, pieces, images } from '../../assets';
 import { playSound } from '../../utils';
 import { GAME_STATES, RGBA } from '../../constants.js';
 
@@ -39,7 +39,7 @@ const highlightSquare = (square, colorRgba) => {
     }
 };
 
-const ChessBoard = ({ displayFen }) => {
+const ChessBoard = ({ displayFen, visibleCraters = [] }) => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
@@ -104,6 +104,35 @@ const ChessBoard = ({ displayFen }) => {
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [myBombs]);
+
+    // Sync crater overlays with visibleCraters. Re-runs on displayFen change too so craters
+    // are re-applied after react-chessboard repaints on history navigation.
+    useEffect(() => {
+        document.querySelectorAll('.scorched').forEach(el => el.remove());
+
+        visibleCraters.forEach(square => {
+            const squareEl = document.querySelector(`[data-square="${square}"]`);
+            if (!squareEl || squareEl.querySelector('.scorched')) return;
+            const crater = document.createElement('img');
+            crater.src = images.craterPng;
+            crater.className = 'scorched';
+            Object.assign(crater.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '85%',
+                height: '85%',
+                objectFit: 'cover',
+                pointerEvents: 'none',
+                zIndex: '1',
+                opacity: '0.9',
+                transform: 'translate(-50%, -50%)',
+            });
+            squareEl.style.position = 'relative';
+            squareEl.appendChild(crater);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visibleCraters, displayFen]);
 
     useEffect(() => {
         // remove all existing highlighted squares

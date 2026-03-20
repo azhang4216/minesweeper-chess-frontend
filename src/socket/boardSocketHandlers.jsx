@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { images, sounds } from '../assets';
 import { actions } from '../redux';
 import { playSound } from '../utils';
@@ -18,6 +18,7 @@ export const useBoardSocketHandlers = ({
     setDrawOfferDeclinedMsg,
     setRematchOffered,
     onRematchReady,
+    onExplosion,
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
@@ -29,6 +30,13 @@ export const useBoardSocketHandlers = ({
     useEffect(() => {
         isWhiteRef.current = isWhite;
     }, [isWhite]);
+
+    // Track move history length so we know which history index an explosion falls on
+    const moveHistory = useSelector(state => state.game.moveHistory);
+    const moveHistoryLengthRef = useRef(moveHistory.length);
+    useEffect(() => {
+        moveHistoryLengthRef.current = moveHistory.length;
+    }, [moveHistory]);
 
     const handleRoomCreated = ({ message }) => {
         setRoomMessage(message);
@@ -89,6 +97,9 @@ export const useBoardSocketHandlers = ({
                 // if it is our own bomb, we need to remove the X
                 dispatch(actions.detonateBomb(squareToExplode));
 
+                // Capture move count now (before the timeout) — this move will be moveHistory.length + 1
+                const explosionMoveCount = moveHistoryLengthRef.current + 1;
+
                 setTimeout(() => {
                     // we get rid of the exploded piece a bit later for syncing with "oh no" sound
                     dispatch(actions.updateGameFromServer(gameFen, moveSan));
@@ -109,27 +120,10 @@ export const useBoardSocketHandlers = ({
                     squareEl.style.position = 'relative';
                     squareEl.appendChild(explosion);
 
-                    // after animation, the scorched overlay is added
+                    // after animation, notify board-page to record this explosion in state
                     setTimeout(() => {
                         explosion.remove();
-
-                        const crater = document.createElement('img');
-                        crater.src = images.craterPng;
-                        crater.className = 'scorched';
-                        Object.assign(crater.style, {
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            width: '85%',
-                            height: '85%',
-                            objectFit: 'cover',
-                            pointerEvents: 'none',
-                            zIndex: '1',
-                            opacity: '0.9',
-                            transform: 'translate(-50%, -50%)', // offset to center the crater
-                        });
-
-                        squareEl.appendChild(crater);
+                        onExplosion(squareToExplode, explosionMoveCount);
                     }, 1000);                                   // adjust time to match GIF length
                 }, 900);                                        // delay time before we play explosion
             } else {
