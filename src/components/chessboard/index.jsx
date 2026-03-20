@@ -11,6 +11,7 @@ import { GAME_STATES, RGBA } from '../../constants.js';
 import {
     useGameFen,
     useIsWhite,
+    useIsMyTurn,
     useMyBombs,
     useGameState
 } from '../../hooks';
@@ -38,18 +39,23 @@ const highlightSquare = (square, colorRgba) => {
     }
 };
 
-const ChessBoard = () => {
+const ChessBoard = ({ displayFen }) => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
     // extract state from redux 
     const gameFen = useGameFen();
     const isWhite = useIsWhite();
+    const isMyTurn = useIsMyTurn();
     const myBombs = useMyBombs();
     const gameState = useGameState();
 
+    const isHistory = !!displayFen;
+
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
     const [squaresToHighlight, setSquaresToHighlight] = useState([]);
+    const [rightClickHighlights, setRightClickHighlights] = useState(new Set());
+    const [customArrows, setCustomArrows] = useState([]);
     const [lastMove, setLastMove] = useState({ from: null, to: null });
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [legalMoves, setLegalMoves] = useState([]);
@@ -150,19 +156,25 @@ const ChessBoard = () => {
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
+        if (isHistory) return false;
         console.log(`Trying to make move: ${sourceSquare} to ${targetSquare} with ${piece}.`);
 
-        if (GAME_STATES.playing && ((isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b'))) {
-            socket.emit("makeMove", {
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: piece[1]?.toLowerCase() ?? "q",
-            });
-        } else {
-            playSound(sounds.illegal);
-            setSelectedSquare(null);
-            setLegalMoves([]);
+        if (gameState !== GAME_STATES.playing) return false;
+
+        const isMyPiece = (isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b');
+        if (!isMyPiece) return false;
+
+        if (!isMyTurn) {
+            // queue as premove — library re-fires onPieceDrop when position updates
+            return true;
         }
+
+        socket.emit("makeMove", {
+            from: sourceSquare,
+            to: targetSquare,
+            promotion: piece[1]?.toLowerCase() ?? "q",
+        });
+        return true;
     };
 
     const onMouseoverSquare = (square, _pieceOnSquare) => {
@@ -179,7 +191,17 @@ const ChessBoard = () => {
     };
 
     const onSquareRightClick = (square) => {
-        setSquaresToHighlight([...squaresToHighlight, square]);
+        setRightClickHighlights(prev => {
+            const next = new Set(prev);
+            if (next.has(square)) next.delete(square);
+            else next.add(square);
+            return next;
+        });
+    };
+
+    const clearAnnotations = () => {
+        setRightClickHighlights(new Set());
+        setCustomArrows([]); // new reference triggers library's internal clearArrows()
     };
 
     const customPieces = Object.fromEntries(
@@ -230,19 +252,26 @@ const ChessBoard = () => {
             acc[sq] = { backgroundColor: RGBA.light_yellow };
             return acc;
         }, {}),
+        ...[...rightClickHighlights].reduce((acc, sq) => {
+            acc[sq] = { backgroundColor: 'rgba(235, 97, 80, 0.6)' };
+            return acc;
+        }, {}),
     };
 
     return (
         <div onClick={handleClick}>
             <Chessboard
-                position={gameFen}
+                position={displayFen ?? gameFen}
                 onPieceDrop={onDrop}
+                arePiecesDraggable={!isHistory}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
-                {...(gameState === GAME_STATES.playing ? { onSquareRightClick: onSquareRightClick } : {})}
+                onSquareRightClick={gameState === GAME_STATES.playing ? onSquareRightClick : undefined}
+                onSquareClick={gameState === GAME_STATES.playing && !isHistory ? clearAnnotations : undefined}
                 boardOrientation={isWhite ? "white" : "black"}
                 arePremovesAllowed={true}
                 clearPremovesOnRightClick={true}
+                customArrows={customArrows}
                 customArrowColor={RGBA.iwc_purple}
                 customPieces={customPieces}
                 boardStyle={{
