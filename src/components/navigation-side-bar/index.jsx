@@ -83,7 +83,7 @@ const NavigationSideBar = () => {
 
                 {/* Play — navigates to home where matchmaking lives */}
                 <button
-                    className={`nav-link${isActive('/') ? ' nav-link--active' : ''}`}
+                    className="nav-link"
                     onClick={go('/')}
                     disabled={!isLoggedIn && !isGuest}
                     title={!isLoggedIn && !isGuest ? 'Sign in to play' : undefined}
