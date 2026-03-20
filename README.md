@@ -15,9 +15,11 @@ If any piece (friend or foe) lands on a square containing a bomb, the bomb deton
 - Chess UI built with react-chessboard
 - Chess logic implemented with chess.js
 - Redux toolkit for state management
-- Tailwind CSS for styling
+- Custom CSS with design tokens (dark tactical theme)
+- React Router DOM for client-side routing
 - Socket.io client for real-time gameplay
-- Axios for api requests e.g. profile login, reset password
+- Axios for API requests (login, profile, reset password)
+- GitHub Actions for CI (tests required on every PR to main)
 
 ## 💻 Local Development
 
@@ -48,13 +50,18 @@ npm start
 
 - [x] Core chess mechanics
 - [x] Core UI: name, elo, timer, bomb count
-- [x] Bomb placement
-- [x] Bomb detonation & animation
+- [x] Bomb placement and detonation with animation
+- [x] Crater overlay persists through move history navigation
 - [x] Display captured pieces
-- [x] Foley effects for placing a piece & incorrect movies
-- [ ] Collapsable left menu
-- [x] Move history tracking
-- [ ] User: creation, login, logout, reset
+- [x] Foley effects for placing a piece and invalid moves
+- [x] Move history navigation with clickable SAN history
+- [x] Resign and draw offer with confirm modal
+- [x] Rematch and new game post-game flow
+- [x] Opponent disconnect countdown
+- [x] Matchmaking queue with time control selection
+- [x] User authentication: creation, login, logout, guest play, password reset
+- [x] Navigation sidebar with dark tactical theme
+- [x] CI: GitHub Actions runs unit tests on every PR to main
 
 ## 📄 License
 
