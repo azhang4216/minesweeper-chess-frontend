@@ -27,15 +27,17 @@ A modal overlay shown while in the matchmaking queue. Contains:
 - "Searching for opponent..." text
 - A "Cancel" button
 
-Cancel emits `leaveQueue` and closes the popup. When `roomJoined` fires, the popup closes and the user navigates to `/play-game` (same navigation as the old join-room flow).
+Cancel emits `leaveQueue` and closes the popup optimistically (before the callback). If `roomJoined` fires before or at the same time as the cancel (race condition), the user navigates to the game — the backend will have already removed the queue entry as part of setting up the match. When `roomJoined` fires during normal searching, the popup closes and the user navigates to `/play-game`.
 
 ## Socket events
 
 | Direction | Event | Payload |
 |-----------|-------|---------|
-| emit | `enterQueue` | `{ timeControl: number }` |
+| emit | `enterQueue` | `{ timeControl: number }` — timeControl is seconds (60, 180, 300, or 600) |
 | emit | `leaveQueue` | (none) |
 | listen | `roomJoined` | existing game data — navigate to `/play-game` |
+
+Note: the backend emits `roomJoined` (not `matchFound`) via `io.to(roomId)` after joining both players to the socket room with `io.in(playerId).socketsJoin(roomId)`. There is no separate `matchFound` event.
 
 ## Removed
 
@@ -57,7 +59,7 @@ Cancel emits `leaveQueue` and closes the popup. When `roomJoined` fires, the pop
 ## Error handling
 
 - If `enterQueue` returns `{ success: false }`: display error message inline (e.g. "Already in a game")
-- If socket disconnects while searching: popup closes naturally on reconnect/page state reset
+- If the socket disconnects while searching, the backend removes the player from the queue automatically. On reconnect, the searching popup does not reopen — the user is returned to the home page and must click "Play Game" again to re-enter the queue.
 
 ## What is not in scope
 
