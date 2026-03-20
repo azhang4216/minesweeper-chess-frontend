@@ -129,7 +129,7 @@ const SidePanel = ({
                 <div className="game-actions">
                     {onRequestRematch && (
                         <button
-                            className={`action-btn action-btn--ghost${rematchRequested ? ' action-btn--waiting' : ''}`}
+                            className={`action-btn action-btn--primary${rematchRequested ? ' action-btn--waiting' : ''}`}
                             onClick={onRequestRematch}
                             disabled={rematchRequested}
                         >

@@ -33,32 +33,34 @@
 .confirm-button,
 .cancel-button {
     padding: 10px 28px;
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     border-radius: 8px;
-    border: none;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    transition: background 0.15s, box-shadow 0.15s;
 }
-
-.confirm-button:hover,
-.cancel-button:hover { transform: translateY(-1px); }
 
 .confirm-button {
     background: rgba(239, 68, 68, 0.85);
+    border: 1px solid rgba(239, 68, 68, 0.5);
     color: #fff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
 }
 
-.confirm-button:hover { background: #ef4444; }
+.confirm-button:hover {
+    background: #ef4444;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+}
 
 .cancel-button {
-    background: var(--panel);
+    background: transparent;
     border: 1px solid var(--border-strong);
     color: var(--text-muted);
 }
 
 .cancel-button:hover {
-    background: var(--panel-hover);
+    background: var(--panel);
     color: var(--text);
 }
