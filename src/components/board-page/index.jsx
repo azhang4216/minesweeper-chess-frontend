@@ -148,7 +148,7 @@ const BoardPage = () => {
     };
     const handleNewGame = () => navigate('/');
     const onRematchReady = (newGameData) => {
-        navigate('/board', { state: newGameData, replace: true });
+        navigate('/play-game', { state: newGameData, replace: true });
     };
 
     const handleAcceptDraw = () => {
