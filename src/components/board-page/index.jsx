@@ -9,6 +9,7 @@ import Chessboard from '../chessboard';
 import SidePanel from '../side-panel';
 import WinLossPopup from '../win-loss-popup';
 import Timer from '../timer';
+import ConfirmModal from '../confirm-modal';
 
 // hooks
 import {
@@ -93,6 +94,7 @@ const BoardPage = () => {
     const [gameOverResult, setGameOverResult] = useState("");
     const [myEloChange, setmyEloChange] = useState(0);
     const [opponentEloChange, setOpponentEloChange] = useState(0);
+    const [confirmAction, setConfirmAction] = useState(null); // null | 'resign' | 'draw'
 
     // viewIndex === null means "at latest" — use live gameFen
     const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
@@ -119,6 +121,17 @@ const BoardPage = () => {
     };
     const goToLatest = () => setViewIndex(null);
     const goToMove = (idx) => setViewIndex(idx);
+
+    const handleResign = () => setConfirmAction('resign');
+    const handleResignConfirm = () => {
+        socket.emit('resign');
+        setConfirmAction(null);
+    };
+    const handleOfferDraw = () => setConfirmAction('draw');
+    const handleDrawConfirm = () => {
+        socket.emit('offerDraw');
+        setConfirmAction(null);
+    };
 
     // for timer display logic
     const isMyMove = useIsMyTurn();
@@ -197,6 +210,15 @@ const BoardPage = () => {
                             onClose={() => setDisplayWinLossPopup(false)}
                         />
                     )}
+                    {confirmAction && (
+                        <ConfirmModal
+                            message={confirmAction === 'resign'
+                                ? 'Are you sure you want to resign?'
+                                : 'Offer a draw to your opponent?'}
+                            onConfirm={confirmAction === 'resign' ? handleResignConfirm : handleDrawConfirm}
+                            onCancel={() => setConfirmAction(null)}
+                        />
+                    )}
                     <div className="chess-wrapper">
                         {disconnectCountdown !== null && disconnectCountdown > 0 && (
                             <div className="disconnect-notice">
@@ -264,6 +286,8 @@ const BoardPage = () => {
                         onGoForward={goForward}
                         onGoToLatest={goToLatest}
                         onGoToMove={goToMove}
+                        onResign={gameState === GAME_STATES.playing ? handleResign : undefined}
+                        onOfferDraw={gameState === GAME_STATES.playing ? handleOfferDraw : undefined}
                     />
                 </div>
             </div>

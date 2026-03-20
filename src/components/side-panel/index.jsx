@@ -22,6 +22,8 @@ const SidePanel = ({
     onGoForward,
     onGoToLatest,
     onGoToMove,
+    onResign,
+    onOfferDraw,
 }) => {
     const moveHistory = useMoveHistory();
     const isWhite = useIsWhite();
@@ -105,6 +107,20 @@ const SidePanel = ({
                     </div>
                 </div>
             }
+            {(onResign || onOfferDraw) && (
+                <div className="game-actions">
+                    {onResign && (
+                        <button className="action-btn action-btn--danger" onClick={onResign}>
+                            Resign
+                        </button>
+                    )}
+                    {onOfferDraw && (
+                        <button className="action-btn action-btn--ghost" onClick={onOfferDraw}>
+                            Offer Draw
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

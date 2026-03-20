@@ -60,3 +60,52 @@
     color: var(--accent-light) !important;
     font-weight: 600;
 }
+
+/* ── Action buttons ─────────────────────────────── */
+
+.game-actions {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    border: 1px solid transparent;
+    letter-spacing: 0.02em;
+}
+
+.action-btn:hover { transform: translateY(-1px); }
+
+.action-btn--danger {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+.action-btn--danger:hover {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.55);
+}
+
+.action-btn--ghost {
+    background: var(--panel);
+    border-color: var(--border-strong);
+    color: var(--text-muted);
+}
+
+.action-btn--ghost:hover {
+    background: var(--panel-hover);
+    color: var(--text);
+    border-color: var(--accent);
+}
