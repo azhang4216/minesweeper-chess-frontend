@@ -47,6 +47,7 @@ const NavigationSideBar = () => {
             const guestId = await generateGuestUUID();
             dispatch(actions.playAsGuest(guestId));
             socket.emit('authenticate', { playerId: guestId });
+            navigate('/');
         } catch (e) {
             console.error('Failed to generate guest UUID:', e);
         } finally {
@@ -85,8 +86,6 @@ const NavigationSideBar = () => {
                 <button
                     className="nav-link"
                     onClick={go('/')}
-                    disabled={!isLoggedIn && !isGuest}
-                    title={!isLoggedIn && !isGuest ? 'Sign in to play' : undefined}
                 >
                     Play
                 </button>
