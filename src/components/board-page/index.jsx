@@ -147,11 +147,8 @@ const BoardPage = () => {
         setRematchRequested(true);
     };
     const handleNewGame = () => navigate('/');
-    const onRematchReady = ({ roomId, players, fen, secsToPlaceBomb, secsToPlay }) => {
-        navigate('/board', {
-            state: { roomId, players, fen, secsToPlaceBomb, secsToPlay },
-            replace: true,
-        });
+    const onRematchReady = (newGameData) => {
+        navigate('/board', { state: newGameData, replace: true });
     };
 
     const handleAcceptDraw = () => {
