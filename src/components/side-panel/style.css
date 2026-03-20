@@ -109,3 +109,9 @@
     color: var(--text);
     border-color: var(--accent);
 }
+
+.action-btn--waiting {
+    opacity: 0.55;
+    cursor: default;
+    transform: none !important;
+}

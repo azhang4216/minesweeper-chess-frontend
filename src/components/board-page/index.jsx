@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // styling
 import './style.css';
@@ -37,6 +37,7 @@ const BoardPage = () => {
     const socket = useSocket();
     const dispatch = useDispatch();
     const myUsername = useUsername();
+    const navigate = useNavigate();
 
     // information about the game being passed in
     const location = useLocation();
@@ -56,6 +57,8 @@ const BoardPage = () => {
             setViewIndex(null);
             setDrawOfferPending(false);
             setDrawOfferDeclinedMsg('');
+            setRematchOffered(false);
+            setRematchRequested(false);
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
@@ -99,6 +102,8 @@ const BoardPage = () => {
     const [confirmAction, setConfirmAction] = useState(null); // null | 'resign' | 'draw'
     const [drawOfferPending, setDrawOfferPending] = useState(false);
     const [drawOfferDeclinedMsg, setDrawOfferDeclinedMsg] = useState('');
+    const [rematchOffered, setRematchOffered] = useState(false);
+    const [rematchRequested, setRematchRequested] = useState(false);
 
     // viewIndex === null means "at latest" — use live gameFen
     const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
@@ -137,6 +142,18 @@ const BoardPage = () => {
         setConfirmAction(null);
     };
 
+    const handleRequestRematch = () => {
+        socket.emit('requestRematch');
+        setRematchRequested(true);
+    };
+    const handleNewGame = () => navigate('/');
+    const onRematchReady = ({ roomId, players, fen, secsToPlaceBomb, secsToPlay }) => {
+        navigate('/board', {
+            state: { roomId, players, fen, secsToPlaceBomb, secsToPlay },
+            replace: true,
+        });
+    };
+
     const handleAcceptDraw = () => {
         socket.emit('drawResponse', { accepted: true });
         setDrawOfferPending(false);
@@ -165,6 +182,8 @@ const BoardPage = () => {
         handlePlayerRejoined,   // add this
         handleDrawOffer,
         handleDrawOfferDeclined,
+        handleRematchOffered,
+        handleRematchReady,
     } = useBoardSocketHandlers({
         setRoomMessage: (_x) => { }, // for now, we don't need it
         setGameOverReason,
@@ -175,6 +194,8 @@ const BoardPage = () => {
         setDisconnectCountdown,   // add this
         setDrawOfferPending,
         setDrawOfferDeclinedMsg,
+        setRematchOffered,
+        onRematchReady,
     });
 
     useEffect(() => {
@@ -190,6 +211,8 @@ const BoardPage = () => {
         socket.on('playerRejoined', handlePlayerRejoined);
         socket.on('drawOffer', handleDrawOffer);
         socket.on('drawOfferDeclined', handleDrawOfferDeclined);
+        socket.on('rematchOffered', handleRematchOffered);
+        socket.on('rematchReady', handleRematchReady);
 
         return () => {
             socket.off('roomCreated', handleRoomCreated);
@@ -204,6 +227,8 @@ const BoardPage = () => {
             socket.off('playerRejoined', handlePlayerRejoined);
             socket.off('drawOffer', handleDrawOffer);
             socket.off('drawOfferDeclined', handleDrawOfferDeclined);
+            socket.off('rematchOffered', handleRematchOffered);
+            socket.off('rematchReady', handleRematchReady);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket]);
@@ -323,6 +348,10 @@ const BoardPage = () => {
                         onGoToMove={goToMove}
                         onResign={gameState === GAME_STATES.playing ? handleResign : undefined}
                         onOfferDraw={gameState === GAME_STATES.playing ? handleOfferDraw : undefined}
+                        onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
+                        onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
+                        rematchRequested={rematchRequested}
+                        rematchOffered={rematchOffered}
                     />
                 </div>
             </div>

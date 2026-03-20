@@ -16,6 +16,8 @@ export const useBoardSocketHandlers = ({
     setDisconnectCountdown,   // add this
     setDrawOfferPending,
     setDrawOfferDeclinedMsg,
+    setRematchOffered,
+    onRematchReady,
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
@@ -234,6 +236,9 @@ export const useBoardSocketHandlers = ({
         setDrawOfferDeclinedMsg('Your draw offer was declined.');
     };
 
+    const handleRematchOffered = () => setRematchOffered(true);
+    const handleRematchReady = (gameData) => onRematchReady(gameData);
+
     return {
         handleRoomCreated,
         handleRoomJoinError,
@@ -247,6 +252,8 @@ export const useBoardSocketHandlers = ({
         handlePlayerRejoined,
         handleDrawOffer,
         handleDrawOfferDeclined,
+        handleRematchOffered,
+        handleRematchReady,
     };
 };
 

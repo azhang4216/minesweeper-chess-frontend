@@ -24,6 +24,10 @@ const SidePanel = ({
     onGoToMove,
     onResign,
     onOfferDraw,
+    onRequestRematch,
+    onNewGame,
+    rematchRequested,
+    rematchOffered,
 }) => {
     const moveHistory = useMoveHistory();
     const isWhite = useIsWhite();
@@ -117,6 +121,24 @@ const SidePanel = ({
                     {onOfferDraw && (
                         <button className="action-btn action-btn--ghost" onClick={onOfferDraw}>
                             Offer Draw
+                        </button>
+                    )}
+                </div>
+            )}
+            {(onRequestRematch || onNewGame) && (
+                <div className="game-actions">
+                    {onRequestRematch && (
+                        <button
+                            className={`action-btn action-btn--ghost${rematchRequested ? ' action-btn--waiting' : ''}`}
+                            onClick={onRequestRematch}
+                            disabled={rematchRequested}
+                        >
+                            {rematchRequested ? 'Waiting...' : rematchOffered ? 'Accept Rematch' : 'Rematch'}
+                        </button>
+                    )}
+                    {onNewGame && (
+                        <button className="action-btn action-btn--ghost" onClick={onNewGame}>
+                            New Game
                         </button>
                     )}
                 </div>
