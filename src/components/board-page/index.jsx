@@ -57,6 +57,7 @@ const BoardPage = () => {
             setViewIndex(null);
             setDrawOfferPending(false);
             setDrawOfferDeclinedMsg('');
+            setDrawCooldown(0);
             setRematchOffered(false);
             setRematchRequested(false);
 
@@ -102,6 +103,7 @@ const BoardPage = () => {
     const [confirmAction, setConfirmAction] = useState(null); // null | 'resign' | 'draw'
     const [drawOfferPending, setDrawOfferPending] = useState(false);
     const [drawOfferDeclinedMsg, setDrawOfferDeclinedMsg] = useState('');
+    const [drawCooldown, setDrawCooldown] = useState(0);
     const [rematchOffered, setRematchOffered] = useState(false);
     const [rematchRequested, setRematchRequested] = useState(false);
 
@@ -236,6 +238,17 @@ const BoardPage = () => {
         return () => clearTimeout(id);
     }, [disconnectCountdown]);
 
+    // Start 30s cooldown whenever our draw offer is declined
+    useEffect(() => {
+        if (drawOfferDeclinedMsg) setDrawCooldown(30);
+    }, [drawOfferDeclinedMsg]);
+
+    useEffect(() => {
+        if (drawCooldown <= 0) return;
+        const id = setTimeout(() => setDrawCooldown(prev => prev - 1), 1000);
+        return () => clearTimeout(id);
+    }, [drawCooldown]);
+
     if (!roomId) {
         return <p>Error: Missing game data</p>;
     }
@@ -272,8 +285,8 @@ const BoardPage = () => {
                     {drawOfferDeclinedMsg && (
                         <ConfirmModal
                             message={drawOfferDeclinedMsg}
+                            confirmText="OK"
                             onConfirm={() => setDrawOfferDeclinedMsg('')}
-                            onCancel={() => setDrawOfferDeclinedMsg('')}
                         />
                     )}
                     {rematchOffered && (
@@ -352,6 +365,7 @@ const BoardPage = () => {
                         onGoToMove={goToMove}
                         onResign={gameState === GAME_STATES.playing ? handleResign : undefined}
                         onOfferDraw={gameState === GAME_STATES.playing ? handleOfferDraw : undefined}
+                        drawCooldown={drawCooldown}
                         onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
                         onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
                         rematchRequested={rematchRequested}

@@ -25,6 +25,7 @@ const SidePanel = ({
     onGoToMove,
     onResign,
     onOfferDraw,
+    drawCooldown = 0,
     onRequestRematch,
     onNewGame,
     rematchRequested,
@@ -119,8 +120,12 @@ const SidePanel = ({
                         </button>
                     )}
                     {onOfferDraw && (
-                        <button className="action-btn action-btn--ghost" onClick={onOfferDraw}>
-                            Draw
+                        <button
+                            className="action-btn action-btn--ghost"
+                            onClick={onOfferDraw}
+                            disabled={drawCooldown > 0}
+                        >
+                            {drawCooldown > 0 ? `Draw (${drawCooldown}s)` : 'Draw'}
                         </button>
                     )}
                 </div>
