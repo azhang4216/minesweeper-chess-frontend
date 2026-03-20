@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // hooks
 import {
@@ -15,12 +15,32 @@ import { Timer } from '../';
 // constants
 import { GAME_STATES } from '../../constants';
 
-const SidePanel = () => {
+const SidePanel = ({
+    viewIndex,
+    onGoToStart,
+    onGoBack,
+    onGoForward,
+    onGoToLatest,
+    onGoToMove,
+}) => {
     const moveHistory = useMoveHistory();
     const isWhite = useIsWhite();
     const myBombs = useMyBombs();
     const bombPlantingTimeLeft = useBombPlantingTime();
     const gameState = useGameState();
+
+    // Track when bombPlantingTimeLeft was last set so the Timer can correct for elapsed time
+    const [bombSyncAt, setBombSyncAt] = useState(() => Date.now());
+    useEffect(() => {
+        setBombSyncAt(Date.now());
+    }, [bombPlantingTimeLeft]);
+
+    const moveHistoryEndRef = useRef(null);
+    useEffect(() => {
+        if (viewIndex >= moveHistory.length) {
+            moveHistoryEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [moveHistory, viewIndex]);
 
     return (
         <div className="side-panel">
@@ -33,9 +53,10 @@ const SidePanel = () => {
                                 "Waiting for your opponent to finish planting bombs..."
                         }
                     </h3>
-                    <Timer 
+                    <Timer
                         isActive={true}
-                        initialSeconds={bombPlantingTimeLeft}
+                        serverSeconds={bombPlantingTimeLeft}
+                        lastSyncAt={bombSyncAt}
                     />
                     <p>
                         As the {isWhite ? "white" : "black"} player, you can place bombs only on the {isWhite ? "3rd & 4th" : "5th & 6th"} ranks.
@@ -49,20 +70,38 @@ const SidePanel = () => {
                 </div>
                 :
                 <div className="move-history">
-                    <h3>Moves</h3>
+                    <div className="move-history-header">
+                        <span className="moves-label">Moves</span>
+                        <div className="nav-controls">
+                            <button className="nav-btn" onClick={onGoToStart} title="Start">⏮</button>
+                            <button className="nav-btn" onClick={onGoBack} title="Previous">◀</button>
+                            <button className="nav-btn" onClick={onGoForward} title="Next">▶</button>
+                            <button className="nav-btn" onClick={onGoToLatest} title="Latest">⏭</button>
+                        </div>
+                    </div>
                     <div className="move-history-table">
                         {Array.from({ length: Math.ceil(moveHistory.length / 2) }).map((_, idx) => {
-                            const whiteMove = moveHistory[2 * idx];
-                            const blackMove = moveHistory[2 * idx + 1];
-
+                            const whiteMoveIdx = 2 * idx + 1;
+                            const blackMoveIdx = 2 * idx + 2;
                             return (
                                 <div className="move-history-row" key={idx}>
                                     <div className="move-turn">{idx + 1}.</div>
-                                    <div className="move-white">{whiteMove || ""}</div>
-                                    <div className="move-black">{blackMove || ""}</div>
+                                    <div
+                                        className={`move-white${viewIndex === whiteMoveIdx ? ' move-active' : ''}`}
+                                        onClick={() => moveHistory[2 * idx] && onGoToMove(whiteMoveIdx)}
+                                    >
+                                        {moveHistory[2 * idx] || ''}
+                                    </div>
+                                    <div
+                                        className={`move-black${viewIndex === blackMoveIdx ? ' move-active' : ''}`}
+                                        onClick={() => moveHistory[2 * idx + 1] && onGoToMove(blackMoveIdx)}
+                                    >
+                                        {moveHistory[2 * idx + 1] || ''}
+                                    </div>
                                 </div>
                             );
                         })}
+                        <div ref={moveHistoryEndRef} />
                     </div>
                 </div>
             }
