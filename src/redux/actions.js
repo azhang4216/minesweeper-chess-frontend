@@ -1,9 +1,10 @@
-export const updateGameFromServer = (gameFen, moveSan, temporaryUpdate=false) => ({
+export const updateGameFromServer = (gameFen, moveSan, temporaryUpdate=false, fenOnly=false) => ({
     type: "UPDATE_GAME",
     payload: {
         gameFen,
         moveSan,
         temporaryUpdate,
+        fenOnly,
     },
 });
 

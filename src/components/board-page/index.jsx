@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 
 // styling
@@ -51,6 +51,7 @@ const BoardPage = () => {
 
             // make sure previous game state does not carry over
             dispatch(actions.resetGame());
+            dispatch(actions.setGameState(GAME_STATES.placing_bombs));
             setStartingFen(fen);
             setViewIndex(null);
             setDrawOfferPending(false);
@@ -91,6 +92,9 @@ const BoardPage = () => {
 
     const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
     const [startingFen, setStartingFen] = useState(null);
+    const prevViewIndexRef = useRef(null);
+    const [snapFen, setSnapFen] = useState(null);
+    const [boardAnimDuration, setBoardAnimDuration] = useState(undefined);
     const [explosionHistory, setExplosionHistory] = useState([]); // [{ square, moveCount }]
     const [disconnectCountdown, setDisconnectCountdown] = useState(null);
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
@@ -104,6 +108,33 @@ const BoardPage = () => {
     const [drawCooldown, setDrawCooldown] = useState(0);
     const [rematchOffered, setRematchOffered] = useState(false);
     const [rematchRequested, setRematchRequested] = useState(false);
+
+    // When the user jumps more than one move, snap to i-1 instantly then animate the single step to i
+    useEffect(() => {
+        const prev = prevViewIndexRef.current;
+        prevViewIndexRef.current = viewIndex;
+
+        if (viewIndex === null) {
+            setSnapFen(null);
+            setBoardAnimDuration(undefined);
+            return;
+        }
+
+        const prevIdx = prev ?? moveHistory.length;
+        if (Math.abs(viewIndex - prevIdx) > 1) {
+            const snapIdx = Math.max(0, viewIndex - 1);
+            setSnapFen(getFenAtIndex(startingFen ?? gameFen, moveHistory, snapIdx));
+            setBoardAnimDuration(0);
+            requestAnimationFrame(() => {
+                setSnapFen(null);
+                setBoardAnimDuration(undefined);
+            });
+        } else {
+            setSnapFen(null);
+            setBoardAnimDuration(undefined);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewIndex]);
 
     // viewIndex === null means "at latest" — use live gameFen
     const isViewingHistory = viewIndex !== null && viewIndex < moveHistory.length;
@@ -335,7 +366,8 @@ const BoardPage = () => {
                             className="chess-board-container"
                         >
                             <Chessboard
-                                displayFen={isViewingHistory ? displayFen : undefined}
+                                displayFen={snapFen ?? (isViewingHistory ? displayFen : undefined)}
+                                animationDuration={boardAnimDuration}
                                 visibleCraters={visibleCraters}
                             />
                         </div>

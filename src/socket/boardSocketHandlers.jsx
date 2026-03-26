@@ -38,6 +38,10 @@ export const useBoardSocketHandlers = ({
         moveHistoryLengthRef.current = moveHistory.length;
     }, [moveHistory]);
 
+    // Sequence counter: incremented on every gameState event so explosion timeouts
+    // can detect whether a newer move arrived before the 900ms delay fires.
+    const moveSeqRef = useRef(0);
+
     const handleRoomCreated = ({ message }) => {
         setRoomMessage(message);
         dispatch(actions.setGameState(GAME_STATES.matching));
@@ -88,8 +92,13 @@ export const useBoardSocketHandlers = ({
         // see what sort of sound we need to play based on the move just made
         if (specialMove) {
             if (specialMove.startsWith("explode ")) {
-                // temporary update is true, so the piece temporarily moves there
-                dispatch(actions.updateGameFromServer(preExplosionFen, moveSan, true));
+                // Stamp the sequence before the async delay so we can detect if a
+                // newer move arrives while we're waiting for the explosion animation.
+                const mySeq = ++moveSeqRef.current;
+
+                // Add move to history NOW (correct order), show piece on bomb square temporarily.
+                // preExplosionFen = piece on square; gameFen = piece removed.
+                dispatch(actions.updateGameFromServer(preExplosionFen, moveSan));
 
                 const squareToExplode = specialMove.split(" ")[1];
                 playSound(sounds.ohNoBoom);
@@ -97,12 +106,15 @@ export const useBoardSocketHandlers = ({
                 // if it is our own bomb, we need to remove the X
                 dispatch(actions.detonateBomb(squareToExplode));
 
-                // Capture move count now (before the timeout) — this move will be moveHistory.length + 1
-                const explosionMoveCount = moveHistoryLengthRef.current + 1;
+                // Capture move count now (history was just updated above)
+                const explosionMoveCount = moveHistoryLengthRef.current;
 
                 setTimeout(() => {
-                    // we get rid of the exploded piece a bit later for syncing with "oh no" sound
-                    dispatch(actions.updateGameFromServer(gameFen, moveSan));
+                    // Only swap FEN if no newer move arrived; if it did, that move's
+                    // gameFen already reflects the post-explosion board correctly.
+                    if (moveSeqRef.current === mySeq) {
+                        dispatch(actions.updateGameFromServer(gameFen, moveSan, false, true));
+                    }
 
                     // explosion animation
                     const explosion = document.createElement('img');

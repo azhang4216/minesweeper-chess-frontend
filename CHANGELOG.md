@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-03-26
+
+### Fixed
+- History navigation animation: clicking move i now snaps to position i-1 instantly then animates the single step to i, rather than animating the full distance from the current view position
+- Premove stale closure: `onPieceDrop` callback now reads `isMyTurn`, `isHistory`, and `gameState` from refs synced on every render, preventing premoves from silently no-oping when the closure captured stale state
+- Play Game button: disabled condition now correctly blocks `placing_bombs` and `matching` states; mount effect resets `gameState` to `inactive` so returning players from a completed game always see an enabled button
+- Guest login: navigating to home page during `placing_bombs` state no longer leaves the Play Game button disabled; `gameState` resets on home mount
+- `useInitializeSocket`: passes `roomId` in navigate state so `BoardPage` receives required game data on reconnect; dispatches `setGameState(inactive)` before navigating home on `noActiveGame` so the Play Game button is immediately usable
+
+### Tests
+- Updated `useInitializeSocket.test.js`: added `roomId` to `BASE_DATA` and updated navigate assertions to include the state object
+- Updated `actions.test.js`: added `fenOnly: false` to `updateGameFromServer` expected payloads
+
 ## [0.2.0] - 2026-03-20
 
 ### Added
