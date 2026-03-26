@@ -26,6 +26,12 @@ const HomePage = () => {
     const [searching, setSearching] = useState(false);
     const [queueError, setQueueError] = useState('');
 
+    // Reset game state when landing on home page so the Play Game button is always usable
+    useEffect(() => {
+        dispatch(actions.setGameState(GAME_STATES.inactive));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handleSignIn = () => navigate("/sign-in");
 
     const handlePlayAsGuest = async () => {
@@ -96,7 +102,7 @@ const HomePage = () => {
                     <button
                         className="play-game-button"
                         onClick={handlePlayGame}
-                        disabled={gameState === GAME_STATES.playing}
+                        disabled={gameState !== GAME_STATES.inactive && gameState !== GAME_STATES.game_over}
                     >
                         Play Game
                     </button>

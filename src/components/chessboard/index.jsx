@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { useSocket } from '../../socket/socketContext.js';
@@ -39,7 +39,7 @@ const highlightSquare = (square, colorRgba) => {
     }
 };
 
-const ChessBoard = ({ displayFen, visibleCraters = [] }) => {
+const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
@@ -51,6 +51,14 @@ const ChessBoard = ({ displayFen, visibleCraters = [] }) => {
     const gameState = useGameState();
 
     const isHistory = !!displayFen;
+
+    // Refs keep onDrop closures fresh when react-chessboard re-fires premoves
+    const isMyTurnRef = useRef(isMyTurn);
+    const isHistoryRef = useRef(isHistory);
+    const gameStateRef = useRef(gameState);
+    isMyTurnRef.current = isMyTurn;
+    isHistoryRef.current = isHistory;
+    gameStateRef.current = gameState;
 
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
     const [squaresToHighlight, setSquaresToHighlight] = useState([]);
@@ -182,14 +190,14 @@ const ChessBoard = ({ displayFen, visibleCraters = [] }) => {
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
-        if (isHistory) return false;
+        if (isHistoryRef.current) return false;
 
-        if (gameState !== GAME_STATES.playing) return false;
+        if (gameStateRef.current !== GAME_STATES.playing) return false;
 
         const isMyPiece = (isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b');
         if (!isMyPiece) return false;
 
-        if (!isMyTurn) {
+        if (!isMyTurnRef.current) {
             // queue as premove — library re-fires onPieceDrop when position updates
             return true;
         }
@@ -287,6 +295,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [] }) => {
         <div onClick={handleClick}>
             <Chessboard
                 position={displayFen ?? gameFen}
+                animationDuration={animationDuration}
                 onPieceDrop={onDrop}
                 arePiecesDraggable={!isHistory}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}

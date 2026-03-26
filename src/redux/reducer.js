@@ -38,13 +38,13 @@ Rules of Reducers (https://redux.js.org/tutorials/fundamentals/part-3-state-acti
 export default function appReducer(state = initialState, action) {
     switch (action.type) {
         case "UPDATE_GAME": {
-            const { gameFen, moveSan, temporaryUpdate } = action.payload;
+            const { gameFen, moveSan, temporaryUpdate, fenOnly } = action.payload;
             return {
                 ...state,
                 game: {
                     ...state.game,
                     gameFen,
-                    ...(temporaryUpdate ? {} : { moveHistory: [...state.game.moveHistory, moveSan] })
+                    ...((temporaryUpdate || fenOnly) ? {} : { moveHistory: [...state.game.moveHistory, moveSan] })
                 }
             };
         }

@@ -17,46 +17,58 @@ const useInitializeSocket = () => {
 
     useEffect(() => {
         const handleRejoined = (data) => {
-            if (data.gameFen && data.players) {
-                const me = data.players.find(p => p.user_id === myUsernameRef.current);
-                const opponent = data.players.find(p => p.user_id !== myUsernameRef.current);
-                if (!me || !opponent) return;
+            if (!data.players) return;
 
-                dispatch(actions.resetGame());
+            const me = data.players.find(p => p.user_id === myUsernameRef.current);
+            const opponent = data.players.find(p => p.user_id !== myUsernameRef.current);
+            if (!me || !opponent) return;
+
+            dispatch(actions.resetGame());
+            dispatch(actions.setOrientation(me.is_white));
+            dispatch(actions.setGameState(data.gameState ?? GAME_STATES.playing));
+
+            dispatch(actions.setPlayerInfo({
+                name: me.username,
+                rating: me.elo,
+                bombs: me.bombs ?? [],
+                secondsLeft: me.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
+            }));
+
+            dispatch(actions.setOpponentInfo({
+                name: opponent.username,
+                rating: opponent.elo,
+                bombs: opponent.bombs ?? [],
+                secondsLeft: opponent.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
+            }));
+
+            if (data.gameFen) {
                 dispatch(actions.setGameFen(data.gameFen));
-                dispatch(actions.setOrientation(me.is_white));
-                dispatch(actions.setGameState(data.gameState ?? GAME_STATES.playing));
+            }
 
-                dispatch(actions.setPlayerInfo({
-                    name: me.username,
-                    rating: me.elo,
-                    bombs: me.bombs ?? [],
-                    secondsLeft: me.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
-                }));
+            if (Array.isArray(data.moveHistory)) {
+                dispatch(actions.setMoveHistory(data.moveHistory));
+            }
 
-                dispatch(actions.setOpponentInfo({
-                    name: opponent.username,
-                    rating: opponent.elo,
-                    bombs: opponent.bombs ?? [],
-                    secondsLeft: opponent.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
-                }));
-
-                if (Array.isArray(data.moveHistory)) {
-                    dispatch(actions.setMoveHistory(data.moveHistory));
-                }
-
+            if (data.whiteTimeLeft != null) {
                 dispatch(actions.setTimers({
                     whiteTimeLeft: data.whiteTimeLeft,
                     blackTimeLeft: data.blackTimeLeft,
                 }));
-
-                navigate("/play-game");
             }
+
+            navigate("/play-game", { state: { roomId: data.roomId } });
+        };
+
+        const handleNoActiveGame = () => {
+            dispatch(actions.setGameState(GAME_STATES.inactive));
+            navigate("/");
         };
 
         socket.on("rejoined", handleRejoined);
+        socket.on("noActiveGame", handleNoActiveGame);
         return () => {
             socket.off("rejoined", handleRejoined);
+            socket.off("noActiveGame", handleNoActiveGame);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
