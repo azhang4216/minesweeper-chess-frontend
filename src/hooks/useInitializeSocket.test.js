@@ -55,6 +55,7 @@ const PLAYER_WHITE = { user_id: 'alice', username: 'alice', elo: 1200, is_white:
 const PLAYER_BLACK = { user_id: 'bob',   username: 'bob',   elo: 1150, is_white: false, bombs: [] };
 
 const BASE_DATA = {
+    roomId: 'room-test-1',
     gameFen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
     players: [PLAYER_WHITE, PLAYER_BLACK],
     gameState: 'PLAYING',
@@ -113,7 +114,7 @@ describe('useInitializeSocket', () => {
         expect(types).toContain('SET_OPPONENT_INFO');
         expect(types).toContain('SET_MOVE_HISTORY');
         expect(types).toContain('SET_TIMERS');
-        expect(mockNavigate).toHaveBeenCalledWith('/play-game');
+        expect(mockNavigate).toHaveBeenCalledWith('/play-game', { state: { roomId: BASE_DATA.roomId } });
     });
 
     test('does nothing when rejoined has no gameFen (placing_bombs or inactive state)', () => {
@@ -140,7 +141,7 @@ describe('useInitializeSocket', () => {
 
         const types = mockDispatch.mock.calls.map(([a]) => a.type);
         expect(types).not.toContain('SET_MOVE_HISTORY');
-        expect(mockNavigate).toHaveBeenCalledWith('/play-game');
+        expect(mockNavigate).toHaveBeenCalledWith('/play-game', { state: { roomId: BASE_DATA.roomId } });
     });
 
     test('assigns white timer to alice (white) and black timer to bob (black)', () => {

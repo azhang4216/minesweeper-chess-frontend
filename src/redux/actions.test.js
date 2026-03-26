@@ -22,14 +22,14 @@ describe('action creators', () => {
     test('updateGameFromServer defaults temporaryUpdate to false', () => {
         expect(updateGameFromServer('fen123', 'e4')).toEqual({
             type: 'UPDATE_GAME',
-            payload: { gameFen: 'fen123', moveSan: 'e4', temporaryUpdate: false },
+            payload: { gameFen: 'fen123', moveSan: 'e4', temporaryUpdate: false, fenOnly: false },
         });
     });
 
     test('updateGameFromServer passes temporaryUpdate=true', () => {
         expect(updateGameFromServer('fen123', 'e4', true)).toEqual({
             type: 'UPDATE_GAME',
-            payload: { gameFen: 'fen123', moveSan: 'e4', temporaryUpdate: true },
+            payload: { gameFen: 'fen123', moveSan: 'e4', temporaryUpdate: true, fenOnly: false },
         });
     });
 
