@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-03-26
+
+### Added
+- **UX polish overhaul**: cinematic detonation overlay with 5 expanding rings, impact flash, emoji bounce, and per-piece flavor text; board shake animation on explosion
+- **Meme GIF backgrounds** on win/loss/draw popup (happy cat, sad hamster, cat sadge) with subtle opacity and border-radius treatment
+- **Home page personality**: random tagline pool of 26 lines including chess personality references (Eric Rosen, Hikaru Nakamura, Levy Rozman), ELO badge for logged-in players, cycling search copy with elapsed timer, CSS mine spinner in matchmaking state
+- **Profile page redesign**: hero layout with large Rajdhani username and 42px ELO block, card-based friend/game sections, inline action toast (replaces `alert()`), clickable player names in past games and friends list
+- **Search page redesign**: sleek icon-left input, accent focus ring, left-border hover on result rows
+- **Win/loss popup**: "Add Friend" button for post-game friend requests, opponent profile link, mutual rematch lockout
+- **Guest UUID persistence**: guest player ID now saved to localStorage so guests rejoin active games after page reload
+
+### Fixed
+- Profile past games: result labels now match backend values (`WHITE_WINS`/`BLACK_WINS`/`DRAW`); guest players detected via UUID regex fallback when `is_guest` flag missing on legacy records
+- Detonation overlays: queued so rapid double-explosions both animate sequentially instead of the second canceling the first
+- Bomb timer: now uses Redux `bombTimerSyncedAt` for correct reset on rematch
+- Board state: `Chessboard` keyed on `roomId` so state fully clears on new game or rematch
+- Move validation: chess.js validates on drop, distinguishing illegal-move from invalid-FEN
+- Redux `gameFen`: dispatched immediately on explosion instead of waiting for move-sequence race condition
+- Rematch: global socket listeners ensure offline opponents receive offer and ready events; decline now emits `declineRematch` and surfaces "Rematch declined" to requester
+- Home page bomb images: switched from fragile `nth-child` selectors to `.bomb--1/2/3` explicit classes, fixing oversized bomb appearing when tagline was added
+
+### Tests
+- Updated `actions.test.js`: removed stale `temporaryUpdate`/`fenOnly` expectations from `updateGameFromServer`; updated `setPlacingBombSeconds` to expect `{ secs, syncedAt }` payload
+- Updated `reducer.test.js`: removed stale `temporaryUpdate=true` test; fixed `SET_PLACING_BOMBS_SECONDS` dispatch to use `{ secs, syncedAt }` format
+- Updated `useInitializeSocket.test.js`: added `useLocation` to react-router-dom mock
+
 ## [0.2.1] - 2026-03-26
 
 ### Fixed
