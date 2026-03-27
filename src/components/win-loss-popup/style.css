@@ -21,13 +21,13 @@
 
 .wl-bg-gif {
     position: absolute;
-    bottom: 32px;
-    right: 32px;
-    width: 180px;
-    height: 180px;
+    bottom: 40px;
+    right: 40px;
+    width: 340px;
+    height: 340px;
     object-fit: cover;
-    border-radius: 12px;
-    opacity: 0.18;
+    border-radius: 16px;
+    opacity: 0.28;
     pointer-events: none;
     user-select: none;
 }
