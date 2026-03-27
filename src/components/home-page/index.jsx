@@ -39,6 +39,8 @@ const TAGLINES = [
     'That\'s not a fork. That\'s a detonator.',
     'Elo goes up. Pieces go boom.',
     'Warning: may cause sudden piece loss.',
+    'Oh no, my queen-- BOOM. (Sorry, Eric.)',
+    'If takes takes takes then takes then takes then BOOM wait what??',
 ];
 
 const SEARCH_LINES = [
