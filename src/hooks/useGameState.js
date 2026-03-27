@@ -40,6 +40,10 @@ export const useBombPlantingTime = () => {
     return useSelector((state) => state.game?.placingBombsSeconds);
 }
 
+export const useBombTimerSyncedAt = () => {
+    return useSelector((state) => state.game?.bombTimerSyncedAt);
+}
+
 export const useGameState = () => {
     return useSelector((state) => state.game?.gameState);
 }

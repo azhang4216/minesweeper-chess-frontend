@@ -9,6 +9,7 @@ export {
     useMyTimeLeft,
     useOpponentTimeLeft,
     useBombPlantingTime,
+    useBombTimerSyncedAt,
     useGameState,
     // usePrompt
 } from './useGameState';

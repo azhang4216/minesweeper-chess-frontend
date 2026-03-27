@@ -9,6 +9,7 @@ const initialState = {
         isWhite: true,
         gameState: GAME_STATES.inactive,
         placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
+        bombTimerSyncedAt: Date.now(),
         moveHistory: [],
         // loggedIn: false,          // playing as a guest also counts as logging in!
         // playingAsGuest: false,
@@ -145,7 +146,8 @@ export default function appReducer(state = initialState, action) {
                 ...state,
                 game: {
                     ...state.game,
-                    placingBombsSeconds: action.payload,
+                    placingBombsSeconds: action.payload.secs,
+                    bombTimerSyncedAt: action.payload.syncedAt,
                 }
             };
 

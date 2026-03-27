@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './style.css';
 
 // hooks
@@ -7,6 +7,7 @@ import {
     useMoveHistory,
     useMyBombs,
     useBombPlantingTime,
+    useBombTimerSyncedAt,
     useGameState
 } from '../../hooks';
 
@@ -34,13 +35,8 @@ const SidePanel = ({
     const isWhite = useIsWhite();
     const myBombs = useMyBombs();
     const bombPlantingTimeLeft = useBombPlantingTime();
+    const bombTimerSyncedAt = useBombTimerSyncedAt();
     const gameState = useGameState();
-
-    // Track when bombPlantingTimeLeft was last set so the Timer can correct for elapsed time
-    const [bombSyncAt, setBombSyncAt] = useState(() => Date.now());
-    useEffect(() => {
-        setBombSyncAt(Date.now());
-    }, [bombPlantingTimeLeft]);
 
     const moveHistoryEndRef = useRef(null);
     useEffect(() => {
@@ -63,7 +59,7 @@ const SidePanel = ({
                         <Timer
                             isActive={true}
                             serverSeconds={bombPlantingTimeLeft}
-                            lastSyncAt={bombSyncAt}
+                            lastSyncAt={bombTimerSyncedAt}
                         />
                     </div>
                     <div className="bpi-slots">

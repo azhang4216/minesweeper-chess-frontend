@@ -43,9 +43,9 @@ export const setOrientation = (isWhite) => ({
     payload: isWhite,
 });
 
-export const setPlacingBombSeconds = (placingBombSeconds) => ({
+export const setPlacingBombSeconds = (secs) => ({
     type: "SET_PLACING_BOMBS_SECONDS",
-    payload: placingBombSeconds,
+    payload: { secs, syncedAt: Date.now() },
 });
 
 export const setRandomizedBombs = ({ whitePlayerBombs, blackPlayerBombs }) => ({
