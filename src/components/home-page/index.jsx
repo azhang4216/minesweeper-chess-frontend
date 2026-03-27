@@ -41,6 +41,7 @@ const TAGLINES = [
     'Warning: may cause sudden piece loss.',
     'Oh no, my queen-- BOOM. (Sorry, Eric.)',
     'If takes takes takes then takes then takes then BOOM wait what??',
+    'And she sacrificed THE ROOK!!! ...into a mine.',
 ];
 
 const SEARCH_LINES = [
