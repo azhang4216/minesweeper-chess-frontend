@@ -2,6 +2,13 @@ import React from "react";
 import './style.css';
 import { getEloChangeColor } from "../../utils";
 import { usePlayer, useOpponent } from '../../hooks';
+import { images } from '../../assets';
+
+const VARIANT_GIF = {
+    win:  images.happyCatGif,
+    loss: images.sadHamsterGif,
+    draw: images.catSadgeLoadingGif,
+};
 
 const COPY = {
     win: {
@@ -59,6 +66,7 @@ const WinLossPopup = ({
 
     return (
         <div className={`wl-overlay wl-overlay--${variant}`}>
+            <img src={VARIANT_GIF[variant]} alt="" className="wl-bg-gif" aria-hidden="true" />
             <div className="wl-card">
                 <div className="wl-headline">{copy.headline}</div>
                 <div className="wl-tagline">{copy.tagline}</div>
