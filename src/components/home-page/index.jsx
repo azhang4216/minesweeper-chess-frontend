@@ -29,10 +29,16 @@ const TAGLINES = [
     'En passant? More like en ka-BOOM.',
     'Checkmate is the boring way to win.',
     'It\'s not a trap if it explodes.',
-    'No draws. Only explosions.',
     'Magnus doesn\'t know about this yet.',
     'Check. Mate. Boom.',
-    'Castle early. Mine often.',
+    'Step carefully. No, seriously.',
+    'The queen is safe. Probably.',
+    'Fischer never had this problem.',
+    'FIDE has not approved this.',
+    'This is fine.',
+    'That\'s not a fork. That\'s a detonator.',
+    'Elo goes up. Pieces go boom.',
+    'Warning: may cause sudden piece loss.',
 ];
 
 const SEARCH_LINES = [
