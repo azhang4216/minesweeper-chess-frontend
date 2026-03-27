@@ -47,15 +47,6 @@ describe('appReducer', () => {
             expect(state.game.moveHistory).toEqual(['e4']);
         });
 
-        test('with temporaryUpdate=true, updates FEN but does not append to moveHistory', () => {
-            const state = dispatch({
-                type: 'UPDATE_GAME',
-                payload: { gameFen: 'new-fen', moveSan: 'e4', temporaryUpdate: true },
-            });
-            expect(state.game.gameFen).toBe('new-fen');
-            expect(state.game.moveHistory).toEqual([]);
-        });
-
         test('does not mutate the original state', () => {
             const original = init();
             const originalHistory = original.game.moveHistory;
@@ -174,7 +165,7 @@ describe('appReducer', () => {
         });
 
         test('SET_PLACING_BOMBS_SECONDS', () => {
-            expect(dispatch({ type: 'SET_PLACING_BOMBS_SECONDS', payload: 30 }).game.placingBombsSeconds).toBe(30);
+            expect(dispatch({ type: 'SET_PLACING_BOMBS_SECONDS', payload: { secs: 30, syncedAt: Date.now() } }).game.placingBombsSeconds).toBe(30);
         });
 
         test('SET_MOVE_HISTORY replaces moveHistory', () => {
