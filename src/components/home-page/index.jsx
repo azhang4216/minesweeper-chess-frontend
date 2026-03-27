@@ -20,10 +20,19 @@ const TAGLINES = [
     'Outsmart them. Then blow them up.',
     'The board remembers everything.',
     'Every square is a gamble.',
-    'Chess evolved. Play accordingly.',
     'They never saw it coming.',
     'Strategy meets sabotage.',
     'Place wisely. Play dirty.',
+    'Here comes the BOOM!',
+    'Wait — kings can explode?!',
+    'Mine your own business.',
+    'En passant? More like en ka-BOOM.',
+    'Checkmate is the boring way to win.',
+    'It\'s not a trap if it explodes.',
+    'No draws. Only explosions.',
+    'Magnus doesn\'t know about this yet.',
+    'Check. Mate. Boom.',
+    'Castle early. Mine often.',
 ];
 
 const SEARCH_LINES = [
