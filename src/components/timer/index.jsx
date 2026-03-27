@@ -9,6 +9,9 @@ const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
 
     const getDisplaySeconds = () => {
         const elapsed = (Date.now() - syncRef.current.lastSyncAt) / 1000;
+        // Within 500ms of a sync, return the server value directly — prevents tiny React
+        // render delays from causing Math.floor to show one second less (e.g. 4:59 vs 5:00).
+        if (elapsed < 0.5) return Math.floor(syncRef.current.serverSeconds);
         return Math.max(0, Math.floor(syncRef.current.serverSeconds - elapsed));
     };
 

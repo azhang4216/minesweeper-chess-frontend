@@ -179,9 +179,14 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     }, [gameState]);
 
     const handleClick = async (_e) => {
+        // Only handle clicks during bomb placement — during play, react-chessboard
+        // handles interaction via onDrop/onSquareClick and this handler must not
+        // fire the illegal-move sound on every square click.
+        if (gameState !== GAME_STATES.placing_bombs) return;
+
         const selected = squareMouseIsOver;
 
-        if (gameState === GAME_STATES.placing_bombs && myBombs.length < 3 &&
+        if (myBombs.length < 3 &&
             ((isWhite && (selected[1] === '3' || selected[1] === '4')) || (!isWhite && (selected[1] === '5' || selected[1] === '6'))) &&
             !myBombs.includes(selected)
         ) {
@@ -189,7 +194,6 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         } else {
             playSound(sounds.illegal);
         }
-
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {

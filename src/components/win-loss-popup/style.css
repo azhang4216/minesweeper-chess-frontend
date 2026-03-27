@@ -1,10 +1,16 @@
 .wl-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 220px;
+    z-index: 50;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    border-radius: 10px;
+    overflow: hidden;
     animation: wlSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -21,13 +27,13 @@
 
 .wl-bg-gif {
     position: absolute;
-    bottom: 40px;
-    right: 40px;
-    width: 340px;
-    height: 340px;
+    bottom: 16px;
+    right: 8px;
+    width: 180px;
+    height: 180px;
     object-fit: cover;
-    border-radius: 16px;
-    opacity: 0.28;
+    border-radius: 10px;
+    opacity: 0.22;
     pointer-events: none;
     user-select: none;
 }
@@ -40,9 +46,11 @@
     flex-direction: column;
     align-items: center;
     gap: 0;
-    padding: 0 24px;
-    max-width: 480px;
+    padding: 0 14px;
+    max-width: 220px;
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 /* ── Headline ───────────────────────────────────── */
@@ -63,12 +71,12 @@
 
 .wl-tagline {
     font-family: 'Rajdhani', Impact, sans-serif;
-    font-size: 28px;
+    font-size: 18px;
     font-weight: 900;
     letter-spacing: 0.04em;
     color: var(--text);
     margin-bottom: 6px;
-    line-height: 1.15;
+    line-height: 1.25;
 }
 
 .wl-overlay--loss .wl-tagline { color: rgba(240, 239, 248, 0.7); }
@@ -104,7 +112,7 @@
 
 .wl-elo-change {
     font-family: 'Rajdhani', Impact, sans-serif;
-    font-size: 42px;
+    font-size: 34px;
     font-weight: 900;
     line-height: 1;
     letter-spacing: -1px;

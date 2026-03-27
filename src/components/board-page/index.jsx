@@ -101,7 +101,12 @@ const BoardPage = () => {
     const moveHistory = useMoveHistory();
 
     const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
-    const [startingFen, setStartingFen] = useState(null);
+    // On rejoin, location.state only has roomId (no players/fen). Pre-seed the standard
+    // opening FEN so the history viewer can replay moves from the correct starting position.
+    const isRejoin = !!(roomId && !players);
+    const [startingFen, setStartingFen] = useState(() =>
+        isRejoin ? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' : null
+    );
     const prevViewIndexRef = useRef(null);
     const [snapFen, setSnapFen] = useState(null);
     const [boardAnimDuration, setBoardAnimDuration] = useState(undefined);
@@ -203,6 +208,7 @@ const BoardPage = () => {
     };
     const handleNewGame = () => navigate('/');
     const onRematchReady = (newGameData) => {
+        setDisplayWinLossPopup(false);
         navigate('/play-game', { state: newGameData, replace: true });
     };
 
@@ -219,6 +225,8 @@ const BoardPage = () => {
     const playNextDetonation = () => {
         if (detonationQueueRef.current.length === 0) {
             isDetonatingRef.current = false;
+            // Restore default animation now that all explosions are done
+            setBoardAnimDuration(undefined);
             return;
         }
         isDetonatingRef.current = true;
@@ -266,6 +274,11 @@ const BoardPage = () => {
         onRematchReady,
         onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
         onDetonation: (piece) => {
+            // Snap the board to post-explosion position instantly — no slide animation.
+            // The detonation overlay handles the visual effect. Without this, react-chessboard
+            // briefly renders the exploded piece at the destination square during its 300ms
+            // transition, which causes it to visually "reappear" on the next move.
+            setBoardAnimDuration(0);
             detonationQueueRef.current.push(piece);
             if (!isDetonatingRef.current) playNextDetonation();
         },

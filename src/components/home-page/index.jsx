@@ -107,12 +107,16 @@ const HomePage = () => {
 
     const handlePlayAsGuest = async () => {
         try {
-            const assignedGuestID = await generateGuestUUID();
-            localStorage.setItem('guestPlayerId', assignedGuestID);
+            // Reuse existing guest ID so in-progress games survive navigation back to home
+            let assignedGuestID = localStorage.getItem('guestPlayerId');
+            if (!assignedGuestID) {
+                assignedGuestID = await generateGuestUUID();
+                localStorage.setItem('guestPlayerId', assignedGuestID);
+            }
             dispatch(actions.playAsGuest(assignedGuestID));
             socket.emit("authenticate", { playerId: assignedGuestID });
         } catch (e) {
-            console.error("Failed to generate guest UUID:", e);
+            console.error("Failed to initialize guest session:", e);
         }
     };
 

@@ -9,7 +9,7 @@ import { sendFriendRequest } from "../../api/profile";
 const VARIANT_GIF = {
     win:  images.happyCatGif,
     loss: images.sadHamsterGif,
-    draw: images.catSadgeLoadingGif,
+    draw: images.officeHandshakeMeme,
 };
 
 const COPY = {

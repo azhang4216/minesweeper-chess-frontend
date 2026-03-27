@@ -166,7 +166,7 @@ export const useBoardSocketHandlers = ({
             setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
-            setDisplayWinLossPopup(true);
+            setTimeout(() => setDisplayWinLossPopup(true), 800);
             playSound(sounds.gameEnd);
         };
 
@@ -187,7 +187,7 @@ export const useBoardSocketHandlers = ({
             setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
-            setDisplayWinLossPopup(true);
+            setTimeout(() => setDisplayWinLossPopup(true), 800);
             playSound(sounds.gameEnd);
         };
 
