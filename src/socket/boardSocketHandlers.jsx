@@ -158,12 +158,11 @@ export const useBoardSocketHandlers = ({
         setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
         
-        // if the reason the game ended is cuz a piece blew up leading to insufficient material, 
-        // we delay the popup a little so that we can watch the piece blow up
+        // Delay the popup so the detonation overlay finishes before it appears.
+        // Use the same timing as handleWinLossGameOver so king/non-king delays stay in sync.
         if (by.includes("explode")) {
-            setTimeout(() => {
-                setDisplayWinLossPopup(true);
-            }, 2000);
+            const delay = lastExplosionWasKingRef.current ? 5500 : 3200;
+            setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
             setDisplayWinLossPopup(true);

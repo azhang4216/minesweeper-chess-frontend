@@ -46,7 +46,7 @@ export default function appReducer(state = initialState, action) {
                 game: {
                     ...state.game,
                     gameFen,
-                    moveHistory: [...state.game.moveHistory, moveSan],
+                    moveHistory: moveSan != null ? [...state.game.moveHistory, moveSan] : state.game.moveHistory,
                 }
             };
         }

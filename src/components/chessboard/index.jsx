@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
@@ -215,9 +215,10 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
             chessValidator = null;
         }
         if (chessValidator) {
-            const promotion = piece[1]?.toLowerCase() ?? 'q';
             try {
-                chessValidator.move({ from: sourceSquare, to: targetSquare, promotion });
+                // Use 'q' for promotion validation — we only need legality, not the specific piece.
+                // piece[1] is the dragged piece type (e.g. 'P'), not the promotion target.
+                chessValidator.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
             } catch {
                 return false; // illegal move — snap piece back and clear queued premove
             }
@@ -291,22 +292,21 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     };
 
     // Amber glow on valid bomb placement squares during placing_bombs phase
-    const placementGlow = gameState === GAME_STATES.placing_bombs
-        ? (() => {
-            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-            const validRanks = isWhite ? ['3', '4'] : ['5', '6'];
-            const styles = {};
-            for (const file of files) {
-                for (const rank of validRanks) {
-                    const sq = file + rank;
-                    if (!myBombs.includes(sq)) {
-                        styles[sq] = { boxShadow: 'inset 0 0 0 2px rgba(245, 158, 11, 0.35)' };
-                    }
+    const placementGlow = useMemo(() => {
+        if (gameState !== GAME_STATES.placing_bombs) return {};
+        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        const validRanks = isWhite ? ['3', '4'] : ['5', '6'];
+        const styles = {};
+        for (const file of files) {
+            for (const rank of validRanks) {
+                const sq = file + rank;
+                if (!myBombs.includes(sq)) {
+                    styles[sq] = { boxShadow: 'inset 0 0 0 2px rgba(245, 158, 11, 0.35)' };
                 }
             }
-            return styles;
-        })()
-        : {};
+        }
+        return styles;
+    }, [gameState, isWhite, myBombs]);
 
     const customSquareStyles = {
         ...getBaseSquareColors(),

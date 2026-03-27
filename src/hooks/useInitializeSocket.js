@@ -44,6 +44,7 @@ const useInitializeSocket = () => {
                 rating: opponent.elo,
                 bombs: opponent.bombs ?? [],
                 secondsLeft: opponent.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
+                is_guest: opponent.is_guest ?? false,
             }));
 
             if (data.gameFen) dispatch(actions.setGameFen(data.gameFen));

@@ -77,8 +77,9 @@ const WinLossPopup = ({
     const isDraw = result === 'Draw';
     const variant = isWin ? 'win' : isDraw ? 'draw' : 'loss';
     const copy = COPY[variant];
-    const newElo = player.rating + myEloChange;
-    const eloColor = getEloChangeColor(myEloChange);
+    const safeEloChange = myEloChange ?? 0;
+    const newElo = player.rating + safeEloChange;
+    const eloColor = getEloChangeColor(safeEloChange);
 
     return (
         <div className={`wl-overlay wl-overlay--${variant}`}>
@@ -94,7 +95,7 @@ const WinLossPopup = ({
 
                 <div className="wl-elo">
                     <span className="wl-elo-change" style={{ color: eloColor }}>
-                        {myEloChange > 0 ? '+' : ''}{myEloChange}
+                        {safeEloChange > 0 ? '+' : ''}{safeEloChange}
                     </span>
                     <span className="wl-elo-new">→ {newElo}</span>
                     <span className="wl-elo-label">ELO</span>
