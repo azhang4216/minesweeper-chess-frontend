@@ -37,7 +37,17 @@ export const getFenAtIndex = (startFen, moves, n) => {
     const chess = new Chess(startFen);
     const count = Math.min(n, moves.length);
     for (let i = 0; i < count; i++) {
-        try { chess.move(moves[i]); } catch (_) { /* skip invalid */ }
+        const san = moves[i];
+        if (san.endsWith('💣💥')) {
+            // Explosion move: replay the underlying chess move, then remove the piece
+            // (mirroring the server-side room.game.move() + room.game.remove(to) sequence)
+            try {
+                const result = chess.move(san.slice(0, -'💣💥'.length));
+                if (result) chess.remove(result.to);
+            } catch (_) { /* skip if somehow invalid */ }
+        } else {
+            try { chess.move(san); } catch (_) { /* skip invalid */ }
+        }
     }
     return chess.fen();
 };
