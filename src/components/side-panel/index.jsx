@@ -30,6 +30,7 @@ const SidePanel = ({
     onRequestRematch,
     onNewGame,
     rematchRequested,
+    rematchDeclinedMsg,
 }) => {
     const moveHistory = useMoveHistory();
     const isWhite = useIsWhite();
@@ -134,10 +135,10 @@ const SidePanel = ({
                     {onRequestRematch && (
                         <button
                             className={`action-btn action-btn--primary${rematchRequested ? ' action-btn--waiting' : ''}`}
-                            onClick={onRequestRematch}
-                            disabled={rematchRequested}
+                            onClick={!rematchDeclinedMsg ? onRequestRematch : undefined}
+                            disabled={rematchRequested || !!rematchDeclinedMsg}
                         >
-                            {rematchRequested ? 'Waiting...' : 'Rematch'}
+                            {rematchDeclinedMsg ? rematchDeclinedMsg : rematchRequested ? 'Waiting...' : 'Rematch'}
                         </button>
                     )}
                     {onNewGame && (

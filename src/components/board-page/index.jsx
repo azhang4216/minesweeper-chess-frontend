@@ -65,6 +65,7 @@ const BoardPage = () => {
             setDrawCooldown(0);
             setRematchOffered(false);
             setRematchRequested(false);
+            setRematchDeclinedMsg('');
             setExplosionHistory([]);
 
             dispatch(actions.setOpponentInfo({
@@ -114,6 +115,7 @@ const BoardPage = () => {
     const [drawCooldown, setDrawCooldown] = useState(0);
     const [rematchOffered, setRematchOffered] = useState(false);
     const [rematchRequested, setRematchRequested] = useState(false);
+    const [rematchDeclinedMsg, setRematchDeclinedMsg] = useState('');
     const [detonatedPiece, setDetonatedPiece] = useState(null); // piece char or null
     const [showMatchFound, setShowMatchFound] = useState(false);
 
@@ -222,9 +224,10 @@ const BoardPage = () => {
         handleDrawOffer,
         handleDrawOfferDeclined,
         handleRematchOffered,
+        handleRematchDeclined,
         handleRematchReady,
     } = useBoardSocketHandlers({
-        setRoomMessage: (_x) => { }, // for now, we don't need it
+        setRoomMessage: (msg) => { if (msg === 'Rematch declined.') setRematchDeclinedMsg(msg); },
         setGameOverReason,
         setGameOverResult,
         setmyEloChange,
@@ -234,6 +237,7 @@ const BoardPage = () => {
         setDrawOfferPending,
         setDrawOfferDeclinedMsg,
         setRematchOffered,
+        setRematchRequested,
         onRematchReady,
         onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
         onDetonation: (piece) => {
@@ -257,6 +261,7 @@ const BoardPage = () => {
         socket.on('drawOffer', handleDrawOffer);
         socket.on('drawOfferDeclined', handleDrawOfferDeclined);
         socket.on('rematchOffered', handleRematchOffered);
+        socket.on('rematchDeclined', handleRematchDeclined);
         socket.on('rematchReady', handleRematchReady);
 
         return () => {
@@ -273,6 +278,7 @@ const BoardPage = () => {
             socket.off('drawOffer', handleDrawOffer);
             socket.off('drawOfferDeclined', handleDrawOfferDeclined);
             socket.off('rematchOffered', handleRematchOffered);
+            socket.off('rematchDeclined', handleRematchDeclined);
             socket.off('rematchReady', handleRematchReady);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -361,7 +367,10 @@ const BoardPage = () => {
                         <ConfirmModal
                             message={`${opponent.name} would like a rematch. Accept?`}
                             onConfirm={() => { handleRequestRematch(); setRematchOffered(false); }}
-                            onCancel={() => setRematchOffered(false)}
+                            onCancel={() => {
+                                socket.emit('declineRematch');
+                                setRematchOffered(false);
+                            }}
                         />
                     )}
                     <div className="chess-wrapper">
@@ -441,6 +450,7 @@ const BoardPage = () => {
                         onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
                         onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
                         rematchRequested={rematchRequested}
+                        rematchDeclinedMsg={rematchDeclinedMsg}
                     />
                 </div>
             </div>
