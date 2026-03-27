@@ -46,8 +46,7 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 9px;
-    border-left: 3px solid transparent;
-    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
     user-select: none;
 }
 
@@ -68,7 +67,6 @@
 
 .player-info.active-turn {
     background: var(--panel-hover);
-    border-left-color: var(--accent);
     box-shadow: 0 0 12px var(--accent-glow);
 }
 
@@ -296,8 +294,8 @@
 
 /* ── Bomb placement — amber color shift ────────── */
 
-.placing-bombs .player-info {
-    border-left-color: rgba(245, 158, 11, 0.5);
+.placing-bombs .player-info.active-turn {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
 }
 
 .placing-bombs .chess-board-container {
