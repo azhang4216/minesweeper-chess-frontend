@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GAME_STATES } from '../../constants';
-import { useGameState, useIsLoggedIn } from "../../hooks";
+import { useGameState, useIsLoggedIn, usePlayer } from "../../hooks";
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
 import { generateGuestUUID } from "../../api";
@@ -15,22 +15,63 @@ const TIME_CONTROLS = [
     { label: '10m', seconds: 600 },
 ];
 
+const SEARCH_LINES = [
+    'Searching for someone to humiliate...',
+    'Scanning the threat database...',
+    'Locating your next victim...',
+    'Calculating their inevitable doom...',
+    'Finding someone who trusts you...',
+    'Recruiting a willing sacrifice...',
+];
+
 const HomePage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const socket = useSocket();
     const gameState = useGameState();
     const isLoggedIn = useIsLoggedIn();
+    const player = usePlayer();
 
     const [selectedTimeControl, setSelectedTimeControl] = useState(180);
     const [searching, setSearching] = useState(false);
     const [queueError, setQueueError] = useState('');
+    const [searchLine, setSearchLine] = useState(0);
+    const [elapsed, setElapsed] = useState(0);
+    const elapsedRef = useRef(null);
 
     // Reset game state when landing on home page so the Play Game button is always usable
     useEffect(() => {
         dispatch(actions.setGameState(GAME_STATES.inactive));
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Cycle copy + track elapsed time while searching
+    useEffect(() => {
+        if (!searching) {
+            setSearchLine(0);
+            setElapsed(0);
+            return;
+        }
+
+        const copyTimer = setInterval(() => {
+            setSearchLine(i => (i + 1) % SEARCH_LINES.length);
+        }, 3000);
+
+        elapsedRef.current = setInterval(() => {
+            setElapsed(s => s + 1);
+        }, 1000);
+
+        return () => {
+            clearInterval(copyTimer);
+            clearInterval(elapsedRef.current);
+        };
+    }, [searching]);
+
+    const formatElapsed = (s) => {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `0:${String(sec).padStart(2, '0')}`;
+    };
 
     const handleSignIn = () => navigate("/sign-in");
 
@@ -87,6 +128,9 @@ const HomePage = () => {
         if (isLoggedIn) {
             return (
                 <div className="matchmaking-group">
+                    {player?.rating != null && (
+                        <div className="player-elo-badge">{player.rating} ELO</div>
+                    )}
                     <div className="time-control-pills">
                         {TIME_CONTROLS.map(({ label, seconds }) => (
                             <button
@@ -124,6 +168,7 @@ const HomePage = () => {
     return (
         <div className="front-page">
             <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
+            <p className="tagline">Chess. But with landmines.</p>
             <div className="join-create-room-container">
                 {ButtonGroups()}
             </div>
@@ -131,8 +176,19 @@ const HomePage = () => {
             {searching && (
                 <div className="searching-overlay">
                     <div className="searching-popup">
-                        <div className="searching-spinner" />
-                        <p className="searching-text">Searching for someone to humiliate...</p>
+                        <div className="searching-mine">
+                            <div className="mine-body" />
+                            <div className="mine-spike mine-spike--top" />
+                            <div className="mine-spike mine-spike--right" />
+                            <div className="mine-spike mine-spike--bottom" />
+                            <div className="mine-spike mine-spike--left" />
+                            <div className="mine-spike mine-spike--tr" />
+                            <div className="mine-spike mine-spike--tl" />
+                            <div className="mine-spike mine-spike--br" />
+                            <div className="mine-spike mine-spike--bl" />
+                        </div>
+                        <p className="searching-text">{SEARCH_LINES[searchLine]}</p>
+                        <p className="searching-elapsed">{formatElapsed(elapsed)}</p>
                         <button className="searching-cancel" onClick={handleCancel}>
                             Cancel
                         </button>
