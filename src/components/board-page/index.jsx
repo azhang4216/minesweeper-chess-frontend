@@ -67,6 +67,8 @@ const BoardPage = () => {
             setRematchRequested(false);
             setRematchDeclinedMsg('');
             setExplosionHistory([]);
+            detonationQueueRef.current = [];
+            isDetonatingRef.current = false;
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
@@ -118,6 +120,8 @@ const BoardPage = () => {
     const [rematchDeclinedMsg, setRematchDeclinedMsg] = useState('');
     const [detonatedPiece, setDetonatedPiece] = useState(null); // piece char or null
     const [showMatchFound, setShowMatchFound] = useState(false);
+    const detonationQueueRef = useRef([]);
+    const isDetonatingRef = useRef(false);
 
     // When the user jumps more than one move, snap to i-1 instantly then animate the single step to i
     useEffect(() => {
@@ -209,6 +213,22 @@ const BoardPage = () => {
         setDrawOfferPending(false);
     };
 
+    // Play detonation overlays sequentially so rapid double-explosions both animate
+    const playNextDetonation = () => {
+        if (detonationQueueRef.current.length === 0) {
+            isDetonatingRef.current = false;
+            return;
+        }
+        isDetonatingRef.current = true;
+        const piece = detonationQueueRef.current.shift();
+        setDetonatedPiece(piece);
+        const isKing = piece?.toLowerCase() === 'k';
+        setTimeout(() => {
+            setDetonatedPiece(null);
+            playNextDetonation();
+        }, isKing ? 3200 : 1600);
+    };
+
     // board socket handlers
     const {
         handleRoomCreated,
@@ -241,9 +261,8 @@ const BoardPage = () => {
         onRematchReady,
         onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
         onDetonation: (piece) => {
-            setDetonatedPiece(piece);
-            const isKing = piece?.toLowerCase() === 'k';
-            setTimeout(() => setDetonatedPiece(null), isKing ? 3200 : 1600);
+            detonationQueueRef.current.push(piece);
+            if (!isDetonatingRef.current) playNextDetonation();
         },
     });
 
