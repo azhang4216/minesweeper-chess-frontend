@@ -20,8 +20,8 @@ import { actions } from "../../redux";
 import "./style.css";
 
 const ProfilePage = () => {
-    const username = useUsername();                    // the logged in user's username
-    const { username: profileUsername } = useParams(); // the profile being viewed
+    const username = useUsername();
+    const { username: profileUsername } = useParams();
     const isGuest = useIsPlayingAsGuest();
     const isLoggedIn = useIsLoggedIn();
     const navigate = useNavigate();
@@ -38,10 +38,15 @@ const ProfilePage = () => {
     const [pastGames, setPastGames] = useState([]);
     const [gamesPage, setGamesPage] = useState(1);
     // eslint-disable-next-line
-    const [gamesLimit, setGamesLimit] = useState(10); // TODO: allow users 25, 50, or 100
+    const [gamesLimit, setGamesLimit] = useState(10);
     const [totalGames, setTotalGames] = useState(0);
+    const [actionMsg, setActionMsg] = useState('');
 
-    // Fetch profile data on mount
+    const notify = (msg) => {
+        setActionMsg(msg);
+        setTimeout(() => setActionMsg(''), 3000);
+    };
+
     useEffect(() => {
         const fetchprofileData = async () => {
             try {
@@ -49,107 +54,80 @@ const ProfilePage = () => {
                 setError(null);
                 const data = await getUserProfileByUsername(profileUsername);
                 setProfileData(data);
-
-                // Fetch friend usernames for received requests
-                if (data.friendRequestsReceived?.length > 0) {
-                    setFriendRequestsReceived(data.friendRequestsReceived);
-                } else {
-                    setFriendRequestsReceived([]);
-                }
-
-                // Fetch friend usernames for friends list
-                if (data.friends?.length > 0) {
-                    setFriendsList(data.friends);
-                } else {
-                    setFriendsList([]);
-                }
-
+                setFriendRequestsReceived(data.friendRequestsReceived?.length > 0 ? data.friendRequestsReceived : []);
+                setFriendsList(data.friends?.length > 0 ? data.friends : []);
                 setNotFound(false);
             } catch (err) {
-                if (err.response && err.response.status === 404) {
-                    setNotFound(true);
-                } else {
-                    setError("Failed to load profile.");
-                }
+                if (err.response && err.response.status === 404) setNotFound(true);
+                else setError("Failed to load profile.");
             } finally {
                 setLoading(false);
             }
         };
-
         fetchprofileData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profileUsername]);
 
     useEffect(() => {
-        if (profileData && username) {
-            setIsOwnProfile(profileData.username === username);
-        }
+        if (profileData && username) setIsOwnProfile(profileData.username === username);
     }, [profileData, username]);
 
-    // Fetch paginated past games
     useEffect(() => {
         const fetchPastGames = async () => {
             try {
                 const data = await getGamesByUsername(profileUsername, gamesPage, gamesLimit);
                 setPastGames(data.games || []);
                 setTotalGames(data.totalGames || 0);
-            } catch (err) {
+            } catch {
                 setPastGames([]);
             }
         };
         fetchPastGames();
     }, [profileUsername, gamesPage, gamesLimit]);
 
-    // Send friend request
     const handleSendFriendRequest = async () => {
         try {
             await sendFriendRequest(profileUsername, username);
-            alert("Friend request sent!");
+            notify("Friend request sent!");
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to send friend request.");
+            notify(err.response?.data?.error || "Failed to send friend request.");
         }
     };
 
-    // Accept friend request
+    const refreshProfile = async () => {
+        const data = await getUserProfileByUsername(username);
+        setProfileData(data);
+        setFriendRequestsReceived(data.friendRequestsReceived || []);
+        setFriendsList(data.friends || []);
+    };
+
     const handleAcceptFriend = async (requesterUsername) => {
         try {
             await acceptFriendRequest(username, requesterUsername);
-            alert(`Friend request from ${requesterUsername} accepted!`);
-            // Refresh profile data
-            const data = await getUserProfileByUsername(username);
-            setProfileData(data);
-            setFriendRequestsReceived(data.friendRequestsReceived || []);
-            setFriendsList(data.friends || []);
+            notify(`${requesterUsername} added to friends.`);
+            await refreshProfile();
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to accept friend request.");
+            notify(err.response?.data?.error || "Failed to accept friend request.");
         }
     };
 
-    // Reject friend request
     const handleRejectFriend = async (requesterUsername) => {
         try {
             await rejectFriendRequest(username, requesterUsername);
-            alert(`Friend request from ${requesterUsername} rejected.`);
-            // Refresh profile data
-            const data = await getUserProfileByUsername(username);
-            setProfileData(data);
-            setFriendRequestsReceived(data.friendRequestsReceived || []);
+            notify("Request declined.");
+            await refreshProfile();
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to reject friend request.");
+            notify(err.response?.data?.error || "Failed to reject friend request.");
         }
     };
 
-    // Remove friend
     const handleRemoveFriend = async (friendUsername) => {
         try {
             await removeFriend(username, friendUsername);
-            alert(`Removed ${friendUsername} from friends.`);
-            // Refresh profile data
-            const data = await getUserProfileByUsername(username);
-            setProfileData(data);
-            setFriendsList(data.friends || []);
+            notify(`Removed ${friendUsername}.`);
+            await refreshProfile();
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to remove friend.");
+            notify(err.response?.data?.error || "Failed to remove friend.");
         }
     };
 
@@ -157,261 +135,225 @@ const ProfilePage = () => {
         setShowConfirmDelete(false);
         try {
             await deleteAccount(username);
-            alert("Account deleted successfully.");
             dispatch(actions.logOut());
             navigate("/");
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to delete account.");
+            notify(err.response?.data?.error || "Failed to delete account.");
         }
     };
 
-    const handleDeleteAccountCancel = () => {
-        setShowConfirmDelete(false);
-    };
-
-    // Pagination controls
     const totalPages = Math.ceil(totalGames / gamesLimit);
 
-    if (loading)
-        return <div className="profile-page-message">Loading profile...</div>;
-    if (notFound)
-        return <div className="profile-page-message">User not found.</div>;
-    if (error)
-        return <div className="profile-page-message">{error}</div>;
-    if (!profileData)
-        return <div className="profile-page-message">Something went wrong.</div>;
+    const formatEloChange = (change) => {
+        const val = parseInt(change?.$numberInt || change);
+        if (isNaN(val)) return null;
+        return { val, color: val >= 0 ? '#4ade80' : '#f87171', prefix: val >= 0 ? '+' : '' };
+    };
+
+    const formatDate = (raw) => {
+        const d = new Date(raw?.$date?.$numberLong || raw);
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    const resultLabel = (result) => {
+        if (result === '1-0') return { text: 'White wins', cls: 'result-white' };
+        if (result === '0-1') return { text: 'Black wins', cls: 'result-black' };
+        return { text: 'Draw', cls: 'result-draw' };
+    };
+
+    if (loading) return <div className="profile-state-msg">Loading...</div>;
+    if (notFound) return <div className="profile-state-msg">Player not found.</div>;
+    if (error)    return <div className="profile-state-msg">{error}</div>;
+    if (!profileData) return <div className="profile-state-msg">Something went wrong.</div>;
+
+    const isDeleted = profileData.status === "DELETED";
 
     return (
         <>
-            <div className={`profile-page-full${profileData.status === "DELETED" ? " profile-deleted" : ""}`}>
-                <h1 className="profile-username">
-                    {profileData.username}
-                    {profileData.role === "admin" && (
-                        // TODO: update with another custom emoji
-                        <span className="tooltip-wrapper">
-                            <span className="role-badge">🌟</span>
-                            <span className="tooltip-text-role">This user is an admin.</span>
-                        </span>
-                    )}
-                    {profileData.role === "mod" && (
-                        // TODO: update with another custom emoji
-                        <span className="tooltip-wrapper">
-                            <span className="role-badge">⭐️</span>
-                            <span className="tooltip-text-role">This user is a mod.</span>
-                        </span>
-                    )}
-                    {profileData.status === "DELETED" && (
-                        <span className="deleted-label"> (Deleted)</span>
-                    )}
-                </h1>
-                <p className="profile-details">ELO: {profileData.elo}</p>
-                <p className="profile-details">Joined: {profileData.date_joined}</p>
+            <div className={`profile-page${isDeleted ? ' profile-page--deleted' : ''}`}>
+                <div className="profile-hero">
+                    <div className="profile-hero-left">
+                        <div className="profile-name">
+                            {profileData.username}
+                            {profileData.role === "admin" && (
+                                <span className="profile-tooltip-wrap">
+                                    <span className="profile-role-badge">🌟</span>
+                                    <span className="profile-tooltip">This user is an admin.</span>
+                                </span>
+                            )}
+                            {profileData.role === "mod" && (
+                                <span className="profile-tooltip-wrap">
+                                    <span className="profile-role-badge">⭐️</span>
+                                    <span className="profile-tooltip">This user is a mod.</span>
+                                </span>
+                            )}
+                            {isDeleted && <span className="profile-deleted-tag">DELETED</span>}
+                        </div>
+                        <div className="profile-meta">
+                            Joined {new Date(profileData.date_joined).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
+                        </div>
+                    </div>
+                    <div className="profile-elo-block">
+                        <div className="profile-elo-value">{profileData.elo}</div>
+                        <div className="profile-elo-label">ELO</div>
+                    </div>
+                </div>
+
+                {actionMsg && <div className="profile-action-msg">{actionMsg}</div>}
 
                 <div className="profile-actions">
                     {isOwnProfile ? (
                         <>
-                            {/* TODO: edit profile feature */}
-                            <span className="tooltip-wrapper">
-                                <button
-                                    className="edit-button"
-                                    disabled
-                                >
+                            <span className="profile-tooltip-wrap">
+                                <button className="profile-btn profile-btn--ghost" disabled>
                                     Edit Profile
                                 </button>
-                                <span className="tooltip-text">Edit profile feature coming soon!</span>
+                                <span className="profile-tooltip profile-tooltip--below">Coming soon</span>
                             </span>
-                            <button
-                                className="delete-button"
-                                onClick={() => setShowConfirmDelete(true)}
-                            >
+                            <button className="profile-btn profile-btn--danger" onClick={() => setShowConfirmDelete(true)}>
                                 Delete Account
                             </button>
                         </>
                     ) : (
-                        isLoggedIn &&
-                        !isGuest && 
-                        profileData.status !== "DELETED" && (
-                            <button className="create-room-button" onClick={handleSendFriendRequest}>
-                                Send Friend Request
+                        isLoggedIn && !isGuest && !isDeleted && (
+                            <button className="profile-btn profile-btn--primary" onClick={handleSendFriendRequest}>
+                                Add Friend
                             </button>
                         )
                     )}
                 </div>
 
-                {isOwnProfile && (
-                    <div className="scroll-section">
-                        <h2>Friend Requests Received</h2>
-                        {friendRequestsReceived.length > 0 ? (
-                            <ul className="scroll-list">
-                                {friendRequestsReceived.map((potentialFriend) => (
-                                    <li key={potentialFriend["id"]} className="scroll-item friend-request-item">
-                                        {potentialFriend["username"]} {"("}
-                                        <Link
-                                            to={`/profile/${potentialFriend["username"]}`}
-                                            className="friend-link"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            see profile
+                <div className="profile-sections">
+                    {isOwnProfile && (
+                        <div className="profile-card">
+                            <div className="profile-card-title">FRIEND REQUESTS</div>
+                            {friendRequestsReceived.length > 0 ? (
+                                <ul className="profile-list">
+                                    {friendRequestsReceived.map((f) => (
+                                        <li key={f.id} className="profile-list-item">
+                                            <Link to={`/profile/${f.username}`} className="profile-link" target="_blank" rel="noopener noreferrer">
+                                                {f.username}
+                                            </Link>
+                                            <div className="profile-req-actions">
+                                                <button className="profile-btn-sm profile-btn-sm--accept" onClick={() => handleAcceptFriend(f.username)}>✓</button>
+                                                <button className="profile-btn-sm profile-btn-sm--reject" onClick={() => handleRejectFriend(f.username)}>✕</button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="profile-empty">No pending requests.</p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="profile-card">
+                        <div className="profile-card-title">FRIENDS</div>
+                        {friendsList.length > 0 ? (
+                            <ul className="profile-list">
+                                {friendsList.map((f) => (
+                                    <li key={f.id} className="profile-list-item">
+                                        <Link to={`/profile/${f.username}`} className="profile-link" target="_blank" rel="noopener noreferrer">
+                                            {f.username}
                                         </Link>
-                                        {")"}
-                                        <div className="friend-request-actions">
-                                            <button
-                                                className="accept-button"
-                                                onClick={() => handleAcceptFriend(potentialFriend["username"])}
-                                            >
-                                                Accept
+                                        {isOwnProfile && (
+                                            <button className="profile-btn-sm profile-btn-sm--reject" onClick={() => handleRemoveFriend(f.username)}>
+                                                Remove
                                             </button>
-                                            <button
-                                                className="reject-button"
-                                                onClick={() => handleRejectFriend(potentialFriend["username"])}
-                                            >
-                                                Reject
-                                            </button>
-                                        </div>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="no-results">No friend requests.</p>
+                            <p className="profile-empty">No friends yet.</p>
                         )}
                     </div>
-                )}
-
-                <div className="scroll-section">
-                    <h2>Friends</h2>
-                    {friendsList.length > 0 ? (
-                        <ul className="scroll-list">
-                            {friendsList.map((friend) => (
-                                <li key={friend["id"]} className="scroll-item">
-                                    <Link
-                                        to={`/profile/${friend["username"]}`}
-                                        className="friend-link"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {friend["username"]}
-                                    </Link>
-                                    {" "}
-                                    {isOwnProfile && (
-                                        <button
-                                            className="remove-friend-button"
-                                            onClick={() => handleRemoveFriend(friend["username"])}
-                                        >
-                                            Remove
-                                        </button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="no-results">No friends yet.</p>
-                    )}
                 </div>
 
-                <div className="scroll-section">
-                    <h2>Past Games</h2>
+                <div className="profile-card profile-card--wide">
+                    <div className="profile-card-title">PAST GAMES</div>
                     {pastGames.length > 0 ? (
-                        <div className="games-table-wrapper">
-                            <table className="games-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>White Player</th>
-                                        <th>Black Player</th>
-                                        <th>Result</th>
-                                        <th>Bombs</th>
-                                        <th>Link</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {pastGames.map((game) => (
-                                        <tr key={game._id}>
-                                            <td>
-                                                {new Date(game.date?.$date?.$numberLong || game.date).toLocaleString()}
-                                            </td>
-                                            <td>
-                                                {game.white_player.is_guest ? 'Guest Player' : game.white_player.player_id} (
-                                                <span>
-                                                    {game.white_player.elo_before_game_start?.$numberInt || game.white_player.elo_before_game_start}
-                                                    {game.white_player.elo_change && (
-                                                        <>
-                                                            {" "}
-                                                            <span style={{ color: parseInt(game.white_player.elo_change?.$numberInt || game.white_player.elo_change) >= 0 ? "green" : "red" }}>
-                                                                {parseInt(game.white_player.elo_change?.$numberInt || game.white_player.elo_change) >= 0 ? "+" : ""}
-                                                                {game.white_player.elo_change?.$numberInt || game.white_player.elo_change}
-                                                            </span>
-                                                        </>
-                                                    )}
-                                                </span>
-                                                )
-                                            </td>
-                                            <td>
-                                                {game.black_player.is_guest ? 'Guest Player' : game.black_player.player_id} (
-                                                <span>
-                                                    {game.black_player.elo_before_game_start?.$numberInt || game.black_player.elo_before_game_start}
-                                                    {game.black_player.elo_change && (
-                                                        <>
-                                                            {" "}
-                                                            <span style={{ color: parseInt(game.black_player.elo_change?.$numberInt || game.black_player.elo_change) >= 0 ? "green" : "red" }}>
-                                                                {parseInt(game.black_player.elo_change?.$numberInt || game.black_player.elo_change) >= 0 ? "+" : ""}
-                                                                {game.black_player.elo_change?.$numberInt || game.black_player.elo_change}
-                                                            </span>
-                                                        </>
-                                                    )}
-                                                </span>
-                                                )
-                                            </td>
-                                            <td>
-                                                {game.result} ({game.result_by})
-                                            </td>
-                                            <td>
-                                                {game.bombs.join(", ")}
-                                            </td>
-                                            <td>
-                                                <Link
-                                                    to={`/game/${game._id}`}
-                                                    className="friend-link"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    View Game
-                                                </Link>
-                                            </td>
+                        <>
+                            <div className="games-table-wrap">
+                                <table className="games-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>White</th>
+                                            <th>Black</th>
+                                            <th>Result</th>
+                                            <th>Bombs</th>
+                                            <th></th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {pastGames.map((game) => {
+                                            const whiteElo = formatEloChange(game.white_player.elo_change);
+                                            const blackElo = formatEloChange(game.black_player.elo_change);
+                                            const res = resultLabel(game.result);
+                                            return (
+                                                <tr key={game._id}>
+                                                    <td>{formatDate(game.date)}</td>
+                                                    <td>
+                                                        {game.white_player.is_guest ? 'Guest' : game.white_player.player_id}
+                                                        {whiteElo && (
+                                                            <span className="games-elo-change" style={{ color: whiteElo.color }}>
+                                                                {' '}{whiteElo.prefix}{whiteElo.val}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {game.black_player.is_guest ? 'Guest' : game.black_player.player_id}
+                                                        {blackElo && (
+                                                            <span className="games-elo-change" style={{ color: blackElo.color }}>
+                                                                {' '}{blackElo.prefix}{blackElo.val}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td><span className={`games-result ${res.cls}`}>{res.text}</span></td>
+                                                    <td className="games-bombs">{game.bombs.join(", ")}</td>
+                                                    <td>
+                                                        <Link to={`/game/${game._id}`} className="profile-link" target="_blank" rel="noopener noreferrer">
+                                                            View →
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {totalPages > 1 && (
+                                <div className="games-pagination">
+                                    <button
+                                        className="profile-btn profile-btn--ghost"
+                                        disabled={gamesPage === 1}
+                                        onClick={() => setGamesPage(p => p - 1)}
+                                    >
+                                        ← Prev
+                                    </button>
+                                    <span className="games-page-label">Page {gamesPage} of {totalPages}</span>
+                                    <button
+                                        className="profile-btn profile-btn--ghost"
+                                        disabled={gamesPage === totalPages}
+                                        onClick={() => setGamesPage(p => p + 1)}
+                                    >
+                                        Next →
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     ) : (
-                        <p className="no-results">No past games yet.</p>
-                    )}
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <div className="pagination-controls">
-                            <button
-                                disabled={gamesPage === 1}
-                                onClick={() => setGamesPage(gamesPage - 1)}
-                            >
-                                Previous
-                            </button>
-                            <span>Page {gamesPage} of {totalPages}</span>
-                            <button
-                                disabled={gamesPage === totalPages}
-                                onClick={() => setGamesPage(gamesPage + 1)}
-                            >
-                                Next
-                            </button>
-                        </div>
+                        <p className="profile-empty">No past games yet.</p>
                     )}
                 </div>
             </div>
 
             {showConfirmDelete && (
                 <ConfirmModal
-                    message="Are you sure you want to delete your account? This action is permanent."
+                    message="Delete your account? This is permanent and cannot be undone."
                     onConfirm={handleDeleteAccountConfirmed}
-                    onCancel={handleDeleteAccountCancel}
+                    onCancel={() => setShowConfirmDelete(false)}
                 />
             )}
         </>
