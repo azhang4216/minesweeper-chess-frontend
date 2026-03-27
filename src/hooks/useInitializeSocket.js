@@ -15,8 +15,10 @@ const useInitializeSocket = () => {
     const myUsernameRef = useRef(myUsername);
     const locationRef = useRef(location);
 
-    useEffect(() => { myUsernameRef.current = myUsername; }, [myUsername]);
-    useEffect(() => { locationRef.current = location; }, [location]);
+    // Update synchronously in render body (not in useEffect) so socket handlers
+    // never see a stale pathname — effects run after paint, creating a brief window.
+    myUsernameRef.current = myUsername;
+    locationRef.current = location;
 
     const [rematchBanner, setRematchBanner] = useState(null); // { from: string } | null
 

@@ -58,9 +58,10 @@ export const logIn = (username) => ({
     payload: username,
 });
 
-export const logOut = () => ({
-    type: "LOG_OUT",
-});
+export const logOut = () => {
+    localStorage.removeItem('guestPlayerId'); // clear stale guest session on any logout path
+    return { type: "LOG_OUT" };
+};
 
 export const playAsGuest = (guestID) => ({
     type: "PLAY_AS_GUEST",

@@ -17,7 +17,8 @@ export const useBoardSocketHandlers = ({
     setDrawOfferPending,
     setDrawOfferDeclinedMsg,
     setRematchOffered,
-    setRematchRequested,   // NEW — resets "Waiting..." state when declined
+    setRematchRequested,
+    onRematchDeclined,     // called when opponent declines; replaces string-matched setRoomMessage
     onRematchReady,
     onExplosion,
     onDetonation,
@@ -209,7 +210,7 @@ export const useBoardSocketHandlers = ({
 
     const handleRematchDeclined = () => {
         setRematchRequested(false);
-        setRoomMessage('Rematch declined.');
+        onRematchDeclined();
     };
 
     const handleRematchReady = (gameData) => onRematchReady(gameData);

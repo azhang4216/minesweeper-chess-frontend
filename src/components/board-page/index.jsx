@@ -251,17 +251,18 @@ const BoardPage = () => {
         handleRematchDeclined,
         handleRematchReady,
     } = useBoardSocketHandlers({
-        setRoomMessage: (msg) => { if (msg === 'Rematch declined.') setRematchDeclinedMsg(msg); },
+        setRoomMessage: () => {},
         setGameOverReason,
         setGameOverResult,
         setmyEloChange,
         setOpponentEloChange,
         setDisplayWinLossPopup,
-        setDisconnectCountdown,   // add this
+        setDisconnectCountdown,
         setDrawOfferPending,
         setDrawOfferDeclinedMsg,
         setRematchOffered,
         setRematchRequested,
+        onRematchDeclined: () => setRematchDeclinedMsg('Rematch declined.'),
         onRematchReady,
         onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
         onDetonation: (piece) => {
