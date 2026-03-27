@@ -62,6 +62,10 @@ npm start
 - [x] User authentication: creation, login, logout, guest play, password reset
 - [x] Navigation sidebar with dark tactical theme
 - [x] CI: GitHub Actions runs unit tests on every PR to main
+- [x] Profile and search pages with dark tactical theme
+- [x] Friends system: send/accept/reject/remove friend requests, post-game Add Friend
+- [x] Cinematic detonation overlay: expanding rings, impact flash, board shake, flavor text
+- [x] Win/loss/draw popup with meme GIF backgrounds and personality copy
 
 ## 📄 License
 
