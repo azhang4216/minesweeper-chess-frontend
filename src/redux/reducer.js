@@ -26,6 +26,7 @@ const initialState = {
             bombs: [],
             secondsLeft: 100,
             lastSyncAt: Date.now(),
+            is_guest: false,
         }
     }
 }

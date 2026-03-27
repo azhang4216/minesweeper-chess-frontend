@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import './style.css';
 import { getEloChangeColor } from "../../utils";
-import { usePlayer, useOpponent } from '../../hooks';
+import { usePlayer, useOpponent, useUsername } from '../../hooks';
 import { images } from '../../assets';
+import { sendFriendRequest } from "../../api/profile";
 
 const VARIANT_GIF = {
     win:  images.happyCatGif,
@@ -53,9 +55,23 @@ const WinLossPopup = ({
     onRequestRematch,
     onNewGame,
     rematchRequested,
+    rematchDeclinedMsg,
 }) => {
     const player = usePlayer();
     const opponent = useOpponent();
+    const myUsername = useUsername();
+    const [friendRequestSent, setFriendRequestSent] = useState(false);
+
+    const canSendFriendRequest = myUsername && !opponent.is_guest;
+
+    const handleSendFriendRequest = async () => {
+        try {
+            await sendFriendRequest(opponent.name, myUsername);
+            setFriendRequestSent(true);
+        } catch {
+            setFriendRequestSent(true); // show "Sent" even on error (e.g. already friends)
+        }
+    };
 
     const isWin = result === 'You win';
     const isDraw = result === 'Draw';
@@ -87,17 +103,29 @@ const WinLossPopup = ({
                 <div className="wl-matchup">
                     <span>{player.name}</span>
                     <span className="wl-matchup-vs">vs</span>
-                    <span>{opponent.name}</span>
+                    {opponent.is_guest
+                        ? <span>{opponent.name}</span>
+                        : <Link to={`/profile/${opponent.name}`} className="wl-opponent-link" onClick={onClose}>{opponent.name}</Link>
+                    }
                 </div>
 
                 <div className="wl-actions">
                     {onRequestRematch && (
                         <button
                             className={`wl-btn wl-btn--primary${rematchRequested ? ' wl-btn--waiting' : ''}`}
-                            onClick={onRequestRematch}
-                            disabled={rematchRequested}
+                            onClick={!rematchDeclinedMsg ? onRequestRematch : undefined}
+                            disabled={rematchRequested || !!rematchDeclinedMsg}
                         >
-                            {rematchRequested ? 'Waiting...' : 'Rematch'}
+                            {rematchDeclinedMsg ? rematchDeclinedMsg : rematchRequested ? 'Waiting...' : 'Rematch'}
+                        </button>
+                    )}
+                    {canSendFriendRequest && (
+                        <button
+                            className="wl-btn wl-btn--ghost"
+                            onClick={handleSendFriendRequest}
+                            disabled={friendRequestSent}
+                        >
+                            {friendRequestSent ? 'Request Sent' : 'Add Friend'}
                         </button>
                     )}
                     {onNewGame && (

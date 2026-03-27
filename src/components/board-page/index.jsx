@@ -75,6 +75,7 @@ const BoardPage = () => {
                 rating: opponentInfo.elo,
                 bombs: [],
                 secondsLeft: secsToPlay,
+                is_guest: opponentInfo.is_guest ?? false,
             }));
 
             dispatch(actions.setPlayerInfo({
@@ -360,6 +361,7 @@ const BoardPage = () => {
                             onRequestRematch={handleRequestRematch}
                             onNewGame={handleNewGame}
                             rematchRequested={rematchRequested}
+                            rematchDeclinedMsg={rematchDeclinedMsg}
                         />
                     )}
                     {confirmAction && (
@@ -392,6 +394,7 @@ const BoardPage = () => {
                             onCancel={() => {
                                 socket.emit('declineRematch');
                                 setRematchOffered(false);
+                                setRematchDeclinedMsg('You declined.');
                             }}
                         />
                     )}
