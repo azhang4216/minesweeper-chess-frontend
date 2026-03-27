@@ -347,30 +347,20 @@
 }
 
 .games-result {
-    font-family: 'Rajdhani', Impact, sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 2px 8px;
-    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.result-white { color: #f4f4f5; background: rgba(255,255,255,0.08); }
-.result-black { color: var(--text-dim); background: rgba(0,0,0,0.2); }
-.result-draw  { color: var(--text-dim); background: var(--panel); }
+.result-white { color: #86efac; }
+.result-black { color: var(--accent); }
+.result-draw  { color: var(--text-dim); }
 
 .games-player-guest {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    line-height: 1.3;
-}
-
-.games-guest-id {
-    font-size: 10px;
     color: var(--text-dim);
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0;
+    font-style: italic;
+    font-size: 13px;
 }
 
 .games-analyze-link {

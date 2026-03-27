@@ -155,6 +155,9 @@ const ProfilePage = () => {
         return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isGuestPlayer = (player) => player.is_guest || UUID_RE.test(player.player_id);
+
     const resultLabel = (result) => {
         if (result === 'WHITE_WINS') return { text: 'White wins', cls: 'result-white' };
         if (result === 'BLACK_WINS') return { text: 'Black wins', cls: 'result-black' };
@@ -295,9 +298,9 @@ const ProfilePage = () => {
                                                 <tr key={game._id}>
                                                     <td>{formatDate(game.date)}</td>
                                                     <td>
-                                                        {game.white_player.is_guest
-                                                            ? <span className="games-player-guest">Guest Player<span className="games-guest-id">{game.white_player.player_id}</span></span>
-                                                            : game.white_player.player_id}
+                                                        {isGuestPlayer(game.white_player)
+                                                            ? <span className="games-player-guest">Guest Player</span>
+                                                            : <Link to={`/profile/${game.white_player.player_id}`} className="profile-link">{game.white_player.player_id}</Link>}
                                                         {whiteElo && (
                                                             <span className="games-elo-change" style={{ color: whiteElo.color }}>
                                                                 {' '}{whiteElo.prefix}{whiteElo.val}
@@ -305,9 +308,9 @@ const ProfilePage = () => {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        {game.black_player.is_guest
-                                                            ? <span className="games-player-guest">Guest Player<span className="games-guest-id">{game.black_player.player_id}</span></span>
-                                                            : game.black_player.player_id}
+                                                        {isGuestPlayer(game.black_player)
+                                                            ? <span className="games-player-guest">Guest Player</span>
+                                                            : <Link to={`/profile/${game.black_player.player_id}`} className="profile-link">{game.black_player.player_id}</Link>}
                                                         {blackElo && (
                                                             <span className="games-elo-change" style={{ color: blackElo.color }}>
                                                                 {' '}{blackElo.prefix}{blackElo.val}
