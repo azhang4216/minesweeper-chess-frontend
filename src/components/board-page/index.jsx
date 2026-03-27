@@ -396,6 +396,7 @@ const BoardPage = () => {
 
                         <div className={`chess-board-container${criticalTimer ? ' critical-timer' : ''}`}>
                             <Chessboard
+                                key={roomId}
                                 displayFen={snapFen ?? (isViewingHistory ? displayFen : undefined)}
                                 animationDuration={boardAnimDuration}
                                 visibleCraters={visibleCraters}
