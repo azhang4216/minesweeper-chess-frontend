@@ -156,8 +156,8 @@ const ProfilePage = () => {
     };
 
     const resultLabel = (result) => {
-        if (result === '1-0') return { text: 'White wins', cls: 'result-white' };
-        if (result === '0-1') return { text: 'Black wins', cls: 'result-black' };
+        if (result === 'WHITE_WINS') return { text: 'White wins', cls: 'result-white' };
+        if (result === 'BLACK_WINS') return { text: 'Black wins', cls: 'result-black' };
         return { text: 'Draw', cls: 'result-draw' };
     };
 
@@ -295,7 +295,9 @@ const ProfilePage = () => {
                                                 <tr key={game._id}>
                                                     <td>{formatDate(game.date)}</td>
                                                     <td>
-                                                        {game.white_player.is_guest ? 'Guest' : game.white_player.player_id}
+                                                        {game.white_player.is_guest
+                                                            ? <span className="games-player-guest">Guest Player<span className="games-guest-id">{game.white_player.player_id}</span></span>
+                                                            : game.white_player.player_id}
                                                         {whiteElo && (
                                                             <span className="games-elo-change" style={{ color: whiteElo.color }}>
                                                                 {' '}{whiteElo.prefix}{whiteElo.val}
@@ -303,7 +305,9 @@ const ProfilePage = () => {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        {game.black_player.is_guest ? 'Guest' : game.black_player.player_id}
+                                                        {game.black_player.is_guest
+                                                            ? <span className="games-player-guest">Guest Player<span className="games-guest-id">{game.black_player.player_id}</span></span>
+                                                            : game.black_player.player_id}
                                                         {blackElo && (
                                                             <span className="games-elo-change" style={{ color: blackElo.color }}>
                                                                 {' '}{blackElo.prefix}{blackElo.val}
@@ -313,8 +317,8 @@ const ProfilePage = () => {
                                                     <td><span className={`games-result ${res.cls}`}>{res.text}</span></td>
                                                     <td className="games-bombs">{game.bombs.join(", ")}</td>
                                                     <td>
-                                                        <Link to={`/game/${game._id}`} className="profile-link" target="_blank" rel="noopener noreferrer">
-                                                            View →
+                                                        <Link to={`/game/${game._id}`} className="profile-link games-analyze-link" target="_blank" rel="noopener noreferrer">
+                                                            Analyze Game
                                                         </Link>
                                                     </td>
                                                 </tr>
