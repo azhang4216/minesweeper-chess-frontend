@@ -1,0 +1,114 @@
+.det-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: detFadeIn 0.12s ease forwards;
+    pointer-events: none;
+}
+
+.det-overlay--regular {
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.det-overlay--king {
+    background: radial-gradient(ellipse at center, #1a0a00 0%, #000000 75%);
+}
+
+@keyframes detFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── Shockwave rings ────────────────────────────── */
+
+.det-ring {
+    position: absolute;
+    border-radius: 50%;
+    border-style: solid;
+    animation: detRingIn 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+.det-overlay--regular .det-ring {
+    border-width: 1.5px;
+    border-color: rgba(239, 68, 68, 0.55);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
+}
+
+.det-overlay--king .det-ring {
+    border-width: 1px;
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.2);
+}
+
+.det-ring--1 { width: 80px;  height: 80px;  animation-delay: 0.05s; }
+.det-ring--2 { width: 160px; height: 160px; animation-delay: 0.15s; }
+.det-ring--3 { width: 260px; height: 260px; animation-delay: 0.28s; }
+
+@keyframes detRingIn {
+    0%   { opacity: 0; transform: scale(0.3); }
+    25%  { opacity: 1; }
+    100% { opacity: 0.5; transform: scale(1); }
+}
+
+/* ── Text ───────────────────────────────────────── */
+
+.det-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    animation: detTextIn 0.3s ease 0.28s both;
+    padding: 0 24px;
+}
+
+@keyframes detTextIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.det-emoji {
+    font-size: 36px;
+    margin-bottom: 10px;
+    line-height: 1;
+}
+
+/* Regular piece: big white line1, small red line2 */
+.det-overlay--regular .det-line1 {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 0 0 28px rgba(239, 68, 68, 0.9);
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+.det-overlay--regular .det-line2 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(239, 68, 68, 0.8);
+    letter-spacing: 0.5px;
+}
+
+/* King: small gold line1, big white line2 */
+.det-overlay--king .det-line1 {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #f59e0b;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.7);
+    margin-bottom: 8px;
+}
+
+.det-overlay--king .det-line2 {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 1px;
+}

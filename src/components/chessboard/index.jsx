@@ -269,8 +269,27 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         return colors;
     };
 
+    // Amber glow on valid bomb placement squares during placing_bombs phase
+    const placementGlow = gameState === GAME_STATES.placing_bombs
+        ? (() => {
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            const validRanks = isWhite ? ['3', '4'] : ['5', '6'];
+            const styles = {};
+            for (const file of files) {
+                for (const rank of validRanks) {
+                    const sq = file + rank;
+                    if (!myBombs.includes(sq)) {
+                        styles[sq] = { boxShadow: 'inset 0 0 0 2px rgba(245, 158, 11, 0.35)' };
+                    }
+                }
+            }
+            return styles;
+        })()
+        : {};
+
     const customSquareStyles = {
         ...getBaseSquareColors(),
+        ...placementGlow,
         ...(selectedSquare && { [selectedSquare]: { backgroundColor: "#c7edcc" } }),
         ...(lastMove.from && { [lastMove.from]: { backgroundColor: "#c7edcc" } }),
         ...(lastMove.to && { [lastMove.to]: { backgroundColor: "#c7edcc" } }),

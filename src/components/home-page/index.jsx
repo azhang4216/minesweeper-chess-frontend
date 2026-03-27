@@ -132,7 +132,7 @@ const HomePage = () => {
                 <div className="searching-overlay">
                     <div className="searching-popup">
                         <div className="searching-spinner" />
-                        <p className="searching-text">Searching for opponent...</p>
+                        <p className="searching-text">Searching for someone to humiliate...</p>
                         <button className="searching-cancel" onClick={handleCancel}>
                             Cancel
                         </button>

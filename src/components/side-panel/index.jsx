@@ -53,26 +53,29 @@ const SidePanel = ({
         <div className="side-panel">
             {(gameState === GAME_STATES.placing_bombs) ?
                 <div className="bomb-placement-info">
-                    <h3>
-                        {
-                            (myBombs.length < 3) ?
-                                `Plant your ${3 - myBombs.length} bombs!` :
-                                "Waiting for your opponent to finish planting bombs..."
-                        }
-                    </h3>
-                    <Timer
-                        isActive={true}
-                        serverSeconds={bombPlantingTimeLeft}
-                        lastSyncAt={bombSyncAt}
-                    />
-                    <p>
-                        As the {isWhite ? "white" : "black"} player, you can place bombs only on the {isWhite ? "3rd & 4th" : "5th & 6th"} ranks.
-                        <br />
-                        <br />
-                        Your opponent can't see them, but you can (marked with a red X).
-                        <br />
-                        <br />
-                        Any piece that steps on a bomb is destroyed, and the bomb is removed.
+                    <div className="bpi-header">Plant your surprises.</div>
+                    <div className="bpi-subtext">
+                        {myBombs.length < 3
+                            ? "They won't see it coming."
+                            : "Waiting for your opponent..."}
+                    </div>
+                    <div className="bpi-timer-wrap">
+                        <Timer
+                            isActive={true}
+                            serverSeconds={bombPlantingTimeLeft}
+                            lastSyncAt={bombSyncAt}
+                        />
+                    </div>
+                    <div className="bpi-slots">
+                        {[0, 1, 2].map(i => (
+                            <div key={i} className={`bpi-slot${i < myBombs.length ? ' bpi-slot--placed' : ''}`}>
+                                {i < myBombs.length ? '💣' : ''}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="bpi-count">{myBombs.length} of 3 placed</div>
+                    <p className="bpi-rule">
+                        {isWhite ? "Ranks 3 & 4" : "Ranks 5 & 6"} only.
                     </p>
                 </div>
                 :

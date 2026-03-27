@@ -1,113 +1,183 @@
-.popup-overlay {
+.wl-overlay {
     position: fixed;
     inset: 0;
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: backdropIn 0.2s ease forwards;
+    animation: wlSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.popup-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(4px);
+.wl-overlay--win  { background: linear-gradient(160deg, #050e08 0%, #0a1a0d 60%, #060a09 100%); }
+.wl-overlay--loss { background: linear-gradient(160deg, #0d0606 0%, #130a0a 60%, #0a0606 100%); }
+.wl-overlay--draw { background: var(--bg); }
+
+@keyframes wlSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.popup-content {
-    position: relative;
-    z-index: 1;
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 16px;
-    padding: 28px 32px;
-    width: 480px;
-    max-width: 95vw;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-    animation: popupIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+/* ── Card ───────────────────────────────────────── */
 
-@keyframes backdropIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-@keyframes popupIn {
-    from { opacity: 0; transform: scale(0.9) translateY(10px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Close button */
-.close-button {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
-    cursor: pointer;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transition: background 0.15s, color 0.15s;
-    padding: 0;
-    min-width: 0;
-}
-
-.close-button:hover:enabled {
-    background: var(--panel-hover);
-    color: var(--text);
-    transform: none;
-    opacity: 1;
-}
-
-/* Media left */
-.result-media {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 10px;
-    flex-shrink: 0;
-    border: 1px solid var(--border);
-}
-
-/* Text right */
-.result-text {
+.wl-card {
+    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    flex: 1;
+    align-items: center;
+    gap: 0;
+    padding: 0 24px;
+    max-width: 480px;
+    width: 100%;
 }
 
-.result-text h2 {
+/* ── Headline ───────────────────────────────────── */
+
+.wl-headline {
     font-family: 'Rajdhani', Impact, sans-serif;
-    font-size: 22px;
+    font-size: 11px;
     font-weight: 700;
+    letter-spacing: 5px;
+    margin-bottom: 16px;
+}
+
+.wl-overlay--win  .wl-headline { color: #22c55e; }
+.wl-overlay--loss .wl-headline { color: rgba(239, 68, 68, 0.7); }
+.wl-overlay--draw .wl-headline { color: var(--text-muted); }
+
+/* ── Tagline ────────────────────────────────────── */
+
+.wl-tagline {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 28px;
+    font-weight: 900;
     letter-spacing: 0.04em;
     color: var(--text);
-    line-height: 1.25;
+    margin-bottom: 6px;
+    line-height: 1.15;
 }
 
-.elo-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
+.wl-overlay--loss .wl-tagline { color: rgba(240, 239, 248, 0.7); }
 
-.elo-info p {
+/* ── Subtext ────────────────────────────────────── */
+
+.wl-subtext {
+    font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 24px;
 }
 
-.elo-info p span { color: var(--text); }
+/* ── Reason ─────────────────────────────────────── */
+
+.wl-reason {
+    font-size: 10px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+}
+
+/* ── ELO display ────────────────────────────────── */
+
+.wl-elo {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.wl-elo-change {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.wl-elo-new {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.wl-elo-label {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    align-self: flex-end;
+    padding-bottom: 6px;
+}
+
+/* ── Matchup line ───────────────────────────────── */
+
+.wl-matchup {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.wl-matchup-vs {
+    font-size: 10px;
+    color: var(--text-dim);
+    opacity: 0.5;
+}
+
+/* ── Action buttons ─────────────────────────────── */
+
+.wl-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.wl-btn {
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    border: 1px solid transparent;
+}
+
+.wl-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.wl-btn:active:not(:disabled) { transform: translateY(0); }
+
+.wl-btn--primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.wl-btn--primary:hover:not(:disabled) {
+    background: var(--accent-light);
+    box-shadow: 0 6px 22px var(--accent-glow);
+}
+
+.wl-btn--ghost {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--text-muted);
+}
+
+.wl-btn--ghost:hover {
+    background: var(--panel);
+    color: var(--text);
+}
+
+.wl-btn--waiting {
+    opacity: 0.5;
+    cursor: default;
+    transform: none !important;
+    box-shadow: none !important;
+}
