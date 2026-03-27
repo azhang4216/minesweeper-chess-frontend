@@ -17,10 +17,11 @@ import {
 } from "./components";
 import { SocketProvider } from "./socket";
 import { useInitializeSocket, useAuthState } from "./hooks";
+import ConfirmModal from "./components/confirm-modal";
 
 // Wrapper to access location inside Router
 const AppContent = () => {
-    useInitializeSocket();
+    const { rematchBanner, acceptGlobalRematch, declineGlobalRematch } = useInitializeSocket();
     useAuthState();                    // Allows for authentication on refresh
 
     const location = useLocation();
@@ -43,6 +44,13 @@ const AppContent = () => {
 
     return (
         <>
+            {rematchBanner && (
+                <ConfirmModal
+                    message="Your opponent wants a rematch. Accept?"
+                    onConfirm={acceptGlobalRematch}
+                    onCancel={declineGlobalRematch}
+                />
+            )}
             {!isNotFound && <UserMenu />}
             <NavigationSideBar />
             <Routes>
