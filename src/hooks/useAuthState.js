@@ -47,7 +47,13 @@ export const useAuthState = () => {
                 dispatch(actions.setIsAuthLoading(false));
             });
         } else {
-            // no token, not loading
+            // No auth token — check if a guest session was saved from a previous page load
+            const guestPlayerId = localStorage.getItem('guestPlayerId');
+            if (guestPlayerId) {
+                dispatch(actions.playAsGuest(guestPlayerId));
+                socket.emit("authenticate", { playerId: guestPlayerId });
+                socket.emit("rejoin", guestPlayerId);
+            }
             dispatch(actions.setIsAuthLoading(false));
         }
     }, [dispatch, socket]);

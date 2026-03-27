@@ -16,27 +16,27 @@ const TIME_CONTROLS = [
 ];
 
 const TAGLINES = [
-    'Chess. But with landmines.',
-    'Outsmart them. Then blow them up.',
-    'The board remembers everything.',
-    'Every square is a gamble.',
-    'They never saw it coming.',
-    'Strategy meets sabotage.',
-    'Place wisely. Play dirty.',
+    // 'Chess. But with landmines.',
+    'Outsmart them. Or just blow them up, idc.',
+    // 'The board remembers everything.',
+    // 'Every square is a gamble.',
+    // 'They never saw it coming.',
+    // 'Strategy meets sabotage.',
+    // 'Place wisely. Play dirty.',
     'Here comes the BOOM!',
     'Wait — kings can explode?!',
-    'Mine your own business.',
+    // 'Mine your own business.',
     'En passant? More like en ka-BOOM.',
-    'Checkmate is the boring way to win.',
-    'It\'s not a trap if it explodes.',
+    // 'Checkmate is the boring way to win.',
+    // 'It\'s not a trap if it explodes.',
     'Magnus doesn\'t know about this yet.',
-    'Check. Mate. Boom.',
-    'Step carefully. No, seriously.',
-    'The queen is safe. Probably.',
+    // 'Check. Mate. Boom.',
+    // 'Step carefully. No, seriously.',
+    // 'The queen is safe. Probably.',
     'Fischer never had this problem.',
     'FIDE has not approved this.',
-    'This is fine.',
-    'That\'s not a fork. That\'s a detonator.',
+    // 'This is fine.',
+    // 'That\'s not a fork. That\'s a detonator.',
     'Elo goes up. Pieces go boom.',
     'Warning: may cause sudden piece loss.',
     'Oh no, my queen-- BOOM. (Sorry, Eric.)',
@@ -108,6 +108,7 @@ const HomePage = () => {
     const handlePlayAsGuest = async () => {
         try {
             const assignedGuestID = await generateGuestUUID();
+            localStorage.setItem('guestPlayerId', assignedGuestID);
             dispatch(actions.playAsGuest(assignedGuestID));
             socket.emit("authenticate", { playerId: assignedGuestID });
         } catch (e) {

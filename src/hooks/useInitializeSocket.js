@@ -59,6 +59,7 @@ const useInitializeSocket = () => {
         };
 
         const handleNoActiveGame = () => {
+            localStorage.removeItem('guestPlayerId'); // clear stale guest session
             dispatch(actions.setGameState(GAME_STATES.inactive));
             navigate("/");
         };
