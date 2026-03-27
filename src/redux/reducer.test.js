@@ -47,6 +47,15 @@ describe('appReducer', () => {
             expect(state.game.moveHistory).toEqual(['e4']);
         });
 
+        test('does not append to moveHistory when moveSan is null', () => {
+            const state = dispatch({
+                type: 'UPDATE_GAME',
+                payload: { gameFen: 'new-fen', moveSan: null },
+            });
+            expect(state.game.gameFen).toBe('new-fen');
+            expect(state.game.moveHistory).toEqual([]);
+        });
+
         test('does not mutate the original state', () => {
             const original = init();
             const originalHistory = original.game.moveHistory;

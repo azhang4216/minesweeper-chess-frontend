@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-03-26
+
+### Fixed
+- **Race condition**: `locationRef` and `myUsernameRef` now updated synchronously in render body instead of via `useEffect`, eliminating stale-value window in socket handlers
+- **Guest rejoin**: `is_guest` flag now propagated through rejoin path (`serializePlayers` → `handleRejoined` → Redux), fixing broken "Add Friend" / opponent-link detection after reconnect
+- **Elo display for guests**: `myEloChange` null-guarded with `?? 0` in WinLossPopup, preventing NaN display when guests finish a game
+- **Detonation timing**: `handleDrawGameOver` now uses `lastExplosionWasKingRef` delay (5500ms / 3200ms) matching `handleWinLossGameOver`, fixing race where draw popup appeared mid-explosion animation
+- **Pawn promotion validation**: client-side legality check now always passes `promotion: 'q'` to chess.js, fixing moves being incorrectly rejected when a pawn reaches the back rank
+- **String coupling**: `handleRematchDeclined` now calls dedicated `onRematchDeclined()` callback instead of routing through string-matched `setRoomMessage`
+- **Guest session leak**: `logOut()` now clears `guestPlayerId` from localStorage on every logout path
+
+### Tests
+- Regression tests: `logOut` localStorage clearing, `UPDATE_GAME` with null `moveSan`, `is_guest` propagation through rejoin path
+
 ## [0.3.0] - 2026-03-26
 
 ### Added

@@ -84,6 +84,12 @@ describe('action creators', () => {
         expect(logOut()).toEqual({ type: 'LOG_OUT' });
     });
 
+    test('logOut clears guestPlayerId from localStorage', () => {
+        localStorage.setItem('guestPlayerId', 'guest-abc');
+        logOut();
+        expect(localStorage.getItem('guestPlayerId')).toBeNull();
+    });
+
     test('playAsGuest', () => {
         expect(playAsGuest('guest-123')).toEqual({ type: 'PLAY_AS_GUEST', payload: 'guest-123' });
     });

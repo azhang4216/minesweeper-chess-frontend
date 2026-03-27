@@ -145,6 +145,29 @@ describe('useInitializeSocket', () => {
         expect(mockNavigate).toHaveBeenCalledWith('/play-game', { state: { roomId: BASE_DATA.roomId } });
     });
 
+    test('propagates is_guest flag from server data into setOpponentInfo', () => {
+        renderHook(() => useInitializeSocket());
+        const dataWithGuest = {
+            ...BASE_DATA,
+            players: [
+                PLAYER_WHITE,
+                { ...PLAYER_BLACK, is_guest: true },
+            ],
+        };
+        act(() => { getCapturedHandler('rejoined')(dataWithGuest); });
+
+        const opponentInfo = mockDispatch.mock.calls.find(([a]) => a.type === 'SET_OPPONENT_INFO')?.[0].payload;
+        expect(opponentInfo.is_guest).toBe(true);
+    });
+
+    test('defaults is_guest to false when field is absent', () => {
+        renderHook(() => useInitializeSocket());
+        act(() => { getCapturedHandler('rejoined')(BASE_DATA); });
+
+        const opponentInfo = mockDispatch.mock.calls.find(([a]) => a.type === 'SET_OPPONENT_INFO')?.[0].payload;
+        expect(opponentInfo.is_guest).toBe(false);
+    });
+
     test('assigns white timer to alice (white) and black timer to bob (black)', () => {
         renderHook(() => useInitializeSocket());
         act(() => { getCapturedHandler('rejoined')(BASE_DATA); });
