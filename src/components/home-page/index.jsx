@@ -15,6 +15,17 @@ const TIME_CONTROLS = [
     { label: '10m', seconds: 600 },
 ];
 
+const TAGLINES = [
+    'Chess. But with landmines.',
+    'Outsmart them. Then blow them up.',
+    'The board remembers everything.',
+    'Every square is a gamble.',
+    'Chess evolved. Play accordingly.',
+    'They never saw it coming.',
+    'Strategy meets sabotage.',
+    'Place wisely. Play dirty.',
+];
+
 const SEARCH_LINES = [
     'Searching for someone to humiliate...',
     'Scanning the threat database...',
@@ -32,6 +43,7 @@ const HomePage = () => {
     const isLoggedIn = useIsLoggedIn();
     const player = usePlayer();
 
+    const [tagline] = useState(() => TAGLINES[Math.floor(Math.random() * TAGLINES.length)]);
     const [selectedTimeControl, setSelectedTimeControl] = useState(180);
     const [searching, setSearching] = useState(false);
     const [queueError, setQueueError] = useState('');
@@ -168,7 +180,7 @@ const HomePage = () => {
     return (
         <div className="front-page">
             <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
-            <p className="tagline">Chess. But with landmines.</p>
+            <p className="tagline">{tagline}</p>
             <div className="join-create-room-container">
                 {ButtonGroups()}
             </div>
