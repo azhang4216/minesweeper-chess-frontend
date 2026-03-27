@@ -57,9 +57,11 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const isMyTurnRef = useRef(isMyTurn);
     const isHistoryRef = useRef(isHistory);
     const gameStateRef = useRef(gameState);
+    const gameFenRef = useRef(gameFen);
     isMyTurnRef.current = isMyTurn;
     isHistoryRef.current = isHistory;
     gameStateRef.current = gameState;
+    gameFenRef.current = gameFen;
 
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
     const [squaresToHighlight, setSquaresToHighlight] = useState([]);
@@ -204,15 +206,21 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
 
         // It's my turn (fresh drop or queued premove firing).
         // Validate before emitting so illegal moves (e.g. don't escape check) snap back instead of looping.
+        let chessValidator;
         try {
-            const test = new Chess(gameFen);
-            const promotion = piece[1]?.toLowerCase() ?? 'q';
-            if (!test.move({ from: sourceSquare, to: targetSquare, promotion })) {
-                return false; // illegal — snap back and clear queued premove
-            }
+            chessValidator = new Chess(gameFenRef.current);
         } catch {
-            // Post-explosion FEN may be missing a king — chess.js throws.
-            // Let the server validate; fall through to emit.
+            // Post-explosion FEN may be missing a king — chess.js can't parse it.
+            // Skip client-side validation and let the server decide.
+            chessValidator = null;
+        }
+        if (chessValidator) {
+            const promotion = piece[1]?.toLowerCase() ?? 'q';
+            try {
+                chessValidator.move({ from: sourceSquare, to: targetSquare, promotion });
+            } catch {
+                return false; // illegal move — snap piece back and clear queued premove
+            }
         }
 
         socket.emit("makeMove", {
