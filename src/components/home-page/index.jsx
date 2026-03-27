@@ -208,10 +208,10 @@ const HomePage = () => {
                 </div>
             )}
 
-            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
-            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
-            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
-            <img src="/landmine_logo.png" alt="" className="bomb" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb bomb--1" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb bomb--2" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb bomb--3" aria-hidden="true" />
+            <img src="/landmine_logo.png" alt="" className="bomb bomb--4" aria-hidden="true" />
         </div>
     );
 };

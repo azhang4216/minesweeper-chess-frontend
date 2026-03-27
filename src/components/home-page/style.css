@@ -40,13 +40,15 @@
 
 /* Tagline */
 .tagline {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-    margin: 10px 0 0;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.12em;
+    margin: 12px 0 0;
     position: relative;
     z-index: 1;
+    opacity: 0.85;
     animation: panelReveal 0.7s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -329,10 +331,10 @@
     animation: floatUp 8s infinite ease-in-out;
 }
 
-.bomb:nth-child(3) { width: 22px; height: 22px; left: 12%; animation-delay: 0s;   animation-duration: 9s; }
-.bomb:nth-child(4) { width: 34px; height: 34px; left: 28%; animation-delay: 2.5s; animation-duration: 7s; }
-.bomb:nth-child(5) { width: 18px; height: 18px; left: 62%; animation-delay: 5s;   animation-duration: 10s; }
-.bomb:nth-child(6) { width: 28px; height: 28px; left: 80%; animation-delay: 1s;   animation-duration: 8s; }
+.bomb--1 { width: 22px; height: 22px; left: 12%; animation-delay: 0s;   animation-duration: 9s; }
+.bomb--2 { width: 34px; height: 34px; left: 28%; animation-delay: 2.5s; animation-duration: 7s; }
+.bomb--3 { width: 18px; height: 18px; left: 62%; animation-delay: 5s;   animation-duration: 10s; }
+.bomb--4 { width: 28px; height: 28px; left: 80%; animation-delay: 1s;   animation-duration: 8s; }
 
 @keyframes floatUp {
     0%   { opacity: 0; transform: translateY(0) rotate(0deg);    bottom: -5%; }
