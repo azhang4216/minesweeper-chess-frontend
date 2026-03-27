@@ -10,6 +10,8 @@ import SidePanel from '../side-panel';
 import WinLossPopup from '../win-loss-popup';
 import Timer from '../timer';
 import ConfirmModal from '../confirm-modal';
+import DetonationOverlay from '../detonation-overlay';
+import MatchFoundOverlay from '../match-found-overlay';
 
 // hooks
 import {
@@ -49,6 +51,10 @@ const BoardPage = () => {
             const myInfo = (players[0].user_id === myUsername) ? players[0] : players[1];
             const opponentInfo = (players[1].user_id === myUsername) ? players[0] : players[1];
 
+            // Show match found overlay briefly before bomb placement starts
+            setShowMatchFound(true);
+            setTimeout(() => setShowMatchFound(false), 2500);
+
             // make sure previous game state does not carry over
             dispatch(actions.resetGame());
             dispatch(actions.setGameState(GAME_STATES.placing_bombs));
@@ -59,13 +65,17 @@ const BoardPage = () => {
             setDrawCooldown(0);
             setRematchOffered(false);
             setRematchRequested(false);
+            setRematchDeclinedMsg('');
             setExplosionHistory([]);
+            detonationQueueRef.current = [];
+            isDetonatingRef.current = false;
 
             dispatch(actions.setOpponentInfo({
                 name: opponentInfo.username,
                 rating: opponentInfo.elo,
                 bombs: [],
                 secondsLeft: secsToPlay,
+                is_guest: opponentInfo.is_guest ?? false,
             }));
 
             dispatch(actions.setPlayerInfo({
@@ -108,6 +118,12 @@ const BoardPage = () => {
     const [drawCooldown, setDrawCooldown] = useState(0);
     const [rematchOffered, setRematchOffered] = useState(false);
     const [rematchRequested, setRematchRequested] = useState(false);
+    const [rematchDeclinedMsg, setRematchDeclinedMsg] = useState('');
+    const [detonatedPiece, setDetonatedPiece] = useState(null); // piece char or null
+    const [boardShaking, setBoardShaking] = useState(false);
+    const [showMatchFound, setShowMatchFound] = useState(false);
+    const detonationQueueRef = useRef([]);
+    const isDetonatingRef = useRef(false);
 
     // When the user jumps more than one move, snap to i-1 instantly then animate the single step to i
     useEffect(() => {
@@ -199,8 +215,23 @@ const BoardPage = () => {
         setDrawOfferPending(false);
     };
 
-    // for timer display logic
-    const isMyMove = useIsMyTurn();
+    // Play detonation overlays sequentially so rapid double-explosions both animate
+    const playNextDetonation = () => {
+        if (detonationQueueRef.current.length === 0) {
+            isDetonatingRef.current = false;
+            return;
+        }
+        isDetonatingRef.current = true;
+        const piece = detonationQueueRef.current.shift();
+        setDetonatedPiece(piece);
+        setBoardShaking(true);
+        setTimeout(() => setBoardShaking(false), 700);
+        const isKing = piece?.toLowerCase() === 'k';
+        setTimeout(() => {
+            setDetonatedPiece(null);
+            playNextDetonation();
+        }, isKing ? 5000 : 3000);
+    };
 
     // board socket handlers
     const {
@@ -217,9 +248,10 @@ const BoardPage = () => {
         handleDrawOffer,
         handleDrawOfferDeclined,
         handleRematchOffered,
+        handleRematchDeclined,
         handleRematchReady,
     } = useBoardSocketHandlers({
-        setRoomMessage: (_x) => { }, // for now, we don't need it
+        setRoomMessage: (msg) => { if (msg === 'Rematch declined.') setRematchDeclinedMsg(msg); },
         setGameOverReason,
         setGameOverResult,
         setmyEloChange,
@@ -229,8 +261,13 @@ const BoardPage = () => {
         setDrawOfferPending,
         setDrawOfferDeclinedMsg,
         setRematchOffered,
+        setRematchRequested,
         onRematchReady,
         onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
+        onDetonation: (piece) => {
+            detonationQueueRef.current.push(piece);
+            if (!isDetonatingRef.current) playNextDetonation();
+        },
     });
 
     useEffect(() => {
@@ -247,6 +284,7 @@ const BoardPage = () => {
         socket.on('drawOffer', handleDrawOffer);
         socket.on('drawOfferDeclined', handleDrawOfferDeclined);
         socket.on('rematchOffered', handleRematchOffered);
+        socket.on('rematchDeclined', handleRematchDeclined);
         socket.on('rematchReady', handleRematchReady);
 
         return () => {
@@ -263,6 +301,7 @@ const BoardPage = () => {
             socket.off('drawOffer', handleDrawOffer);
             socket.off('drawOfferDeclined', handleDrawOfferDeclined);
             socket.off('rematchOffered', handleRematchOffered);
+            socket.off('rematchDeclined', handleRematchDeclined);
             socket.off('rematchReady', handleRematchReady);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -285,12 +324,31 @@ const BoardPage = () => {
         return () => clearTimeout(id);
     }, [drawCooldown]);
 
+    const isMyMove = useIsMyTurn();
+
+    // Critical timer: whole board reacts when the active player has ≤5 seconds
+    const criticalTimer = gameState === GAME_STATES.playing && (
+        (isMyMove && player.secondsLeft <= 5) ||
+        (!isMyMove && opponent.secondsLeft <= 5)
+    );
+
+    // Derive player info for match found overlay
+    const myInfo = players ? ((players[0].user_id === myUsername) ? players[0] : players[1]) : null;
+    const opponentInfo = players ? ((players[1].user_id === myUsername) ? players[0] : players[1]) : null;
+
     if (!roomId) {
         return <p>Error: Missing game data</p>;
     }
 
     return (
-        <div className="board-page-container">
+        <div className={`board-page-container${gameState === GAME_STATES.placing_bombs ? ' placing-bombs' : ''}`}>
+            {showMatchFound && myInfo && opponentInfo && (
+                <MatchFoundOverlay
+                    myName={myInfo.username}
+                    myRating={myInfo.elo}
+                    opponentName={opponentInfo.username}
+                />
+            )}
             <div className="game-container">
                 <div className="game-content-wrapper">
                     {displayWinLossPopup && (
@@ -300,6 +358,10 @@ const BoardPage = () => {
                             myEloChange={myEloChange}
                             opponentEloChange={opponentEloChange}
                             onClose={() => setDisplayWinLossPopup(false)}
+                            onRequestRematch={handleRequestRematch}
+                            onNewGame={handleNewGame}
+                            rematchRequested={rematchRequested}
+                            rematchDeclinedMsg={rematchDeclinedMsg}
                         />
                     )}
                     {confirmAction && (
@@ -329,13 +391,17 @@ const BoardPage = () => {
                         <ConfirmModal
                             message={`${opponent.name} would like a rematch. Accept?`}
                             onConfirm={() => { handleRequestRematch(); setRematchOffered(false); }}
-                            onCancel={() => setRematchOffered(false)}
+                            onCancel={() => {
+                                socket.emit('declineRematch');
+                                setRematchOffered(false);
+                                setRematchDeclinedMsg('You declined.');
+                            }}
                         />
                     )}
                     <div className="chess-wrapper">
                         {disconnectCountdown !== null && disconnectCountdown > 0 && (
                             <div className="disconnect-notice">
-                                Opponent disconnected — {disconnectCountdown}s to reconnect
+                                Your opponent rage-quit. — {disconnectCountdown}s for their dignity to return.
                             </div>
                         )}
                         <div className={`player-info top${!isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
@@ -362,14 +428,14 @@ const BoardPage = () => {
                             </span>
                         </div>
 
-                        <div
-                            className="chess-board-container"
-                        >
+                        <div className={`chess-board-container${criticalTimer ? ' critical-timer' : ''}${boardShaking ? ' shaking' : ''}`}>
                             <Chessboard
+                                key={roomId}
                                 displayFen={snapFen ?? (isViewingHistory ? displayFen : undefined)}
                                 animationDuration={boardAnimDuration}
                                 visibleCraters={visibleCraters}
                             />
+                            {detonatedPiece && <DetonationOverlay piece={detonatedPiece} />}
                         </div>
 
                         <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
@@ -409,6 +475,7 @@ const BoardPage = () => {
                         onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
                         onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
                         rematchRequested={rematchRequested}
+                        rematchDeclinedMsg={rematchDeclinedMsg}
                     />
                 </div>
             </div>

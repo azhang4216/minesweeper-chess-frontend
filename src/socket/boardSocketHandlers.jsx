@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { images, sounds } from '../assets';
+import { sounds } from '../assets';
 import { actions } from '../redux';
-import { playSound } from '../utils';
+import { playSound, getPieceAtSquare } from '../utils';
 import { useIsWhite } from '../hooks';
 import { GAME_STATES } from '../constants';
 import { useRef, useEffect } from 'react';
@@ -13,12 +13,14 @@ export const useBoardSocketHandlers = ({
     setmyEloChange,
     setOpponentEloChange,
     setDisplayWinLossPopup,
-    setDisconnectCountdown,   // add this
+    setDisconnectCountdown,
     setDrawOfferPending,
     setDrawOfferDeclinedMsg,
     setRematchOffered,
+    setRematchRequested,   // NEW — resets "Waiting..." state when declined
     onRematchReady,
     onExplosion,
+    onDetonation,
 }) => {
 
     const dispatch = useDispatch();                          // sends actions to redux store
@@ -38,9 +40,8 @@ export const useBoardSocketHandlers = ({
         moveHistoryLengthRef.current = moveHistory.length;
     }, [moveHistory]);
 
-    // Sequence counter: incremented on every gameState event so explosion timeouts
-    // can detect whether a newer move arrived before the 900ms delay fires.
-    const moveSeqRef = useRef(0);
+    // Track whether the most recent explosion was a king (affects win/loss popup delay)
+    const lastExplosionWasKingRef = useRef(false);
 
     const handleRoomCreated = ({ message }) => {
         setRoomMessage(message);
@@ -92,52 +93,27 @@ export const useBoardSocketHandlers = ({
         // see what sort of sound we need to play based on the move just made
         if (specialMove) {
             if (specialMove.startsWith("explode ")) {
-                // Stamp the sequence before the async delay so we can detect if a
-                // newer move arrives while we're waiting for the explosion animation.
-                const mySeq = ++moveSeqRef.current;
-
-                // Add move to history NOW (correct order), show piece on bomb square temporarily.
-                // preExplosionFen = piece on square; gameFen = piece removed.
-                dispatch(actions.updateGameFromServer(preExplosionFen, moveSan));
-
                 const squareToExplode = specialMove.split(" ")[1];
-                playSound(sounds.ohNoBoom);
 
-                // if it is our own bomb, we need to remove the X
+                // Dispatch real gameFen immediately — Redux is always authoritative
+                dispatch(actions.updateGameFromServer(gameFen, moveSan));
                 dispatch(actions.detonateBomb(squareToExplode));
 
-                // Capture move count now (history was just updated above)
                 const explosionMoveCount = moveHistoryLengthRef.current;
+                playSound(sounds.ohNoBoom);
 
+                // Identify piece from preExplosionFen (preExplosionFen is not dispatched to Redux)
+                const detonatedPiece = getPieceAtSquare(preExplosionFen, squareToExplode);
+                const isKing = detonatedPiece?.toLowerCase() === 'k';
+                lastExplosionWasKingRef.current = isKing;
+
+                // Show cinematic overlay immediately while board shows correct (post-explosion) position
+                onDetonation(detonatedPiece);
+
+                // Record crater after delay (overlay still visible at this point)
                 setTimeout(() => {
-                    // Only swap FEN if no newer move arrived; if it did, that move's
-                    // gameFen already reflects the post-explosion board correctly.
-                    if (moveSeqRef.current === mySeq) {
-                        dispatch(actions.updateGameFromServer(gameFen, moveSan, false, true));
-                    }
-
-                    // explosion animation
-                    const explosion = document.createElement('img');
-                    explosion.src = images.explosionGif;
-                    explosion.className = 'explosion';
-                    explosion.style.position = 'absolute';
-                    explosion.style.top = '0';
-                    explosion.style.left = '0';
-                    explosion.style.width = '100%';
-                    explosion.style.height = '100%';
-                    explosion.style.pointerEvents = 'none';
-                    explosion.style.zIndex = '10';
-
-                    const squareEl = document.querySelector(`[data-square="${squareToExplode}"]`);
-                    squareEl.style.position = 'relative';
-                    squareEl.appendChild(explosion);
-
-                    // after animation, notify board-page to record this explosion in state
-                    setTimeout(() => {
-                        explosion.remove();
-                        onExplosion(squareToExplode, explosionMoveCount);
-                    }, 1000);                                   // adjust time to match GIF length
-                }, 900);                                        // delay time before we play explosion
+                    onExplosion(squareToExplode, explosionMoveCount);
+                }, 900);
             } else {
                 switch (specialMove) {
                     case "capture":
@@ -182,12 +158,11 @@ export const useBoardSocketHandlers = ({
         setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
         
-        // if the reason the game ended is cuz a piece blew up leading to insufficient material, 
-        // we delay the popup a little so that we can watch the piece blow up
+        // Delay the popup so the detonation overlay finishes before it appears.
+        // Use the same timing as handleWinLossGameOver so king/non-king delays stay in sync.
         if (by.includes("explode")) {
-            setTimeout(() => {
-                setDisplayWinLossPopup(true);
-            }, 2000);
+            const delay = lastExplosionWasKingRef.current ? 5500 : 3200;
+            setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
             setDisplayWinLossPopup(true);
@@ -204,12 +179,11 @@ export const useBoardSocketHandlers = ({
         setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
 
-        // if the reason the game ended is cuz a king blew up, 
-        // we delay the popup a little so that we can watch the king blow up
+        // King detonation: wait for the cinematic before showing game over.
+        // Regular explosions that end games use a shorter delay.
         if (by.includes("explode")) {
-            setTimeout(() => {
-                setDisplayWinLossPopup(true);
-            }, 2000);
+            const delay = lastExplosionWasKingRef.current ? 5500 : 3200;
+            setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
             setDisplayWinLossPopup(true);
@@ -228,10 +202,16 @@ export const useBoardSocketHandlers = ({
     };
 
     const handleDrawOfferDeclined = () => {
-        setDrawOfferDeclinedMsg('Your draw offer was declined.');
+        setDrawOfferDeclinedMsg('They declined. Cowards.');
     };
 
     const handleRematchOffered = () => setRematchOffered(true);
+
+    const handleRematchDeclined = () => {
+        setRematchRequested(false);
+        setRoomMessage('Rematch declined.');
+    };
+
     const handleRematchReady = (gameData) => onRematchReady(gameData);
 
     return {
@@ -248,6 +228,7 @@ export const useBoardSocketHandlers = ({
         handleDrawOffer,
         handleDrawOfferDeclined,
         handleRematchOffered,
+        handleRematchDeclined,   // NEW
         handleRematchReady,
     };
 };

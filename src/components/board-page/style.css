@@ -74,11 +74,52 @@
 /* ── Board container ───────────────────────────── */
 
 .chess-board-container {
+    position: relative;
     width: 480px;
     height: 480px;
     border-radius: 4px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.5s ease;
+}
+
+/* Board shake on detonation */
+@keyframes boardShake {
+    0%   { transform: translate(0,    0)    rotate(0deg); }
+    8%   { transform: translate(-10px, -5px) rotate(-0.6deg); }
+    16%  { transform: translate(10px,  6px)  rotate(0.6deg); }
+    24%  { transform: translate(-8px,  7px)  rotate(-0.4deg); }
+    32%  { transform: translate(8px,  -7px)  rotate(0.4deg); }
+    40%  { transform: translate(-5px,  4px)  rotate(-0.25deg); }
+    52%  { transform: translate(5px,  -4px)  rotate(0.25deg); }
+    64%  { transform: translate(-3px,  2px)  rotate(-0.1deg); }
+    76%  { transform: translate(3px,  -2px)  rotate(0.1deg); }
+    88%  { transform: translate(-1px,  1px)  rotate(0deg); }
+    100% { transform: translate(0,    0)    rotate(0deg); }
+}
+
+.chess-board-container.shaking {
+    animation: boardShake 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Critical timer vignette — whole board environment reacts */
+.chess-board-container.critical-timer {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.2);
+}
+
+.chess-board-container.critical-timer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(239, 68, 68, 0.28) 100%);
+    pointer-events: none;
+    z-index: 5;
+    animation: vignetteIn 0.5s ease forwards;
+}
+
+@keyframes vignetteIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 /* ── Side panel ────────────────────────────────── */
@@ -143,21 +184,79 @@
 
 /* ── Bomb placement side panel ─────────────────── */
 
-.bomb-placement-info h3 {
+.bpi-header {
     font-family: 'Rajdhani', Impact, sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: none;
-    color: var(--text);
-    line-height: 1.4;
+    letter-spacing: 0.05em;
+    color: #f59e0b;
+    margin-bottom: 4px;
 }
 
-.bomb-placement-info p {
-    font-size: 13px;
+.bpi-subtext {
+    font-size: 11px;
+    color: rgba(245, 158, 11, 0.65);
+    font-style: italic;
+    margin-bottom: 14px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.bpi-timer-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+/* Bigger clock during bomb placement */
+.bpi-timer-wrap .timer {
+    font-size: 2rem !important;
+    width: 120px !important;
+    padding: 10px 12px !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+    color: #f59e0b !important;
+}
+
+.bpi-slots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.bpi-slot {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1.5px dashed rgba(245, 158, 11, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: rgba(245, 158, 11, 0.04);
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.bpi-slot--placed {
+    border-color: rgba(245, 158, 11, 0.7);
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.bpi-count {
+    font-size: 10px;
     color: var(--text-muted);
-    line-height: 1.6;
-    margin-top: 12px;
+    text-align: center;
+    margin-bottom: 12px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.bpi-rule {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
 }
 
 /* ── Bomb overlay marker ───────────────────────── */
@@ -192,4 +291,15 @@
 @keyframes slideDown {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Bomb placement — amber color shift ────────── */
+
+.placing-bombs .player-info {
+    border-left-color: rgba(245, 158, 11, 0.5);
+}
+
+.placing-bombs .chess-board-container {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(245, 158, 11, 0.1);
+    transition: box-shadow 0.4s ease;
 }

@@ -9,6 +9,7 @@ const initialState = {
         isWhite: true,
         gameState: GAME_STATES.inactive,
         placingBombsSeconds: 100, // amount of time alloted to planting bombs - shouldn't change more than once (at set)
+        bombTimerSyncedAt: Date.now(),
         moveHistory: [],
         // loggedIn: false,          // playing as a guest also counts as logging in!
         // playingAsGuest: false,
@@ -25,6 +26,7 @@ const initialState = {
             bombs: [],
             secondsLeft: 100,
             lastSyncAt: Date.now(),
+            is_guest: false,
         }
     }
 }
@@ -38,13 +40,13 @@ Rules of Reducers (https://redux.js.org/tutorials/fundamentals/part-3-state-acti
 export default function appReducer(state = initialState, action) {
     switch (action.type) {
         case "UPDATE_GAME": {
-            const { gameFen, moveSan, temporaryUpdate, fenOnly } = action.payload;
+            const { gameFen, moveSan } = action.payload;
             return {
                 ...state,
                 game: {
                     ...state.game,
                     gameFen,
-                    ...((temporaryUpdate || fenOnly) ? {} : { moveHistory: [...state.game.moveHistory, moveSan] })
+                    moveHistory: moveSan != null ? [...state.game.moveHistory, moveSan] : state.game.moveHistory,
                 }
             };
         }
@@ -145,7 +147,8 @@ export default function appReducer(state = initialState, action) {
                 ...state,
                 game: {
                     ...state.game,
-                    placingBombsSeconds: action.payload,
+                    placingBombsSeconds: action.payload.secs,
+                    bombTimerSyncedAt: action.payload.syncedAt,
                 }
             };
 

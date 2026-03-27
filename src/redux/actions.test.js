@@ -19,17 +19,10 @@ import {
 } from './actions';
 
 describe('action creators', () => {
-    test('updateGameFromServer defaults temporaryUpdate to false', () => {
+    test('updateGameFromServer creates UPDATE_GAME action', () => {
         expect(updateGameFromServer('fen123', 'e4')).toEqual({
             type: 'UPDATE_GAME',
-            payload: { gameFen: 'fen123', moveSan: 'e4', temporaryUpdate: false, fenOnly: false },
-        });
-    });
-
-    test('updateGameFromServer passes temporaryUpdate=true', () => {
-        expect(updateGameFromServer('fen123', 'e4', true)).toEqual({
-            type: 'UPDATE_GAME',
-            payload: { gameFen: 'fen123', moveSan: 'e4', temporaryUpdate: true, fenOnly: false },
+            payload: { gameFen: 'fen123', moveSan: 'e4' },
         });
     });
 
@@ -64,8 +57,11 @@ describe('action creators', () => {
         expect(setOrientation(false)).toEqual({ type: 'SET_ORIENTATION', payload: false });
     });
 
-    test('setPlacingBombSeconds', () => {
-        expect(setPlacingBombSeconds(60)).toEqual({ type: 'SET_PLACING_BOMBS_SECONDS', payload: 60 });
+    test('setPlacingBombSeconds includes a numeric syncedAt timestamp', () => {
+        expect(setPlacingBombSeconds(60)).toEqual({
+            type: 'SET_PLACING_BOMBS_SECONDS',
+            payload: { secs: 60, syncedAt: expect.any(Number) },
+        });
     });
 
     test('setRandomizedBombs', () => {

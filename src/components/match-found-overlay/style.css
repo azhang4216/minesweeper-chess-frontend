@@ -1,0 +1,114 @@
+.mfo-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: mfoFadeIn 0.2s ease forwards;
+    pointer-events: none;
+}
+
+@keyframes mfoFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.mfo-card {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 36px 52px;
+    text-align: center;
+    animation: mfoCardIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mfoCardIn {
+    from { opacity: 0; transform: scale(0.9) translateY(14px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.mfo-label {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--accent-light);
+    margin-bottom: 28px;
+}
+
+.mfo-players {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-bottom: 28px;
+}
+
+.mfo-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 100px;
+}
+
+.mfo-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(124, 58, 237, 0.12);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-light);
+    font-family: 'Rajdhani', Impact, sans-serif;
+}
+
+.mfo-avatar--opponent {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+}
+
+.mfo-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.mfo-rating {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+}
+
+.mfo-rating--taunt {
+    color: rgba(239, 68, 68, 0.7);
+    font-style: italic;
+}
+
+.mfo-vs {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text-dim);
+}
+
+.mfo-starting {
+    display: inline-block;
+    background: var(--accent);
+    border-radius: 6px;
+    padding: 9px 22px;
+    color: #ffffff;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 16px var(--accent-glow);
+}

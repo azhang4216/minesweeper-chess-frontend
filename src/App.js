@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import {
     BoardPage,
+    ConfirmModal,
     HomePage,
     ProtectedGameRoute,
     ResetPasswordPage,
@@ -20,7 +21,7 @@ import { useInitializeSocket, useAuthState } from "./hooks";
 
 // Wrapper to access location inside Router
 const AppContent = () => {
-    useInitializeSocket();
+    const { rematchBanner, acceptGlobalRematch, declineGlobalRematch } = useInitializeSocket();
     useAuthState();                    // Allows for authentication on refresh
 
     const location = useLocation();
@@ -43,6 +44,13 @@ const AppContent = () => {
 
     return (
         <>
+            {rematchBanner && (
+                <ConfirmModal
+                    message="Your opponent wants a rematch. Accept?"
+                    onConfirm={acceptGlobalRematch}
+                    onCancel={declineGlobalRematch}
+                />
+            )}
             {!isNotFound && <UserMenu />}
             <NavigationSideBar />
             <Routes>

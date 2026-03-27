@@ -21,9 +21,10 @@ jest.mock('react-redux', () => ({
     useDispatch: jest.fn(),
 }));
 
-// Mock useNavigate from react-router-dom
+// Mock useNavigate and useLocation from react-router-dom
 jest.mock('react-router-dom', () => ({
     useNavigate: jest.fn(),
+    useLocation: jest.fn(() => ({ pathname: '/' })),
 }));
 
 // Mock ../redux actions — return plain action objects matching real type strings

@@ -1,11 +1,6 @@
-export const updateGameFromServer = (gameFen, moveSan, temporaryUpdate=false, fenOnly=false) => ({
+export const updateGameFromServer = (gameFen, moveSan) => ({
     type: "UPDATE_GAME",
-    payload: {
-        gameFen,
-        moveSan,
-        temporaryUpdate,
-        fenOnly,
-    },
+    payload: { gameFen, moveSan },
 });
 
 export const placeBomb = (square) => ({
@@ -43,9 +38,9 @@ export const setOrientation = (isWhite) => ({
     payload: isWhite,
 });
 
-export const setPlacingBombSeconds = (placingBombSeconds) => ({
+export const setPlacingBombSeconds = (secs) => ({
     type: "SET_PLACING_BOMBS_SECONDS",
-    payload: placingBombSeconds,
+    payload: { secs, syncedAt: Date.now() },
 });
 
 export const setRandomizedBombs = ({ whitePlayerBombs, blackPlayerBombs }) => ({

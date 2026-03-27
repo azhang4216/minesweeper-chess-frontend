@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { socket } from "../socket";
 import { actions } from "../redux";
 import { GAME_STATES } from "../constants";
@@ -9,11 +9,16 @@ import { useUsername } from "./";
 const useInitializeSocket = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const myUsername = useUsername();
+
     const myUsernameRef = useRef(myUsername);
-    useEffect(() => {
-        myUsernameRef.current = myUsername;
-    }, [myUsername]);
+    const locationRef = useRef(location);
+
+    useEffect(() => { myUsernameRef.current = myUsername; }, [myUsername]);
+    useEffect(() => { locationRef.current = location; }, [location]);
+
+    const [rematchBanner, setRematchBanner] = useState(null); // { from: string } | null
 
     useEffect(() => {
         const handleRejoined = (data) => {
@@ -39,16 +44,11 @@ const useInitializeSocket = () => {
                 rating: opponent.elo,
                 bombs: opponent.bombs ?? [],
                 secondsLeft: opponent.is_white ? data.whiteTimeLeft : data.blackTimeLeft,
+                is_guest: opponent.is_guest ?? false,
             }));
 
-            if (data.gameFen) {
-                dispatch(actions.setGameFen(data.gameFen));
-            }
-
-            if (Array.isArray(data.moveHistory)) {
-                dispatch(actions.setMoveHistory(data.moveHistory));
-            }
-
+            if (data.gameFen) dispatch(actions.setGameFen(data.gameFen));
+            if (Array.isArray(data.moveHistory)) dispatch(actions.setMoveHistory(data.moveHistory));
             if (data.whiteTimeLeft != null) {
                 dispatch(actions.setTimers({
                     whiteTimeLeft: data.whiteTimeLeft,
@@ -60,18 +60,55 @@ const useInitializeSocket = () => {
         };
 
         const handleNoActiveGame = () => {
+            localStorage.removeItem('guestPlayerId'); // clear stale guest session
             dispatch(actions.setGameState(GAME_STATES.inactive));
             navigate("/");
         };
 
+        // Global rematch handlers — delegate to board-page listeners when already on /play-game
+        const handleGlobalRematchOffered = ({ from }) => {
+            if (locationRef.current.pathname === '/play-game') return;
+            setRematchBanner({ from });
+        };
+
+        const handleGlobalRematchReady = (gameData) => {
+            if (locationRef.current.pathname === '/play-game') return;
+            setRematchBanner(null);
+            navigate('/play-game', { state: gameData });
+        };
+
+        const handleGlobalRematchDeclined = () => {
+            if (locationRef.current.pathname === '/play-game') return;
+            setRematchBanner(null);
+        };
+
         socket.on("rejoined", handleRejoined);
         socket.on("noActiveGame", handleNoActiveGame);
+        socket.on("rematchOffered", handleGlobalRematchOffered);
+        socket.on("rematchReady", handleGlobalRematchReady);
+        socket.on("rematchDeclined", handleGlobalRematchDeclined);
+
         return () => {
             socket.off("rejoined", handleRejoined);
             socket.off("noActiveGame", handleNoActiveGame);
+            socket.off("rematchOffered", handleGlobalRematchOffered);
+            socket.off("rematchReady", handleGlobalRematchReady);
+            socket.off("rematchDeclined", handleGlobalRematchDeclined);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const acceptGlobalRematch = () => {
+        socket.emit('requestRematch');
+        setRematchBanner(null);
+    };
+
+    const declineGlobalRematch = () => {
+        socket.emit('declineRematch');
+        setRematchBanner(null);
+    };
+
+    return { rematchBanner, acceptGlobalRematch, declineGlobalRematch };
 };
 
 export default useInitializeSocket;

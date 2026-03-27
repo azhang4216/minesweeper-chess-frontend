@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
+import { Chess } from 'chess.js';
 import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
 import { sounds, pieces, images } from '../../assets';
@@ -56,9 +57,11 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const isMyTurnRef = useRef(isMyTurn);
     const isHistoryRef = useRef(isHistory);
     const gameStateRef = useRef(gameState);
+    const gameFenRef = useRef(gameFen);
     isMyTurnRef.current = isMyTurn;
     isHistoryRef.current = isHistory;
     gameStateRef.current = gameState;
+    gameFenRef.current = gameFen;
 
     const [squareMouseIsOver, setSquareMouseIsOver] = useState('');
     const [squaresToHighlight, setSquaresToHighlight] = useState([]);
@@ -191,15 +194,34 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
         if (isHistoryRef.current) return false;
-
         if (gameStateRef.current !== GAME_STATES.playing) return false;
 
         const isMyPiece = (isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b');
         if (!isMyPiece) return false;
 
         if (!isMyTurnRef.current) {
-            // queue as premove — library re-fires onPieceDrop when position updates
+            // Not my turn — queue as premove; library re-fires onPieceDrop when position updates
             return true;
+        }
+
+        // It's my turn (fresh drop or queued premove firing).
+        // Validate before emitting so illegal moves (e.g. don't escape check) snap back instead of looping.
+        let chessValidator;
+        try {
+            chessValidator = new Chess(gameFenRef.current);
+        } catch {
+            // Post-explosion FEN may be missing a king — chess.js can't parse it.
+            // Skip client-side validation and let the server decide.
+            chessValidator = null;
+        }
+        if (chessValidator) {
+            try {
+                // Use 'q' for promotion validation — we only need legality, not the specific piece.
+                // piece[1] is the dragged piece type (e.g. 'P'), not the promotion target.
+                chessValidator.move({ from: sourceSquare, to: targetSquare, promotion: 'q' });
+            } catch {
+                return false; // illegal move — snap piece back and clear queued premove
+            }
         }
 
         socket.emit("makeMove", {
@@ -269,8 +291,26 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         return colors;
     };
 
+    // Amber glow on valid bomb placement squares during placing_bombs phase
+    const placementGlow = useMemo(() => {
+        if (gameState !== GAME_STATES.placing_bombs) return {};
+        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        const validRanks = isWhite ? ['3', '4'] : ['5', '6'];
+        const styles = {};
+        for (const file of files) {
+            for (const rank of validRanks) {
+                const sq = file + rank;
+                if (!myBombs.includes(sq)) {
+                    styles[sq] = { boxShadow: 'inset 0 0 0 2px rgba(245, 158, 11, 0.35)' };
+                }
+            }
+        }
+        return styles;
+    }, [gameState, isWhite, myBombs]);
+
     const customSquareStyles = {
         ...getBaseSquareColors(),
+        ...placementGlow,
         ...(selectedSquare && { [selectedSquare]: { backgroundColor: "#c7edcc" } }),
         ...(lastMove.from && { [lastMove.from]: { backgroundColor: "#c7edcc" } }),
         ...(lastMove.to && { [lastMove.to]: { backgroundColor: "#c7edcc" } }),
