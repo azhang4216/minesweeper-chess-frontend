@@ -180,10 +180,10 @@ export const useBoardSocketHandlers = ({
         setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
 
-        // King detonation: wait for the 900ms delay + 3s cinematic before showing game over.
-        // Regular explosions that end games (e.g. insufficient material) use a shorter delay.
+        // King detonation: wait for the cinematic before showing game over.
+        // Regular explosions that end games use a shorter delay.
         if (by.includes("explode")) {
-            const delay = lastExplosionWasKingRef.current ? 4200 : 2000;
+            const delay = lastExplosionWasKingRef.current ? 5500 : 3200;
             setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {

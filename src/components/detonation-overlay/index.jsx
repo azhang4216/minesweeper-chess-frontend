@@ -21,6 +21,9 @@ const DetonationOverlay = ({ piece }) => {
 
     return (
         <div className={`det-overlay ${isKing ? 'det-overlay--king' : 'det-overlay--regular'}`}>
+            <div className="det-flash" />
+            <div className="det-ring det-ring--5" />
+            <div className="det-ring det-ring--4" />
             <div className="det-ring det-ring--3" />
             <div className="det-ring det-ring--2" />
             <div className="det-ring det-ring--1" />

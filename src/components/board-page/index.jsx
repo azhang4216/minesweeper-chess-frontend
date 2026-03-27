@@ -119,6 +119,7 @@ const BoardPage = () => {
     const [rematchRequested, setRematchRequested] = useState(false);
     const [rematchDeclinedMsg, setRematchDeclinedMsg] = useState('');
     const [detonatedPiece, setDetonatedPiece] = useState(null); // piece char or null
+    const [boardShaking, setBoardShaking] = useState(false);
     const [showMatchFound, setShowMatchFound] = useState(false);
     const detonationQueueRef = useRef([]);
     const isDetonatingRef = useRef(false);
@@ -222,11 +223,13 @@ const BoardPage = () => {
         isDetonatingRef.current = true;
         const piece = detonationQueueRef.current.shift();
         setDetonatedPiece(piece);
+        setBoardShaking(true);
+        setTimeout(() => setBoardShaking(false), 700);
         const isKing = piece?.toLowerCase() === 'k';
         setTimeout(() => {
             setDetonatedPiece(null);
             playNextDetonation();
-        }, isKing ? 3200 : 1600);
+        }, isKing ? 5000 : 3000);
     };
 
     // board socket handlers
@@ -422,7 +425,7 @@ const BoardPage = () => {
                             </span>
                         </div>
 
-                        <div className={`chess-board-container${criticalTimer ? ' critical-timer' : ''}`}>
+                        <div className={`chess-board-container${criticalTimer ? ' critical-timer' : ''}${boardShaking ? ' shaking' : ''}`}>
                             <Chessboard
                                 key={roomId}
                                 displayFen={snapFen ?? (isViewingHistory ? displayFen : undefined)}
