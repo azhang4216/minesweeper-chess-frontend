@@ -486,8 +486,8 @@ const BoardPage = () => {
                         onResign={gameState === GAME_STATES.playing ? handleResign : undefined}
                         onOfferDraw={gameState === GAME_STATES.playing ? handleOfferDraw : undefined}
                         drawCooldown={drawCooldown}
-                        onRequestRematch={gameState === GAME_STATES.game_over ? handleRequestRematch : undefined}
-                        onNewGame={gameState === GAME_STATES.game_over ? handleNewGame : undefined}
+                        onRequestRematch={gameState === GAME_STATES.game_over && !displayWinLossPopup ? handleRequestRematch : undefined}
+                        onNewGame={gameState === GAME_STATES.game_over && !displayWinLossPopup ? handleNewGame : undefined}
                         rematchRequested={rematchRequested}
                         rematchDeclinedMsg={rematchDeclinedMsg}
                     />
