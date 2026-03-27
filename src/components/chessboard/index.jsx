@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
+import { Chess } from 'chess.js';
 import { useSocket } from '../../socket/socketContext.js';
 import * as actions from '../../redux/actions.js';
 import { sounds, pieces, images } from '../../assets';
@@ -191,15 +192,27 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
         if (isHistoryRef.current) return false;
-
         if (gameStateRef.current !== GAME_STATES.playing) return false;
 
         const isMyPiece = (isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b');
         if (!isMyPiece) return false;
 
         if (!isMyTurnRef.current) {
-            // queue as premove — library re-fires onPieceDrop when position updates
+            // Not my turn — queue as premove; library re-fires onPieceDrop when position updates
             return true;
+        }
+
+        // It's my turn (fresh drop or queued premove firing).
+        // Validate before emitting so illegal moves (e.g. don't escape check) snap back instead of looping.
+        try {
+            const test = new Chess(gameFen);
+            const promotion = piece[1]?.toLowerCase() ?? 'q';
+            if (!test.move({ from: sourceSquare, to: targetSquare, promotion })) {
+                return false; // illegal — snap back and clear queued premove
+            }
+        } catch {
+            // Post-explosion FEN may be missing a king — chess.js throws.
+            // Let the server validate; fall through to emit.
         }
 
         socket.emit("makeMove", {
