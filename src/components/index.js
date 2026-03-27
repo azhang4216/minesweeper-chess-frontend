@@ -18,3 +18,4 @@ export { default as ProfilePage } from './profile-page';
 export { default as SearchPage } from './search-page';
 export { default as ResendVerificationEmailPage } from './resend-verification-email-page';
 export { default as GameViewPage } from './game-view-page';
+export { default as ConfirmModal } from './confirm-modal';

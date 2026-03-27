@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import {
     BoardPage,
+    ConfirmModal,
     HomePage,
     ProtectedGameRoute,
     ResetPasswordPage,
@@ -17,7 +18,6 @@ import {
 } from "./components";
 import { SocketProvider } from "./socket";
 import { useInitializeSocket, useAuthState } from "./hooks";
-import ConfirmModal from "./components/confirm-modal";
 
 // Wrapper to access location inside Router
 const AppContent = () => {
