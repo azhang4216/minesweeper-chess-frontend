@@ -39,10 +39,6 @@ export const useBoardSocketHandlers = ({
         moveHistoryLengthRef.current = moveHistory.length;
     }, [moveHistory]);
 
-    // Sequence counter: incremented on every gameState event so explosion timeouts
-    // can detect whether a newer move arrived before the 900ms delay fires.
-    const moveSeqRef = useRef(0);
-
     // Track whether the most recent explosion was a king (affects win/loss popup delay)
     const lastExplosionWasKingRef = useRef(false);
 
@@ -96,42 +92,26 @@ export const useBoardSocketHandlers = ({
         // see what sort of sound we need to play based on the move just made
         if (specialMove) {
             if (specialMove.startsWith("explode ")) {
-                // Stamp the sequence before the async delay so we can detect if a
-                // newer move arrives while we're waiting for the explosion animation.
-                const mySeq = ++moveSeqRef.current;
-
-                // Add move to history NOW (correct order), show piece on bomb square temporarily.
-                // preExplosionFen = piece on square; gameFen = piece removed.
-                dispatch(actions.updateGameFromServer(preExplosionFen, moveSan));
-
                 const squareToExplode = specialMove.split(" ")[1];
+
+                // Dispatch real gameFen immediately — Redux is always authoritative
+                dispatch(actions.updateGameFromServer(gameFen, moveSan));
+                dispatch(actions.detonateBomb(squareToExplode));
+
+                const explosionMoveCount = moveHistoryLengthRef.current;
                 playSound(sounds.ohNoBoom);
 
-                // Identify the piece that detonated from the pre-explosion FEN
+                // Identify piece from preExplosionFen (preExplosionFen is not dispatched to Redux)
                 const detonatedPiece = getPieceAtSquare(preExplosionFen, squareToExplode);
                 const isKing = detonatedPiece?.toLowerCase() === 'k';
                 lastExplosionWasKingRef.current = isKing;
 
-                // if it is our own bomb, we need to remove the X
-                dispatch(actions.detonateBomb(squareToExplode));
+                // Show cinematic overlay immediately while board shows correct (post-explosion) position
+                onDetonation(detonatedPiece);
 
-                // Capture move count now (history was just updated above)
-                const explosionMoveCount = moveHistoryLengthRef.current;
-
+                // Record crater after delay (overlay still visible at this point)
                 setTimeout(() => {
-                    // Only swap FEN if no newer move arrived; if it did, that move's
-                    // gameFen already reflects the post-explosion board correctly.
-                    if (moveSeqRef.current === mySeq) {
-                        dispatch(actions.updateGameFromServer(gameFen, moveSan, false, true));
-                    }
-
-                    // Trigger cinematic detonation overlay instead of GIF
-                    onDetonation(detonatedPiece);
-
-                    // Record crater after the overlay has had time to show
-                    setTimeout(() => {
-                        onExplosion(squareToExplode, explosionMoveCount);
-                    }, 1000);
+                    onExplosion(squareToExplode, explosionMoveCount);
                 }, 900);
             } else {
                 switch (specialMove) {
