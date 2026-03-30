@@ -337,6 +337,9 @@
 
 .red-x {
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #ef4444;
     font-size: 30px;
     font-weight: bold;
@@ -347,6 +350,9 @@
 
 .enemy-x {
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #f97316;
     font-size: 30px;
     font-weight: bold;
