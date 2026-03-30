@@ -31,6 +31,8 @@ const SidePanel = ({
     onNewGame,
     rematchRequested,
     rematchDeclinedMsg,
+    clickToMove = false,
+    onClickToMoveToggle,
 }) => {
     const moveHistory = useMoveHistory();
     const isWhite = useIsWhite();
@@ -50,11 +52,11 @@ const SidePanel = ({
         <div className="side-panel">
             {(gameState === GAME_STATES.placing_bombs) ?
                 <div className="bomb-placement-info">
-                    <div className="bpi-header">Plant your surprises.</div>
+                    <div className="bpi-header">
+                        {myBombs.length < 3 ? "Plant your surprises." : "Traps set."}
+                    </div>
                     <div className="bpi-subtext">
-                        {myBombs.length < 3
-                            ? "They won't see it coming."
-                            : "Waiting for your opponent..."}
+                        {myBombs.length < 3 ? "They won't see it coming." : '\u00a0'}
                     </div>
                     <div className="bpi-timer-wrap">
                         <Timer
@@ -71,9 +73,10 @@ const SidePanel = ({
                         ))}
                     </div>
                     <div className="bpi-count">{myBombs.length} of 3 placed</div>
-                    <p className="bpi-rule">
-                        {isWhite ? "Ranks 3 & 4" : "Ranks 5 & 6"} only.
-                    </p>
+                    {myBombs.length === 3
+                        ? <div className="bpi-waiting">Waiting for your opponent...</div>
+                        : <p className="bpi-rule">{isWhite ? "Ranks 3 & 4" : "Ranks 5 & 6"} only.</p>
+                    }
                 </div>
                 :
                 <div className="move-history">
@@ -148,6 +151,19 @@ const SidePanel = ({
                     )}
                 </div>
             )}
+            <div className="settings-zone">
+                <div className="settings-label">Settings</div>
+                <div className="setting-row">
+                    <span className="setting-name">Click to move</span>
+                    <button
+                        className={`toggle-btn${clickToMove ? ' toggle-btn--on' : ''}`}
+                        onClick={onClickToMoveToggle}
+                        role="switch"
+                        aria-checked={clickToMove}
+                        aria-label="Click to move"
+                    />
+                </div>
+            </div>
         </div>
     );
 };

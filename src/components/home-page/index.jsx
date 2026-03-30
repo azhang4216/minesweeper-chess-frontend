@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GAME_STATES } from '../../constants';
-import { useGameState, useIsLoggedIn, usePlayer } from "../../hooks";
+import { useGameState, useIsLoggedIn, useIsPlayingAsGuest, usePlayer } from "../../hooks";
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
 import { generateGuestUUID } from "../../api";
@@ -59,6 +59,7 @@ const HomePage = () => {
     const socket = useSocket();
     const gameState = useGameState();
     const isLoggedIn = useIsLoggedIn();
+    const isGuest = useIsPlayingAsGuest();
     const player = usePlayer();
 
     const [tagline] = useState(() => TAGLINES[Math.floor(Math.random() * TAGLINES.length)]);
@@ -107,12 +108,16 @@ const HomePage = () => {
 
     const handlePlayAsGuest = async () => {
         try {
-            const assignedGuestID = await generateGuestUUID();
-            localStorage.setItem('guestPlayerId', assignedGuestID);
+            // Reuse existing guest ID so in-progress games survive navigation back to home
+            let assignedGuestID = localStorage.getItem('guestPlayerId');
+            if (!assignedGuestID) {
+                assignedGuestID = await generateGuestUUID();
+                localStorage.setItem('guestPlayerId', assignedGuestID);
+            }
             dispatch(actions.playAsGuest(assignedGuestID));
             socket.emit("authenticate", { playerId: assignedGuestID });
         } catch (e) {
-            console.error("Failed to generate guest UUID:", e);
+            console.error("Failed to initialize guest session:", e);
         }
     };
 
@@ -160,7 +165,9 @@ const HomePage = () => {
             return (
                 <div className="matchmaking-group">
                     {player?.rating != null && (
-                        <div className="player-elo-badge">{player.rating} ELO</div>
+                        <div className="player-elo-badge">
+                            {player.rating} ELO{isGuest ? ' [Guest]' : ''}
+                        </div>
                     )}
                     <div className="time-control-pills">
                         {TIME_CONTROLS.map(({ label, seconds }) => (

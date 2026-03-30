@@ -17,6 +17,7 @@
 }
 
 .game-content-wrapper {
+    position: relative;
     display: flex;
     gap: 20px;
     align-items: flex-start;
@@ -45,8 +46,7 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 9px;
-    border-left: 3px solid transparent;
-    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
     user-select: none;
 }
 
@@ -65,10 +65,71 @@
     color: var(--text-muted);
 }
 
+.guest-rating-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+}
+
+.guest-rating-tooltip {
+    visibility: hidden;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.guest-rating-wrap:hover .guest-rating-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
 .player-info.active-turn {
     background: var(--panel-hover);
-    border-left-color: var(--accent);
     box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ── Captured pieces row ───────────────────────── */
+
+.captured-row {
+    width: 480px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 2px 4px;
+    min-height: 20px;
+    flex-wrap: wrap;
+}
+
+.cap-piece {
+    width: 20px;
+    height: 20px;
+    margin-right: -4px;
+    display: block;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.cap-piece:last-of-type { margin-right: 0; }
+
+.material-adv {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: 8px;
 }
 
 /* ── Board container ───────────────────────────── */
@@ -259,16 +320,45 @@
     text-align: center;
 }
 
+.bpi-waiting {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    color: rgba(245, 158, 11, 0.75);
+    background: rgba(245, 158, 11, 0.07);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 6px;
+    padding: 6px 10px;
+    letter-spacing: 0.3px;
+}
+
 /* ── Bomb overlay marker ───────────────────────── */
 
 .red-x {
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #ef4444;
     font-size: 30px;
     font-weight: bold;
     pointer-events: none;
     z-index: 5;
     text-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+.enemy-x {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f97316;
+    font-size: 30px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 5;
+    text-shadow: 0 0 6px rgba(249, 115, 22, 0.6);
 }
 
 /* ── Disconnect notice ─────────────────────────── */
@@ -295,11 +385,88 @@
 
 /* ── Bomb placement — amber color shift ────────── */
 
-.placing-bombs .player-info {
-    border-left-color: rgba(245, 158, 11, 0.5);
+.placing-bombs .player-info.active-turn {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
 }
 
 .placing-bombs .chess-board-container {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(245, 158, 11, 0.1);
     transition: box-shadow 0.4s ease;
 }
+
+/* ── Enemy territory fog (opponent's bomb zone) ── */
+
+.enemy-territory-fog {
+    position: absolute;
+    top: 25%;
+    left: 0;
+    right: 0;
+    height: 25%;
+    background: rgba(6, 4, 14, 0.82);
+    border-top: 1.5px solid rgba(245, 158, 11, 0.55);
+    border-bottom: 1.5px solid rgba(245, 158, 11, 0.55);
+    z-index: 4;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.enemy-territory-label .fog-main {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(245, 158, 11, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    pointer-events: none;
+}
+
+.enemy-territory-label .fog-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.3px;
+    pointer-events: none;
+}
+
+/* ── "Board is armed" ceremony overlay ──────────── */
+
+@keyframes boardArmedFade {
+    0%   { opacity: 0; }
+    12%  { opacity: 1; }
+    78%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.board-armed-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    animation: boardArmedFade 2.2s ease forwards;
+    pointer-events: none;
+}
+
+.board-armed-overlay .armed-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ef4444;
+    letter-spacing: 0.5px;
+}
+
+.board-armed-overlay .armed-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+

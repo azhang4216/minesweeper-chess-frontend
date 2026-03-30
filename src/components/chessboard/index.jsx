@@ -40,11 +40,30 @@ const highlightSquare = (square, colorRgba) => {
     }
 };
 
-const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
+// Converts a square ("e4") and board orientation to a percentage-based absolute style
+// so an overlay element sits exactly on that square within a position:relative wrapper.
+const squareToOverlayStyle = (square, isWhite) => {
+    const fileIndex = square.charCodeAt(0) - 97; // 'a'=0 .. 'h'=7
+    const rank = parseInt(square[1], 10);         // 1..8
+    const left = isWhite ? fileIndex / 8 : (7 - fileIndex) / 8;
+    const top = isWhite ? (8 - rank) / 8 : (rank - 1) / 8;
+    return {
+        position: 'absolute',
+        left: `${left * 100}%`,
+        top: `${top * 100}%`,
+        width: '12.5%',
+        height: '12.5%',
+    };
+};
+
+// displayBombs: Array<{ square: string, isOpponent: boolean }> | null
+// When provided, overrides the redux-driven myBombs rendering (used for history nav,
+// game-over view, and analyze view). When null, falls back to myBombs from redux.
+const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration, displayBombs = null, clickToMove = false }) => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
-    // extract state from redux 
+    // extract state from redux
     const gameFen = useGameFen();
     const isWhite = useIsWhite();
     const isMyTurn = useIsMyTurn();
@@ -52,6 +71,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const gameState = useGameState();
 
     const isHistory = !!displayFen;
+    const isGameOver = gameState === GAME_STATES.game_over;
 
     // Refs keep onDrop closures fresh when react-chessboard re-fires premoves
     const isMyTurnRef = useRef(isMyTurn);
@@ -83,67 +103,16 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         };
     }, [dispatch, socket]);
 
+    // Play shovel sound when the player adds a new bomb during placement phase.
+    // Tracks count via ref so it fires exactly once per new bomb regardless of re-renders.
+    const prevBombCountRef = useRef(0);
     useEffect(() => {
-        // remove all existing red-Xs
-        document.querySelectorAll('.red-x').forEach((x) => {
-            x.remove();
-        });
-
-        // redraw all of them (so that when a bomb detonates, removed bomb is not there)
-        myBombs.forEach(square => {
-            const squareEl = document.querySelector(`[data-square="${square}"]`);
-            if (squareEl && !squareEl.querySelector('.red-x')) {
-                const x = document.createElement('div');
-                x.className = 'red-x';
-                x.textContent = 'X';
-                x.style.top = '0';
-                x.style.left = '0';
-                x.style.width = '100%';
-                x.style.height = '100%';
-                x.style.display = 'flex';
-                x.style.alignItems = 'center';
-                x.style.justifyContent = 'center';
-
-                squareEl.style.position = 'relative';
-                squareEl.appendChild(x);
-
-                if (gameState === GAME_STATES.placing_bombs) {
-                    // play shovel sound when bomb buried
-                    playSound(sounds.shovel);
-                }
-            }
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [myBombs]);
-
-    // Sync crater overlays with visibleCraters. Re-runs on displayFen change too so craters
-    // are re-applied after react-chessboard repaints on history navigation.
-    useEffect(() => {
-        document.querySelectorAll('.scorched').forEach(el => el.remove());
-
-        visibleCraters.forEach(square => {
-            const squareEl = document.querySelector(`[data-square="${square}"]`);
-            if (!squareEl || squareEl.querySelector('.scorched')) return;
-            const crater = document.createElement('img');
-            crater.src = images.craterPng;
-            crater.className = 'scorched';
-            Object.assign(crater.style, {
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: '85%',
-                height: '85%',
-                objectFit: 'cover',
-                pointerEvents: 'none',
-                zIndex: '1',
-                opacity: '0.9',
-                transform: 'translate(-50%, -50%)',
-            });
-            squareEl.style.position = 'relative';
-            squareEl.appendChild(crater);
-        });
+        if (gameState === GAME_STATES.placing_bombs && myBombs.length > prevBombCountRef.current) {
+            playSound(sounds.shovel);
+        }
+        prevBombCountRef.current = myBombs.length;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visibleCraters, displayFen]);
+    }, [myBombs.length]);
 
     useEffect(() => {
         // remove all existing highlighted squares
@@ -179,9 +148,14 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     }, [gameState]);
 
     const handleClick = async (_e) => {
+        // Only handle clicks during bomb placement — during play, react-chessboard
+        // handles interaction via onDrop/onSquareClick and this handler must not
+        // fire the illegal-move sound on every square click.
+        if (gameState !== GAME_STATES.placing_bombs) return;
+
         const selected = squareMouseIsOver;
 
-        if (gameState === GAME_STATES.placing_bombs && myBombs.length < 3 &&
+        if (myBombs.length < 3 &&
             ((isWhite && (selected[1] === '3' || selected[1] === '4')) || (!isWhite && (selected[1] === '5' || selected[1] === '6'))) &&
             !myBombs.includes(selected)
         ) {
@@ -189,7 +163,6 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         } else {
             playSound(sounds.illegal);
         }
-
     };
 
     const onDrop = (sourceSquare, targetSquare, piece) => {
@@ -200,7 +173,9 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         if (!isMyPiece) return false;
 
         if (!isMyTurnRef.current) {
-            // Not my turn — queue as premove; library re-fires onPieceDrop when position updates
+            // Not my turn — queue as premove; library re-fires onPieceDrop when position updates.
+            // Premoves are cleared automatically on explosion (board remounts, resetting library state),
+            // which is correct: the position changed drastically and the premove should be reassessed.
             return true;
         }
 
@@ -257,6 +232,56 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const clearAnnotations = () => {
         setRightClickHighlights(new Set());
         setCustomArrows([]); // new reference triggers library's internal clearArrows()
+    };
+
+    // Clear click-to-move selection whenever the mode is turned off
+    useEffect(() => {
+        if (!clickToMove) {
+            setSelectedSquare(null);
+            setLegalMoves([]);
+        }
+    }, [clickToMove]);
+
+    const handleClickToMove = (square) => {
+        clearAnnotations();
+        if (!isMyTurnRef.current) return;
+
+        // Deselect if clicking the already-selected square
+        if (selectedSquare === square) {
+            setSelectedSquare(null);
+            setLegalMoves([]);
+            return;
+        }
+
+        // Move to the clicked square if it's a legal destination
+        if (selectedSquare && legalMoves.includes(square)) {
+            socket.emit('makeMove', { from: selectedSquare, to: square, promotion: 'q' });
+            setSelectedSquare(null);
+            setLegalMoves([]);
+            return;
+        }
+
+        // Try to select a piece on the clicked square
+        let chess;
+        try { chess = new Chess(gameFenRef.current); } catch { return; }
+
+        const piece = chess.get(square);
+        const isMyPiece = piece && (
+            (isWhite && piece.color === 'w') || (!isWhite && piece.color === 'b')
+        );
+
+        if (isMyPiece) {
+            setSelectedSquare(square);
+            try {
+                const moves = chess.moves({ square, verbose: true });
+                setLegalMoves(moves.map(m => m.to));
+            } catch {
+                setLegalMoves([]);
+            }
+        } else {
+            setSelectedSquare(null);
+            setLegalMoves([]);
+        }
     };
 
     const customPieces = Object.fromEntries(
@@ -316,8 +341,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         ...(lastMove.to && { [lastMove.to]: { backgroundColor: "#c7edcc" } }),
         ...legalMoves.reduce((acc, sq) => {
             acc[sq] = {
-                backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                borderRadius: '50%'
+                background: 'radial-gradient(circle, rgba(0,0,0,0.25) 28%, transparent 28%)',
             };
             return acc;
         }, {}),
@@ -331,19 +355,32 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         }, {}),
     };
 
+    // Pieces are not draggable when viewing history, game is over, or click-to-move is on
+    const draggable = !isHistory && !isGameOver && !clickToMove;
+
+    // Bomb markers: use displayBombs prop when provided (history/analyze), else live redux state
+    const bombs = displayBombs ?? myBombs.map(sq => ({ square: sq, isOpponent: false }));
+
+    // Overlay style: covers the board exactly, pointer-events:none so it doesn't block interaction
+    const overlayStyle = { position: 'absolute', inset: 0, pointerEvents: 'none' };
+
     return (
-        <div onClick={handleClick}>
+        <div style={{ position: 'relative' }} onClick={handleClick}>
             <Chessboard
                 position={displayFen ?? gameFen}
                 animationDuration={animationDuration}
                 onPieceDrop={onDrop}
-                arePiecesDraggable={!isHistory}
+                arePiecesDraggable={draggable}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
                 onSquareRightClick={gameState === GAME_STATES.playing ? onSquareRightClick : undefined}
-                onSquareClick={gameState === GAME_STATES.playing && !isHistory ? clearAnnotations : undefined}
+                onSquareClick={
+                    gameState === GAME_STATES.playing && !isHistory
+                        ? (clickToMove ? handleClickToMove : clearAnnotations)
+                        : undefined
+                }
                 boardOrientation={isWhite ? "white" : "black"}
-                arePremovesAllowed={true}
+                arePremovesAllowed={!clickToMove}
                 clearPremovesOnRightClick={true}
                 customArrows={customArrows}
                 customArrowColor={RGBA.iwc_purple}
@@ -354,6 +391,29 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
                 }}
                 customSquareStyles={customSquareStyles}
             />
+            {/* Crater overlay — React-rendered, immune to react-chessboard's internal DOM rebuilds */}
+            <div style={overlayStyle}>
+                {visibleCraters.map(square => (
+                    <img
+                        key={square}
+                        src={images.craterPng}
+                        alt=""
+                        style={{ ...squareToOverlayStyle(square, isWhite), objectFit: 'contain', opacity: 0.9 }}
+                    />
+                ))}
+            </div>
+            {/* Bomb X overlay */}
+            <div style={overlayStyle}>
+                {bombs.map(({ square, isOpponent }) => (
+                    <div
+                        key={square}
+                        className={isOpponent ? 'enemy-x' : 'red-x'}
+                        style={squareToOverlayStyle(square, isWhite)}
+                    >
+                        X
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

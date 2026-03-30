@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { sounds } from '../assets';
 import { actions } from '../redux';
-import { playSound, getPieceAtSquare } from '../utils';
+import { playSound, getPieceAtSquare, dbg, dbgBoard } from '../utils';
 import { useIsWhite } from '../hooks';
 import { GAME_STATES } from '../constants';
 import { useRef, useEffect } from 'react';
@@ -41,6 +41,19 @@ export const useBoardSocketHandlers = ({
         moveHistoryLengthRef.current = moveHistory.length;
     }, [moveHistory]);
 
+    // Track bomb state for debug logging
+    const playerBombs = useSelector(state => state.game.player.bombs);
+    const playerBombsRef = useRef(playerBombs);
+    useEffect(() => { playerBombsRef.current = playerBombs; }, [playerBombs]);
+    const oppBombs = useSelector(state => state.game.opponent.bombs);
+    const oppBombsRef = useRef(oppBombs);
+    useEffect(() => { oppBombsRef.current = oppBombs; }, [oppBombs]);
+
+    // Track player rating so game-over handlers can update it with the ELO delta
+    const playerRating = useSelector(state => state.game.player.rating);
+    const playerRatingRef = useRef(playerRating);
+    playerRatingRef.current = playerRating;
+
     // Track whether the most recent explosion was a king (affects win/loss popup delay)
     const lastExplosionWasKingRef = useRef(false);
 
@@ -65,6 +78,10 @@ export const useBoardSocketHandlers = ({
     };
 
     const handleStartPlay = ({ whitePlayerBombs, blackPlayerBombs }) => {
+        dbg('startPlay', `Game starting. I am ${isWhiteRef.current ? 'WHITE' : 'BLACK'}`);
+        dbg('startPlay', `My bombs locked in: ${playerBombsRef.current.join(', ') || '—'}`);
+        dbg('startPlay', `Opponent bomb count: ${oppBombsRef.current.length}`);
+
         if (whitePlayerBombs !== null && blackPlayerBombs !== null) {
             // we've received randomized bombs from timeout!
             setRoomMessage("Randomly placed bombs on timeout!");
@@ -84,6 +101,15 @@ export const useBoardSocketHandlers = ({
         // determine who just made this move
         const isNextMoveWhite = !(sideToMoveNext === "b");
         const wasMyMove = isWhiteRef.current !== isNextMoveWhite;
+
+        const moveNumber = Math.ceil((moveHistoryLengthRef.current + 1) / 2);
+        dbg('gameState', `Move #${moveNumber} by ${wasMyMove ? 'ME' : 'OPPONENT'}: ${moveSan}${specialMove ? ` [${specialMove}]` : ''}`);
+        dbg('gameState', `FEN: ${gameFen}`);
+        dbgBoard(gameFen, {
+            myBombs: playerBombsRef.current,
+            craters: [],   // craters tracked in board-page; will be logged there on explosion
+            oppBombCount: oppBombsRef.current.length,
+        });
 
         // update the game normally when move isn't an explosion
         // note: explosions have custom timing / updates
@@ -156,8 +182,10 @@ export const useBoardSocketHandlers = ({
     const handleDrawGameOver = ({ by, whiteEloChange, blackEloChange }) => {
         setGameOverResult("Draw");
         setGameOverReason(by);
-        setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
+        const myDrawDelta = isWhiteRef.current ? whiteEloChange : blackEloChange;
+        setmyEloChange(myDrawDelta);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
+        dispatch(actions.updatePlayerRating(playerRatingRef.current + myDrawDelta));
         
         // Delay the popup so the detonation overlay finishes before it appears.
         // Use the same timing as handleWinLossGameOver so king/non-king delays stay in sync.
@@ -166,7 +194,7 @@ export const useBoardSocketHandlers = ({
             setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
-            setDisplayWinLossPopup(true);
+            setTimeout(() => setDisplayWinLossPopup(true), 800);
             playSound(sounds.gameEnd);
         };
 
@@ -177,8 +205,10 @@ export const useBoardSocketHandlers = ({
         const isWinner = ((winner === 'w') && isWhiteRef.current) || ((winner === 'b') && !isWhiteRef.current);
         setGameOverResult(isWinner ? "You win" : "You lose");
         setGameOverReason(by);
-        setmyEloChange(isWhiteRef.current ? whiteEloChange : blackEloChange);
+        const myWinLossDelta = isWhiteRef.current ? whiteEloChange : blackEloChange;
+        setmyEloChange(myWinLossDelta);
         setOpponentEloChange(isWhiteRef.current ? blackEloChange : whiteEloChange);
+        dispatch(actions.updatePlayerRating(playerRatingRef.current + myWinLossDelta));
 
         // King detonation: wait for the cinematic before showing game over.
         // Regular explosions that end games use a shorter delay.
@@ -187,7 +217,7 @@ export const useBoardSocketHandlers = ({
             setTimeout(() => setDisplayWinLossPopup(true), delay);
             playSound(sounds.gameEnd);
         } else {
-            setDisplayWinLossPopup(true);
+            setTimeout(() => setDisplayWinLossPopup(true), 800);
             playSound(sounds.gameEnd);
         };
 

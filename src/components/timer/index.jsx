@@ -9,6 +9,9 @@ const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
 
     const getDisplaySeconds = () => {
         const elapsed = (Date.now() - syncRef.current.lastSyncAt) / 1000;
+        // Within 500ms of a sync, return the server value directly — prevents tiny React
+        // render delays from causing Math.floor to show one second less (e.g. 4:59 vs 5:00).
+        if (elapsed < 0.5) return Math.floor(syncRef.current.serverSeconds);
         return Math.max(0, Math.floor(syncRef.current.serverSeconds - elapsed));
     };
 
@@ -18,7 +21,12 @@ const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
     useEffect(() => {
         syncRef.current = { serverSeconds, lastSyncAt };
         setSecondsLeft(getDisplaySeconds());
-        tenSecondAlertPlayed.current = false;
+        // Only re-arm the alert when time is genuinely above 10s.
+        // Resetting unconditionally would re-fire the sound on every server sync
+        // while under 10 seconds (syncs arrive ~every second).
+        if (serverSeconds > 10) {
+            tenSecondAlertPlayed.current = false;
+        }
     }, [serverSeconds, lastSyncAt]);
 
     // Tick at 250ms while active — always derived from server sync values, never drifts

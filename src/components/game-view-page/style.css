@@ -64,6 +64,34 @@
     color: var(--text-muted);
 }
 
+/* ── Bomb overlay markers (shared with board-page) ── */
+
+.red-x {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    font-size: 30px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 5;
+    text-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+.enemy-x {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f97316;
+    font-size: 30px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 5;
+    text-shadow: 0 0 6px rgba(249, 115, 22, 0.6);
+}
+
 /* ── Back link ─────────────────────────────────── */
 
 .game-view-back {

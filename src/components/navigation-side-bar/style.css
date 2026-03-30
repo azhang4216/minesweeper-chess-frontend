@@ -62,7 +62,8 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
     font-weight: 500;
-    padding: 7px 14px;
+    padding: 11px 14px;
+    min-height: 44px;
     border-radius: 7px;
     cursor: pointer;
     transition: color 0.15s, background 0.15s;
@@ -215,7 +216,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px 6px 6px;
+    padding: 8px 12px 8px 6px;
+    min-height: 44px;
     background: var(--panel);
     border: 1px solid var(--border-strong);
     border-radius: 30px;

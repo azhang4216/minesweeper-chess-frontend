@@ -44,12 +44,17 @@ const NavigationSideBar = () => {
 
     const handlePlayAsGuest = async () => {
         try {
-            const guestId = await generateGuestUUID();
+            // Reuse existing guest ID so in-progress games survive navigation
+            let guestId = localStorage.getItem('guestPlayerId');
+            if (!guestId) {
+                guestId = await generateGuestUUID();
+                localStorage.setItem('guestPlayerId', guestId);
+            }
             dispatch(actions.playAsGuest(guestId));
             socket.emit('authenticate', { playerId: guestId });
             navigate('/');
         } catch (e) {
-            console.error('Failed to generate guest UUID:', e);
+            console.error('Failed to initialize guest session:', e);
         } finally {
             setUserOpen(false);
         }
