@@ -152,60 +152,60 @@ const WinLossPopup = ({
 
     return (
         <div className={`wl-overlay wl-overlay--${variant}`}>
-            <img src={VARIANT_GIF[variant]} alt="" className="wl-bg-gif" aria-hidden="true" />
             <div className="wl-card">
-                <div className="wl-headline">{copy.headline}</div>
-                <div className="wl-tagline">{copy.tagline}</div>
-                <div className="wl-subtext">{copy.subtext}</div>
+                <button className="wl-close" onClick={onClose} aria-label="Close">✕</button>
+                <img src={VARIANT_GIF[variant]} alt="" className="wl-bg-gif" aria-hidden="true" />
+                <div className="wl-content">
+                    <div className="wl-headline">{copy.headline}</div>
+                    <div className="wl-tagline">{copy.tagline}</div>
+                    <div className="wl-subtext">{copy.subtext}</div>
 
-                <div className="wl-reason">
-                    by {humanizeReason(reason)}
-                </div>
+                    <div className="wl-reason">
+                        by {humanizeReason(reason)}
+                    </div>
 
-                <div className="wl-elo">
-                    <span className="wl-elo-change" style={{ color: eloColor }}>
-                        {safeEloChange > 0 ? '+' : ''}{safeEloChange}
-                    </span>
-                    <span className="wl-elo-new">→ {newElo}</span>
-                    <span className="wl-elo-label">ELO</span>
-                </div>
+                    <div className="wl-elo">
+                        <span className="wl-elo-change" style={{ color: eloColor }}>
+                            {safeEloChange > 0 ? '+' : ''}{safeEloChange}
+                        </span>
+                        <span className="wl-elo-new">→ {newElo}</span>
+                        <span className="wl-elo-label">ELO</span>
+                    </div>
 
-                <div className="wl-matchup">
-                    <span>{player.name}</span>
-                    <span className="wl-matchup-vs">vs</span>
-                    {opponent.is_guest
-                        ? <span>{opponent.name}</span>
-                        : <Link to={`/profile/${opponent.name}`} className="wl-opponent-link" onClick={onClose}>{opponent.name}</Link>
-                    }
-                </div>
+                    <div className="wl-matchup">
+                        <span>{player.name}</span>
+                        <span className="wl-matchup-vs">vs</span>
+                        {opponent.is_guest
+                            ? <span>{opponent.name}</span>
+                            : <Link to={`/profile/${opponent.name}`} className="wl-opponent-link" onClick={onClose}>{opponent.name}</Link>
+                        }
+                    </div>
 
-                <div className="wl-actions">
-                    {onRequestRematch && (
-                        <button
-                            className={`wl-btn wl-btn--primary${rematchRequested ? ' wl-btn--waiting' : ''}`}
-                            onClick={!rematchDeclinedMsg ? onRequestRematch : undefined}
-                            disabled={rematchRequested || !!rematchDeclinedMsg}
-                        >
-                            {rematchDeclinedMsg ? rematchDeclinedMsg : rematchRequested ? 'Waiting...' : 'Rematch'}
-                        </button>
-                    )}
-                    {canSendFriendRequest && (
-                        <button
-                            className="wl-btn wl-btn--ghost"
-                            onClick={handleSendFriendRequest}
-                            disabled={friendRequestSent}
-                        >
-                            {friendRequestSent ? 'Request Sent' : 'Add Friend'}
-                        </button>
-                    )}
-                    {onNewGame && (
-                        <button className="wl-btn wl-btn--ghost" onClick={() => { onClose(); onNewGame(); }}>
-                            New Game
-                        </button>
-                    )}
-                    <button className="wl-btn wl-btn--ghost" onClick={onClose}>
-                        Close
-                    </button>
+                    <div className="wl-actions">
+                        {onRequestRematch && (
+                            <button
+                                className={`wl-btn wl-btn--primary${rematchRequested ? ' wl-btn--waiting' : ''}`}
+                                onClick={!rematchDeclinedMsg ? onRequestRematch : undefined}
+                                disabled={rematchRequested || !!rematchDeclinedMsg}
+                            >
+                                {rematchDeclinedMsg ? rematchDeclinedMsg : rematchRequested ? 'Waiting...' : 'Rematch'}
+                            </button>
+                        )}
+                        {canSendFriendRequest && (
+                            <button
+                                className="wl-btn wl-btn--ghost"
+                                onClick={handleSendFriendRequest}
+                                disabled={friendRequestSent}
+                            >
+                                {friendRequestSent ? 'Request Sent' : 'Add Friend'}
+                            </button>
+                        )}
+                        {onNewGame && (
+                            <button className="wl-btn wl-btn--ghost" onClick={() => { onClose(); onNewGame(); }}>
+                                New Game
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

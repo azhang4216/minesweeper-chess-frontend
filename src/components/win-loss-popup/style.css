@@ -1,26 +1,34 @@
 .wl-overlay {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 220px;
-    z-index: 50;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
-    overflow: hidden;
-    animation: wlSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    background: rgba(0, 0, 0, 0.55);
+    animation: wlFadeIn 0.2s ease forwards;
 }
 
-.wl-overlay--win  { background: linear-gradient(160deg, #050e08 0%, #0a1a0d 60%, #060a09 100%); }
-.wl-overlay--loss { background: linear-gradient(160deg, #0d0606 0%, #130a0a 60%, #0a0606 100%); }
-.wl-overlay--draw { background: var(--bg); }
+@keyframes wlFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
 
-@keyframes wlSlideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+.wl-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    width: 340px;
+    animation: wlPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.wl-overlay--win  .wl-card { background: linear-gradient(160deg, #050e08 0%, #0a1a0d 60%, #060a09 100%); }
+.wl-overlay--loss .wl-card { background: linear-gradient(160deg, #0d0606 0%, #130a0a 60%, #0a0606 100%); }
+.wl-overlay--draw .wl-card { background: var(--bg); border: 1px solid var(--border); }
+
+@keyframes wlPopIn {
+    from { opacity: 0; transform: scale(0.92) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* ── Background GIF ─────────────────────────────── */
@@ -30,31 +38,27 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 48%;
+    height: 180px;
     object-fit: cover;
     object-position: center top;
-    border-radius: 0 0 10px 10px;
+    border-radius: 0 0 14px 14px;
     opacity: 0.38;
     pointer-events: none;
     user-select: none;
-    /* Fade the top edge so it blends into the card content above */
     mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 25%, black 70%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 25%, black 70%);
 }
 
-/* ── Card ───────────────────────────────────────── */
+/* ── Content wrapper (sits above the absolute GIF) ── */
 
-.wl-card {
-    text-align: center;
+.wl-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
-    padding: 0 14px;
-    max-width: 220px;
-    width: 100%;
-    position: relative;
-    z-index: 1;
+    padding: 28px 24px 196px;
 }
 
 /* ── Headline ───────────────────────────────────── */
@@ -154,6 +158,33 @@
     font-size: 10px;
     color: var(--text-dim);
     opacity: 0.5;
+}
+
+/* ── Close button ───────────────────────────────── */
+
+.wl-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    z-index: 2;
+}
+
+.wl-close:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--text);
 }
 
 /* ── Action buttons ─────────────────────────────── */
