@@ -73,7 +73,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration, displa
     const isHistory = !!displayFen;
     const isGameOver = gameState === GAME_STATES.game_over;
 
-    // Refs keep onDrop/handleClickToMove closures fresh without re-subscribing events
+    // Refs keep onDrop closures fresh when react-chessboard re-fires premoves
     const isMyTurnRef = useRef(isMyTurn);
     const isHistoryRef = useRef(isHistory);
     const gameStateRef = useRef(gameState);
@@ -172,9 +172,15 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration, displa
         const isMyPiece = (isWhite && piece[0] === 'w') || (!isWhite && piece[0] === 'b');
         if (!isMyPiece) return false;
 
-        if (!isMyTurnRef.current) return false;
+        if (!isMyTurnRef.current) {
+            // Not my turn — queue as premove; library re-fires onPieceDrop when position updates.
+            // Premoves are cleared automatically on explosion (board remounts, resetting library state),
+            // which is correct: the position changed drastically and the premove should be reassessed.
+            return true;
+        }
 
-        // Validate before emitting so illegal moves (e.g. don't escape check) snap back.
+        // It's my turn (fresh drop or queued premove firing).
+        // Validate before emitting so illegal moves (e.g. don't escape check) snap back instead of looping.
         let chessValidator;
         try {
             chessValidator = new Chess(gameFenRef.current);
@@ -374,7 +380,8 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration, displa
                         : undefined
                 }
                 boardOrientation={isWhite ? "white" : "black"}
-                arePremovesAllowed={false}
+                arePremovesAllowed={!clickToMove}
+                clearPremovesOnRightClick={true}
                 customArrows={customArrows}
                 customArrowColor={RGBA.iwc_purple}
                 customPieces={customPieces}
