@@ -58,10 +58,22 @@ const useInitializeSocket = () => {
                 }));
             }
 
+            // Restore bomb-placement timer for placing_bombs rejoins
+            if (data.bombTimeLeft != null) {
+                dispatch(actions.setPlacingBombSeconds(data.bombTimeLeft));
+            }
+
             navigate("/play-game", { state: { roomId: data.roomId } });
         };
 
         const handleNoActiveGame = () => {
+            // Don't redirect if on a non-game page (e.g. /game/:id analyze view) — the
+            // socket always fires rejoin on auth but those pages are read-only and have no active game.
+            const path = locationRef.current.pathname;
+            if (path !== '/play-game' && path !== '/') {
+                dispatch(actions.setGameState(GAME_STATES.inactive));
+                return;
+            }
             localStorage.removeItem('guestPlayerId'); // clear stale guest session
             dispatch(actions.setGameState(GAME_STATES.inactive));
             navigate("/");

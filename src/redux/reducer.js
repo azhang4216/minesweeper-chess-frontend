@@ -228,9 +228,22 @@ export default function appReducer(state = initialState, action) {
                     player: {
                         ...state.game.player,
                         name: action.payload, // unique uuid assigned by server
+                        rating: state.game.player.rating || 1500, // default guest ELO; preserve if already updated this session
                     },
                 }
             }
+
+        case "UPDATE_PLAYER_RATING":
+            return {
+                ...state,
+                game: {
+                    ...state.game,
+                    player: {
+                        ...state.game.player,
+                        rating: action.payload,
+                    }
+                }
+            };
 
         case "SET_MOVE_HISTORY":
             return {

@@ -21,7 +21,12 @@ const Timer = ({ isActive, serverSeconds, lastSyncAt }) => {
     useEffect(() => {
         syncRef.current = { serverSeconds, lastSyncAt };
         setSecondsLeft(getDisplaySeconds());
-        tenSecondAlertPlayed.current = false;
+        // Only re-arm the alert when time is genuinely above 10s.
+        // Resetting unconditionally would re-fire the sound on every server sync
+        // while under 10 seconds (syncs arrive ~every second).
+        if (serverSeconds > 10) {
+            tenSecondAlertPlayed.current = false;
+        }
     }, [serverSeconds, lastSyncAt]);
 
     // Tick at 250ms while active — always derived from server sync values, never drifts

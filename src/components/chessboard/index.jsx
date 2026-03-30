@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
@@ -40,11 +40,14 @@ const highlightSquare = (square, colorRgba) => {
     }
 };
 
-const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
+// displayBombs: Array<{ square: string, isOpponent: boolean }> | null
+// When provided, overrides the redux-driven myBombs rendering (used for history nav,
+// game-over view, and analyze view). When null, falls back to myBombs from redux.
+const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration, displayBombs = null, clickToMove = false }) => {
     const dispatch = useDispatch();
     const socket = useSocket();          // use context so that all components reference the same socket
 
-    // extract state from redux 
+    // extract state from redux
     const gameFen = useGameFen();
     const isWhite = useIsWhite();
     const isMyTurn = useIsMyTurn();
@@ -52,6 +55,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const gameState = useGameState();
 
     const isHistory = !!displayFen;
+    const isGameOver = gameState === GAME_STATES.game_over;
 
     // Refs keep onDrop closures fresh when react-chessboard re-fires premoves
     const isMyTurnRef = useRef(isMyTurn);
@@ -71,6 +75,15 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [legalMoves, setLegalMoves] = useState([]);
 
+    // Increments once after mount so the bomb-injection useLayoutEffect re-runs after
+    // react-chessboard's own useEffect([position]) has settled. Without this, the injection
+    // runs on mount but react-chessboard's internal re-render (from setIsWaitingForAnimation)
+    // can clear or re-order DOM children, losing the X markers.
+    const [mountTrigger, setMountTrigger] = useState(0);
+    useEffect(() => {
+        setMountTrigger(t => t + 1);
+    }, []);
+
     useEffect(() => {
         const handleBombPlaced = (square) => {
             dispatch(actions.placeBomb(square));
@@ -83,42 +96,53 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         };
     }, [dispatch, socket]);
 
-    useEffect(() => {
-        // remove all existing red-Xs
-        document.querySelectorAll('.red-x').forEach((x) => {
-            x.remove();
-        });
+    // Bomb rendering: uses displayBombs prop when provided (history/game-over/analyze),
+    // falls back to myBombs from redux for live play. Re-runs on displayFen change so
+    // markers survive react-chessboard repaints after navigation.
+    // useLayoutEffect (not useEffect) so markers are injected before the browser paint,
+    // preventing the one-frame flash after board remounts on explosion.
+    useLayoutEffect(() => {
+        document.querySelectorAll('.red-x, .enemy-x').forEach(x => x.remove());
 
-        // redraw all of them (so that when a bomb detonates, removed bomb is not there)
-        myBombs.forEach(square => {
+        const bombs = displayBombs ?? myBombs.map(sq => ({ square: sq, isOpponent: false }));
+
+        bombs.forEach(({ square, isOpponent }) => {
             const squareEl = document.querySelector(`[data-square="${square}"]`);
-            if (squareEl && !squareEl.querySelector('.red-x')) {
-                const x = document.createElement('div');
-                x.className = 'red-x';
-                x.textContent = 'X';
-                x.style.top = '0';
-                x.style.left = '0';
-                x.style.width = '100%';
-                x.style.height = '100%';
-                x.style.display = 'flex';
-                x.style.alignItems = 'center';
-                x.style.justifyContent = 'center';
-
-                squareEl.style.position = 'relative';
-                squareEl.appendChild(x);
-
-                if (gameState === GAME_STATES.placing_bombs) {
-                    // play shovel sound when bomb buried
-                    playSound(sounds.shovel);
-                }
-            }
+            if (!squareEl) return;
+            const cls = isOpponent ? 'enemy-x' : 'red-x';
+            if (squareEl.querySelector(`.${cls}`)) return;
+            const div = document.createElement('div');
+            div.className = cls;
+            div.textContent = 'X';
+            Object.assign(div.style, {
+                position: 'absolute',
+                top: '0',
+                left: '0',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            });
+            squareEl.style.position = 'relative';
+            squareEl.appendChild(div);
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [myBombs]);
+
+        // Shovel sound only during bomb placement (falls back path = myBombs)
+        if (!displayBombs && gameState === GAME_STATES.placing_bombs) {
+            myBombs.forEach(square => {
+                const squareEl = document.querySelector(`[data-square="${square}"]`);
+                // Sound plays once per newly-drawn marker (element was just created above)
+                if (squareEl) playSound(sounds.shovel);
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [displayBombs, myBombs, displayFen, gameFen, mountTrigger]);
 
     // Sync crater overlays with visibleCraters. Re-runs on displayFen change too so craters
     // are re-applied after react-chessboard repaints on history navigation.
-    useEffect(() => {
+    // useLayoutEffect so craters are injected before the browser paint (no flash on remount).
+    useLayoutEffect(() => {
         document.querySelectorAll('.scorched').forEach(el => el.remove());
 
         visibleCraters.forEach(square => {
@@ -143,7 +167,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
             squareEl.appendChild(crater);
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visibleCraters, displayFen]);
+    }, [visibleCraters, displayFen, gameFen, mountTrigger]);
 
     useEffect(() => {
         // remove all existing highlighted squares
@@ -263,6 +287,56 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         setCustomArrows([]); // new reference triggers library's internal clearArrows()
     };
 
+    // Clear click-to-move selection whenever the mode is turned off
+    useEffect(() => {
+        if (!clickToMove) {
+            setSelectedSquare(null);
+            setLegalMoves([]);
+        }
+    }, [clickToMove]);
+
+    const handleClickToMove = (square) => {
+        clearAnnotations();
+        if (!isMyTurnRef.current) return;
+
+        // Deselect if clicking the already-selected square
+        if (selectedSquare === square) {
+            setSelectedSquare(null);
+            setLegalMoves([]);
+            return;
+        }
+
+        // Move to the clicked square if it's a legal destination
+        if (selectedSquare && legalMoves.includes(square)) {
+            socket.emit('makeMove', { from: selectedSquare, to: square, promotion: 'q' });
+            setSelectedSquare(null);
+            setLegalMoves([]);
+            return;
+        }
+
+        // Try to select a piece on the clicked square
+        let chess;
+        try { chess = new Chess(gameFenRef.current); } catch { return; }
+
+        const piece = chess.get(square);
+        const isMyPiece = piece && (
+            (isWhite && piece.color === 'w') || (!isWhite && piece.color === 'b')
+        );
+
+        if (isMyPiece) {
+            setSelectedSquare(square);
+            try {
+                const moves = chess.moves({ square, verbose: true });
+                setLegalMoves(moves.map(m => m.to));
+            } catch {
+                setLegalMoves([]);
+            }
+        } else {
+            setSelectedSquare(null);
+            setLegalMoves([]);
+        }
+    };
+
     const customPieces = Object.fromEntries(
         Object.entries(pieces).map(([pieceCode, imgSrc]) => [
             pieceCode,
@@ -320,8 +394,7 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         ...(lastMove.to && { [lastMove.to]: { backgroundColor: "#c7edcc" } }),
         ...legalMoves.reduce((acc, sq) => {
             acc[sq] = {
-                backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                borderRadius: '50%'
+                background: 'radial-gradient(circle, rgba(0,0,0,0.25) 28%, transparent 28%)',
             };
             return acc;
         }, {}),
@@ -335,19 +408,26 @@ const ChessBoard = ({ displayFen, visibleCraters = [], animationDuration }) => {
         }, {}),
     };
 
+    // Pieces are not draggable when viewing history, game is over, or click-to-move is on
+    const draggable = !isHistory && !isGameOver && !clickToMove;
+
     return (
         <div onClick={handleClick}>
             <Chessboard
                 position={displayFen ?? gameFen}
                 animationDuration={animationDuration}
                 onPieceDrop={onDrop}
-                arePiecesDraggable={!isHistory}
+                arePiecesDraggable={draggable}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOverSquare: onMouseoverSquare } : {})}
                 {...(gameState === GAME_STATES.placing_bombs ? { onMouseOutSquare: onMouseoutSquare } : {})}
                 onSquareRightClick={gameState === GAME_STATES.playing ? onSquareRightClick : undefined}
-                onSquareClick={gameState === GAME_STATES.playing && !isHistory ? clearAnnotations : undefined}
+                onSquareClick={
+                    gameState === GAME_STATES.playing && !isHistory
+                        ? (clickToMove ? handleClickToMove : clearAnnotations)
+                        : undefined
+                }
                 boardOrientation={isWhite ? "white" : "black"}
-                arePremovesAllowed={true}
+                arePremovesAllowed={!clickToMove}
                 clearPremovesOnRightClick={true}
                 customArrows={customArrows}
                 customArrowColor={RGBA.iwc_purple}

@@ -128,3 +128,69 @@
     transform: none !important;
     box-shadow: none !important;
 }
+
+/* ── Settings zone ──────────────────────────────── */
+
+.settings-zone {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.settings-label {
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.setting-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* Toggle button */
+.toggle-btn {
+    position: relative;
+    width: 34px;
+    height: 18px;
+    border-radius: 9px;
+    border: none;
+    background: var(--border-strong);
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.toggle-btn::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+}
+
+.toggle-btn--on {
+    background: var(--accent);
+}
+
+.toggle-btn--on::after {
+    transform: translateX(16px);
+}

@@ -21,7 +21,8 @@ import {
     useGameState,
     useGameFen,
     useMoveHistory,
-    useUsername
+    useUsername,
+    useIsWhite
 } from '../../hooks';
 
 // constant game states
@@ -32,8 +33,11 @@ import { useSocket, useBoardSocketHandlers } from "../../socket";
 import { useDispatch } from 'react-redux';
 import { actions } from '../../redux';
 
-import { playSound, getFenAtIndex } from "../../utils";
+import { playSound, getFenAtIndex, getCapturedPieces, dbg, dbgBoard } from "../../utils";
+import { pieces as pieceImages } from "../../assets";
 import { sounds } from "../../assets";
+
+const PIECE_SORT_ORDER = { p: 1, n: 2, b: 3, r: 4, q: 5, k: 6 };
 
 const BoardPage = () => {
     const socket = useSocket();
@@ -67,6 +71,7 @@ const BoardPage = () => {
             setRematchRequested(false);
             setRematchDeclinedMsg('');
             setExplosionHistory([]);
+            setExplosionKey(0);
             detonationQueueRef.current = [];
             isDetonatingRef.current = false;
 
@@ -99,6 +104,7 @@ const BoardPage = () => {
     const gameState = useGameState();
     const gameFen = useGameFen();
     const moveHistory = useMoveHistory();
+    const isWhite = useIsWhite();
 
     const [viewIndex, setViewIndex] = useState(null); // null = "at latest"
     // On rejoin, location.state only has roomId (no players/fen). Pre-seed the standard
@@ -110,6 +116,7 @@ const BoardPage = () => {
     const prevViewIndexRef = useRef(null);
     const [snapFen, setSnapFen] = useState(null);
     const [boardAnimDuration, setBoardAnimDuration] = useState(undefined);
+    const [explosionKey, setExplosionKey] = useState(0);
     const [explosionHistory, setExplosionHistory] = useState([]); // [{ square, moveCount }]
     const [disconnectCountdown, setDisconnectCountdown] = useState(null);
     const [displayWinLossPopup, setDisplayWinLossPopup] = useState(false);
@@ -127,7 +134,10 @@ const BoardPage = () => {
     const [detonatedPiece, setDetonatedPiece] = useState(null); // piece char or null
     const [boardShaking, setBoardShaking] = useState(false);
     const [showMatchFound, setShowMatchFound] = useState(false);
+    const [boardArmed, setBoardArmed] = useState(false);
+    const [clickToMove, setClickToMove] = useState(false);
     const detonationQueueRef = useRef([]);
+    const prevGameStateRef = useRef(gameState);
     const isDetonatingRef = useRef(false);
 
     // When the user jumps more than one move, snap to i-1 instantly then animate the single step to i
@@ -171,10 +181,103 @@ const BoardPage = () => {
         ? getFenAtIndex(startingFen ?? gameFen, moveHistory, Math.max(0, viewIndex))
         : gameFen;
 
+    // Captured pieces — updates as history is navigated
+    const captured = useMemo(() => getCapturedPieces(displayFen), [displayFen]);
+    // My row (bottom): pieces I captured from the opponent
+    const myPiecesRow = (isWhite ? captured.capturedByWhite : captured.capturedByBlack)
+        .filter(t => t !== 'k')
+        .sort((a, b) => PIECE_SORT_ORDER[a] - PIECE_SORT_ORDER[b]);
+    // Their row (top): pieces the opponent captured from me
+    const theirPiecesRow = (isWhite ? captured.capturedByBlack : captured.capturedByWhite)
+        .filter(t => t !== 'k')
+        .sort((a, b) => PIECE_SORT_ORDER[a] - PIECE_SORT_ORDER[b]);
+    // Piece image key prefix: pieces I captured are the opponent's color
+    const myPieceColor = isWhite ? 'b' : 'w';
+    const theirPieceColor = isWhite ? 'w' : 'b';
+    const myMaterialAdv = isWhite ? Math.max(0, captured.materialAdv) : Math.max(0, -captured.materialAdv);
+    const theirMaterialAdv = isWhite ? Math.max(0, -captured.materialAdv) : Math.max(0, captured.materialAdv);
+
+    // Determine if a bomb square belongs to the current player based on orientation + rank.
+    // White places on ranks 3-4, black on ranks 5-6 (enforced by server).
+    const isPlayerBombSquare = (square) => {
+        const rank = square[1];
+        return isWhite ? (rank === '3' || rank === '4') : (rank === '5' || rank === '6');
+    };
+
+    // Full initial bomb lists (current unexploded + those that have since detonated)
+    const allPlayerBombs = useMemo(() => {
+        const explodedMine = explosionHistory.filter(e => isPlayerBombSquare(e.square)).map(e => e.square);
+        return [...new Set([...player.bombs, ...explodedMine])];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [player.bombs, explosionHistory, isWhite]);
+
+    const allOpponentBombs = useMemo(() => {
+        const explodedOpponent = explosionHistory.filter(e => !isPlayerBombSquare(e.square)).map(e => e.square);
+        return [...new Set([...opponent.bombs, ...explodedOpponent])];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [opponent.bombs, explosionHistory, isWhite]);
+
+    // Compute which bombs were "active" (placed but not yet detonated) at a given move index.
+    // This powers history navigation — bombs that exploded after viewIndex are still shown.
+    const displayBombs = useMemo(() => {
+        const isAtLatest = viewIndex === null;
+        const isLivePlaying = (gameState === GAME_STATES.playing || gameState === GAME_STATES.placing_bombs) && isAtLatest;
+
+        // During live play or bomb placement at the current position: let the chessboard use
+        // redux-driven rendering (handles shovel sound, placement highlights, etc.).
+        // During placement specifically, this ensures only the local player sees their own bombs.
+        if (isLivePlaying) return null;
+
+        const currentIdx = viewIndex ?? moveHistory.length;
+
+        const activeMine = allPlayerBombs.filter(sq => {
+            const exp = explosionHistory.find(e => e.square === sq);
+            return !exp || exp.moveCount > currentIdx;
+        });
+
+        const activeOpponent = allOpponentBombs.filter(sq => {
+            const exp = explosionHistory.find(e => e.square === sq);
+            return !exp || exp.moveCount > currentIdx;
+        });
+
+        return [
+            ...activeMine.map(sq => ({ square: sq, isOpponent: false })),
+            ...activeOpponent.map(sq => ({ square: sq, isOpponent: true })),
+        ];
+    }, [viewIndex, moveHistory.length, gameState, allPlayerBombs, allOpponentBombs, explosionHistory]);
+
     // When any new move arrives, snap back to the live position
     useEffect(() => {
         setViewIndex(null);
     }, [moveHistory.length]);
+
+    // "Board is armed" ceremony: detect the transition from placing_bombs -> playing
+    useEffect(() => {
+        if (prevGameStateRef.current === GAME_STATES.placing_bombs && gameState === GAME_STATES.playing) {
+            setBoardArmed(true);
+            setTimeout(() => setBoardArmed(false), 2200);
+        }
+        prevGameStateRef.current = gameState;
+    }, [gameState]);
+
+    // Debug: log bomb placements
+    useEffect(() => {
+        if (player.bombs.length === 0) return;
+        dbg('bomb-placed', `My bombs: [${player.bombs.join(', ')}] (${player.bombs.length}/3)`);
+    }, [player.bombs.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Debug: log craters as they accumulate (each explosion adds one entry)
+    useEffect(() => {
+        if (explosionHistory.length === 0) return;
+        const latest = explosionHistory[explosionHistory.length - 1];
+        const allCraters = explosionHistory.map(e => e.square);
+        dbg('explosion', `BOOM at ${latest.square} (move #${latest.moveCount})`);
+        dbgBoard(gameFen, {
+            myBombs: player.bombs,
+            craters: allCraters,
+            oppBombCount: opponent.bombs.length,
+        });
+    }, [explosionHistory.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const goToStart = () => setViewIndex(0);
     const goBack = () => setViewIndex(v => {
@@ -225,7 +328,10 @@ const BoardPage = () => {
     const playNextDetonation = () => {
         if (detonationQueueRef.current.length === 0) {
             isDetonatingRef.current = false;
-            // Restore default animation now that all explosions are done
+            // Restore default animation duration. No remount needed here —
+            // currentPosition was already synced to the post-explosion FEN during
+            // the initial explosion remount (animationDuration=0 made that update
+            // immediate). A second remount only wipes crater/bomb markers.
             setBoardAnimDuration(undefined);
             return;
         }
@@ -274,10 +380,12 @@ const BoardPage = () => {
         onRematchReady,
         onExplosion: (square, moveCount) => setExplosionHistory(prev => [...prev, { square, moveCount }]),
         onDetonation: (piece) => {
-            // Snap the board to post-explosion position instantly — no slide animation.
-            // The detonation overlay handles the visual effect. Without this, react-chessboard
-            // briefly renders the exploded piece at the destination square during its 300ms
-            // transition, which causes it to visually "reappear" on the next move.
+            // Force-remount the Chessboard so react-chessboard's internal currentPosition
+            // initialises synchronously from the post-explosion gameFen. Without this,
+            // currentPosition remains at the pre-explosion FEN until a setTimeout(fn,0)
+            // fires; if the next move arrives before that timeout, the animation diff runs
+            // against the stale position and the exploded piece visually reappears.
+            setExplosionKey(k => k + 1);
             setBoardAnimDuration(0);
             detonationQueueRef.current.push(piece);
             if (!isDetonatingRef.current) playNextDetonation();
@@ -420,7 +528,16 @@ const BoardPage = () => {
                         )}
                         <div className={`player-info top${!isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
                             <span>{opponent.name}</span>
-                            <span>{opponent.rating}</span>
+                            {opponent.is_guest ? (
+                                <span className="guest-rating-wrap">
+                                    {opponent.rating}?
+                                    <span className="guest-rating-tooltip">
+                                        This player is a guest. Their rating defaults to 1500 — what you see reflects ELO gained or lost this session only.
+                                    </span>
+                                </span>
+                            ) : (
+                                <span>{opponent.rating}</span>
+                            )}
                             <Timer
                                 isActive={!isMyMove && gameState === GAME_STATES.playing}
                                 serverSeconds={opponent.secondsLeft}
@@ -442,14 +559,42 @@ const BoardPage = () => {
                             </span>
                         </div>
 
+                        <div className="captured-row">
+                            {theirPiecesRow.map((t, i) => (
+                                <img key={i} src={pieceImages[theirPieceColor + t.toUpperCase()]} className="cap-piece" alt={t} />
+                            ))}
+                            {theirMaterialAdv > 0 && <span className="material-adv">+{theirMaterialAdv}</span>}
+                        </div>
+
                         <div className={`chess-board-container${criticalTimer ? ' critical-timer' : ''}${boardShaking ? ' shaking' : ''}`}>
                             <Chessboard
-                                key={roomId}
+                                key={`${roomId}-${explosionKey}`}
                                 displayFen={snapFen ?? (isViewingHistory ? displayFen : undefined)}
                                 animationDuration={boardAnimDuration}
                                 visibleCraters={visibleCraters}
+                                displayBombs={displayBombs}
+                                clickToMove={clickToMove}
                             />
                             {detonatedPiece && <DetonationOverlay piece={detonatedPiece} />}
+                            {gameState === GAME_STATES.placing_bombs && (
+                                <div className="enemy-territory-fog">
+                                    <span className="fog-main">Enemy Territory</span>
+                                    <span className="fog-sub">Bombs being set in secret</span>
+                                </div>
+                            )}
+                            {boardArmed && (
+                                <div className="board-armed-overlay">
+                                    <span className="armed-title">💣 The board is armed.</span>
+                                    <span className="armed-subtitle">Tread carefully.</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="captured-row">
+                            {myPiecesRow.map((t, i) => (
+                                <img key={i} src={pieceImages[myPieceColor + t.toUpperCase()]} className="cap-piece" alt={t} />
+                            ))}
+                            {myMaterialAdv > 0 && <span className="material-adv">+{myMaterialAdv}</span>}
                         </div>
 
                         <div className={`player-info bottom${isMyMove && gameState === GAME_STATES.playing ? ' active-turn' : ''}`}>
@@ -490,6 +635,8 @@ const BoardPage = () => {
                         onNewGame={gameState === GAME_STATES.game_over && !displayWinLossPopup ? handleNewGame : undefined}
                         rematchRequested={rematchRequested}
                         rematchDeclinedMsg={rematchDeclinedMsg}
+                        clickToMove={clickToMove}
+                        onClickToMoveToggle={() => setClickToMove(v => !v)}
                     />
                 </div>
             </div>

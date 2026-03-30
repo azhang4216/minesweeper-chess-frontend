@@ -12,22 +12,91 @@ const VARIANT_GIF = {
     draw: images.officeHandshakeMeme,
 };
 
-const COPY = {
-    win: {
-        headline: 'VICTORY',
-        tagline: 'Clean. Calculated. Deadly.',
-        subtext: 'Your mines were better placed.',
-    },
-    loss: {
-        headline: 'DEFEAT',
-        tagline: 'Their mines were better placed.',
-        subtext: 'Touch grass and try again.',
-    },
-    draw: {
+const getCopy = (variant, reason) => {
+    const isExplosion = reason?.startsWith('explode');
+
+    if (variant === 'win') {
+        if (isExplosion) return {
+            headline: 'VICTORY',
+            tagline: 'They stepped on your mine.',
+            subtext: 'They never saw it coming.',
+        };
+        if (reason === 'checkmate') return {
+            headline: 'VICTORY',
+            tagline: 'Clean. Calculated. Deadly.',
+            subtext: 'No escape for the king.',
+        };
+        if (reason === 'timeout') return {
+            headline: 'VICTORY',
+            tagline: "Time ran out for them.",
+            subtext: 'Patience is a weapon too.',
+        };
+        if (reason === 'resign') return {
+            headline: 'VICTORY',
+            tagline: 'They surrendered.',
+            subtext: 'A wise opponent knows when to fold.',
+        };
+        return {
+            headline: 'VICTORY',
+            tagline: 'Well played.',
+            subtext: 'Your mines were better placed.',
+        };
+    }
+
+    if (variant === 'loss') {
+        if (isExplosion) return {
+            headline: 'DEFEAT',
+            tagline: 'You stepped on a mine.',
+            subtext: "Should've looked where you were going.",
+        };
+        if (reason === 'checkmate') return {
+            headline: 'DEFEAT',
+            tagline: 'Their pieces were better.',
+            subtext: 'Touch grass and try again.',
+        };
+        if (reason === 'timeout') return {
+            headline: 'DEFEAT',
+            tagline: 'Your clock ran out.',
+            subtext: 'Tick tock.',
+        };
+        if (reason === 'resign') return {
+            headline: 'DEFEAT',
+            tagline: 'You resigned.',
+            subtext: 'Sometimes discretion is the better part of valor.',
+        };
+        return {
+            headline: 'DEFEAT',
+            tagline: 'Their mines were better placed.',
+            subtext: 'Touch grass and try again.',
+        };
+    }
+
+    // draw
+    if (reason === 'stalemate') return {
         headline: 'DRAW',
-        tagline: 'A gentleman\'s agreement...',
+        tagline: 'Stalemate.',
+        subtext: 'No legal moves. A fitting end.',
+    };
+    if (reason === 'draw by 50-move rule') return {
+        headline: 'DRAW',
+        tagline: '50 moves, no progress.',
+        subtext: 'The game gave up on you both.',
+    };
+    if (reason === 'threefold repetition') return {
+        headline: 'DRAW',
+        tagline: 'Déjà vu.',
+        subtext: "Same position, three times. Neither of you dared change it.",
+    };
+    if (reason === 'insufficient material') return {
+        headline: 'DRAW',
+        tagline: "It's so over.",
+        subtext: "Neither side has the firepower to finish.",
+    };
+    return {
+        headline: 'DRAW',
+        tagline: "A gentleman's agreement...",
         subtext: '...to be mediocre together.',
-    },
+    };
 };
 
 const humanizeReason = (reason) => {
@@ -76,7 +145,7 @@ const WinLossPopup = ({
     const isWin = result === 'You win';
     const isDraw = result === 'Draw';
     const variant = isWin ? 'win' : isDraw ? 'draw' : 'loss';
-    const copy = COPY[variant];
+    const copy = getCopy(variant, reason);
     const safeEloChange = myEloChange ?? 0;
     const newElo = player.rating + safeEloChange;
     const eloColor = getEloChangeColor(safeEloChange);

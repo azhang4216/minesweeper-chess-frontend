@@ -77,6 +77,11 @@ export const resetGame = () => ({
     type: "RESET_GAME",
 });
 
+export const updatePlayerRating = (newRating) => ({
+    type: "UPDATE_PLAYER_RATING",
+    payload: newRating,
+});
+
 export const setIsAuthLoading = (isAuthLoading) => ({
     type: "SET_IS_AUTH_LOADING",
     payload: isAuthLoading,

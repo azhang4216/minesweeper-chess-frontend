@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GAME_STATES } from '../../constants';
-import { useGameState, useIsLoggedIn, usePlayer } from "../../hooks";
+import { useGameState, useIsLoggedIn, useIsPlayingAsGuest, usePlayer } from "../../hooks";
 import { useDispatch } from 'react-redux';
 import { actions } from "../../redux";
 import { generateGuestUUID } from "../../api";
@@ -59,6 +59,7 @@ const HomePage = () => {
     const socket = useSocket();
     const gameState = useGameState();
     const isLoggedIn = useIsLoggedIn();
+    const isGuest = useIsPlayingAsGuest();
     const player = usePlayer();
 
     const [tagline] = useState(() => TAGLINES[Math.floor(Math.random() * TAGLINES.length)]);
@@ -164,7 +165,9 @@ const HomePage = () => {
             return (
                 <div className="matchmaking-group">
                     {player?.rating != null && (
-                        <div className="player-elo-badge">{player.rating} ELO</div>
+                        <div className="player-elo-badge">
+                            {player.rating} ELO{isGuest ? ' [Guest]' : ''}
+                        </div>
                     )}
                     <div className="time-control-pills">
                         {TIME_CONTROLS.map(({ label, seconds }) => (

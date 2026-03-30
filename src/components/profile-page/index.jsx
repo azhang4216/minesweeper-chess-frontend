@@ -320,7 +320,7 @@ const ProfilePage = () => {
                                                     <td><span className={`games-result ${res.cls}`}>{res.text}</span></td>
                                                     <td className="games-bombs">{game.bombs.join(", ")}</td>
                                                     <td>
-                                                        <Link to={`/game/${game._id}`} className="profile-link games-analyze-link" target="_blank" rel="noopener noreferrer">
+                                                        <Link to={`/game/${game._id}`} className="profile-link games-analyze-link">
                                                             Analyze Game
                                                         </Link>
                                                     </td>

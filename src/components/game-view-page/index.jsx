@@ -62,6 +62,13 @@ const GameViewPage = () => {
 
     const displayFen = getFenAtIndex(STARTING_FEN, moves, viewIndex);
 
+    // Board is always shown from white's perspective. White's bombs sit on ranks 3-4,
+    // black's on 5-6. Show all bombs persistently (no explosion timing in the DB record).
+    const displayBombs = (game.bombs || []).map(sq => ({
+        square: sq,
+        isOpponent: sq[1] === '5' || sq[1] === '6',
+    }));
+
     const goToStart = () => setViewIndex(0);
     const goBack = () => setViewIndex(v => Math.max(0, v - 1));
     const goForward = () => setViewIndex(v => Math.min(moves.length, v + 1));
@@ -92,7 +99,7 @@ const GameViewPage = () => {
                         </span>
                     </div>
                     <div className="chess-board-container">
-                        <Chessboard displayFen={displayFen} />
+                        <Chessboard displayFen={displayFen} displayBombs={displayBombs} />
                     </div>
                     <div className="player-info bottom">
                         <span className="player-name">{playerName(white)}</span>
