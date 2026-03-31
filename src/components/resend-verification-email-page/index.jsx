@@ -8,7 +8,7 @@ const ResendVerification = () => {
     const [resentVerificationEmail, setResentVerificationEmail] = useState(false);
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent page refresh
+        e.preventDefault();
         if (!usernameOrEmail) {
             setError("Please enter your username or email to resend a verification email.");
         }
@@ -23,11 +23,11 @@ const ResendVerification = () => {
 
     return (
         <div className="resend-verification-email-page">
-            <img src="/landmine_white.png" alt="Logo" className="logo" />
+            <img src="/landmine_white.png" alt="Landmine Chess Logo" className="logo" />
             <div className="resend-verification-email-container">
-                <h2>Resend Verification Email</h2>
-                <p>Enter your username or email to receive a new verification link.</p>
-                <form onSubmit={handleSubmit}>
+                <h2 className="resend-title">Resend Verification Email</h2>
+                <p className="resend-description">Enter your username or email to receive a new verification link.</p>
+                <form onSubmit={handleSubmit} className="resend-form">
                     <input
                         type="text"
                         placeholder="Username or Email"

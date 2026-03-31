@@ -1,87 +1,133 @@
 .reset-password-page {
-    background-color: var(--iwc-purple);
-    min-height: 100vh;
+    min-height: calc(100vh - var(--nav-h));
+    background: var(--bg);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    padding: 20px;
+    padding: 40px 20px;
+    position: relative;
+}
+
+.reset-password-page::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.reset-password-page .logo {
+    width: 220px;
+    max-width: 72vw;
+    height: auto;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 28px var(--accent-glow));
+    animation: logoReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes logoReveal {
+    from { opacity: 0; transform: scale(0.9) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .reset-container {
-    background-color: white;
-    padding: 50px 30px;
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    animation: cardReveal 0.6s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    align-items: center;
-    max-width: 90vw;
-    width: 400px;
-    animation: fadeInUp 1.5s ease forwards;
+}
+
+@keyframes cardReveal {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .reset-title {
-    font-size: 28px;
-    font-weight: bold;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
     text-align: center;
-    color: var(--iwc-purple);
 }
 
 .reset-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    width: 100%;
+    gap: 8px;
 }
 
 .reset-label {
-    font-weight: bold;
-    color: #333;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
 }
 
 .reset-input {
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: 2px solid var(--iwc-purple);
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+}
+
+.reset-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.reset-input::placeholder {
+    color: var(--text-dim);
 }
 
 .reset-button {
-    background-color: var(--light-lavender);
-    color: black;
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 10px;
+    width: 100%;
+    padding: 13px 24px;
+    background: var(--accent);
+    color: #fff;
     border: none;
+    border-radius: 8px;
+    font-family: 'Rajdhani', Impact, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-align: center;
-    margin-top: 30px;
+    box-shadow: 0 4px 14px var(--accent-glow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    margin-top: 8px;
 }
 
 .reset-button:hover {
-    transform: scale(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+    background: var(--accent-light);
 }
 
 .reset-message {
-    font-size: 16px;
+    font-size: 13px;
+    color: var(--danger);
     text-align: center;
-    color: red;
-}
-
-/* Animation reused from homepage */
-@keyframes fadeInUp {
-    0% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }
